@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format 
+
+  - repo: https://github.com
+    rev: v3.0.0
+    hooks:
+      - id: prettier
+        types_or: [ts, tsx, css, scss, html, json]
+
+  - repo: local
+    hooks:
+      - id: frontend-check
+        name: TS Type Check
+        entry: bash -c "cd frontend && npm run type-check"
+        language: system
+        pass_filenames: false

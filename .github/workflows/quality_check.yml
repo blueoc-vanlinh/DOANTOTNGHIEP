@@ -1,0 +1,31 @@
+name: Quality Check
+
+on: [push, pull_request]
+
+jobs:
+  backend-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with: { python-version: "3.11" }
+      - name: Install Ruff
+        run: pip install ruff
+      - name: Run Ruff Check
+        run: ruff check .
+
+  frontend-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with: { node-version: "18" }
+      - name: Install Deps
+        run: cd frontend && npm install
+      - name: Lint & Type Check
+        run: |
+          cd frontend
+          npm run lint
+          npm run type-check
