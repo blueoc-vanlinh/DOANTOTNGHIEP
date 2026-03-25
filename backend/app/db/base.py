@@ -7,4 +7,3 @@ from app.models import (
     ForecastResult as ForecastResult, 
     DailyInventoryStat as DailyInventoryStat
 )
-from app import models

@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from app.db import base
+from app.db import base  # noqa: F401
 from sqlmodel import SQLModel
 config = context.config
 
