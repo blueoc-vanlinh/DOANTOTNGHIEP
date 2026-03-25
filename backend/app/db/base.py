@@ -1,5 +1,10 @@
 from app.models import (
-    User, Role, Product, Inventory, 
-    StockTransaction, ForecastResult, DailyInventoryStat
+    User as User, 
+    Role as Role, 
+    Product as Product, 
+    Inventory as Inventory, 
+    StockTransaction as StockTransaction, 
+    ForecastResult as ForecastResult, 
+    DailyInventoryStat as DailyInventoryStat
 )
 from app import models
