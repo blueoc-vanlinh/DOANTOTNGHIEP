@@ -1,11 +1,8 @@
 from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-
+from app.db.base import *
 from sqlmodel import SQLModel
-print(SQLModel.metadata.tables.keys())
-from app.db.base import *  # để load models
-
 config = context.config
 
 if config.config_file_name is not None:
