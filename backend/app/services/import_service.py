@@ -19,11 +19,23 @@ def create_import_order(session: Session, data: dict, user_id: int):
             status="COMPLETED",
             created_by=user_id
         )
+
         session.add(order)
-        session.flush() 
+        session.flush()  
 
         total_amount = 0
+
         for item in data["items"]:
+
+            if "product_id" not in item:
+                raise Exception("product_id is required")
+
+            if "quantity" not in item or item["quantity"] <= 0:
+                raise Exception("quantity must be > 0")
+
+            if "unit_cost" not in item or item["unit_cost"] <= 0:
+                raise Exception("unit_cost must be > 0")
+
             order_item = ImportOrderItem(
                 import_order_id=order.id,
                 product_id=item["product_id"],
@@ -32,7 +44,7 @@ def create_import_order(session: Session, data: dict, user_id: int):
             )
             session.add(order_item)
 
-            inventory = increase_stock(
+            increase_stock(
                 session,
                 item["product_id"],
                 data["warehouse_id"],
