@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 from app.db.session import get_session
-from app.services.dashboard_service import *
+from app.services.dashboard_service import total_inventory, low_stock_products, top_selling_products, import_export_summary, inventory_value
 
 router = APIRouter()
 
