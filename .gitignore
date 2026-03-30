@@ -41,7 +41,7 @@ migrations/__pycache__/
 
 # --- IDEs / Editors ---
 .vscode/
-!.vscode/settings.json 
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
@@ -70,3 +70,4 @@ coverage.xml
 *.joblib
 models_checkpoint/
 package-lock.json
+!.frontend/src/lib
