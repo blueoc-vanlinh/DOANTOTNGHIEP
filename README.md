@@ -36,3 +36,29 @@ uvicorn app.main:app --reload
 
 👉 Swagger:
 http://127.0.0.1:8000/docs
+
+rc/
+├── features/
+│   ├── products/
+│   │   ├── api.ts
+│   │   ├── hooks.ts
+│   │   ├── pages/
+│   │   └── components/
+│   ├── inventory/
+│   ├── import/
+│   ├── export/
+│   ├── dashboard/
+│
+├── components/
+│   ├── common/
+│   ├── layout/
+│   └── notification/
+│
+├── lib/
+│   ├── api.ts
+│   ├── react-query.ts
+│
+├── routes/
+├── theme/
+├── utils/
+├── constants/
