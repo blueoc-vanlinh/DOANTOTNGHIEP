@@ -1,51 +1,63 @@
 import React from "react";
 import { Button as AntdButton } from "antd";
 import type { ButtonProps as AntdButtonProps } from "antd";
-interface CustomButtonProps extends AntdButtonProps {
+import type { FC } from "react";
+
+interface CustomButtonProps extends Omit<AntdButtonProps, "icon"> {
   label?: React.ReactNode;
-  iconPosition?: 'start' | 'end';
-  customVariant?: AntdButtonProps['type']; 
+
+  iconPosition?: "start" | "end";
+
+  icon?: React.ReactNode;
+
+  block?: boolean;
 }
 
-export const Button: React.FC<CustomButtonProps> = ({
-  type = 'primary',
+const Button: FC<CustomButtonProps> = ({
+  type = "primary",
+  size = "middle",
   label,
-  loading,
-  style,
-  size = 'middle',
-  className,
-  onClick,
-  htmlType = 'button',
-  danger,
   children,
   icon,
-  iconPosition = 'start',
-  disabled,
-  ...rest 
+  iconPosition = "start",
+  style,
+  className,
+  block = false,
+  ...rest
 }) => {
+  const content = (
+    <>
+      {iconPosition === "start" && icon}
+      {(label || children) && (
+        <span style={{ marginLeft: iconPosition === "start" && icon ? 8 : 0 }}>
+          {label ?? children}
+        </span>
+      )}
+      {iconPosition === "end" && icon && (
+        <span style={{ marginLeft: label || children ? 8 : 0 }}>{icon}</span>
+      )}
+    </>
+  );
+
   return (
     <AntdButton
-      type={type} 
-      danger={danger}
-      disabled={disabled}
-      loading={loading}
-      onClick={onClick}
-      htmlType={htmlType}
-      className={className}
+      type={type}
       size={size}
-      icon={iconPosition === 'start' ? icon : undefined}
+      block={block}
+      className={className}
       style={{
-        borderRadius: '7px',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        borderRadius: "8px",
+        fontWeight: 500,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: size === "large" ? "0 24px" : size === "small" ? "0 12px" : "0 20px",
         ...style,
       }}
+      icon={iconPosition === "start" ? icon : undefined} // Antd vẫn cần icon này để xử lý loading
       {...rest}
     >
-      {label}
-      {children}
-      {iconPosition === 'end' && icon && <span style={{ marginLeft: 8 }}>{icon}</span>}
+      {content}
     </AntdButton>
   );
 };

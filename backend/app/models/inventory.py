@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from sqlmodel import Field
-from sqlalchemy import UniqueConstraint
+from sqlmodel import Column, Field
+from sqlalchemy import Boolean, UniqueConstraint
 from app.db.base_model import BaseModel
 
 class Inventory(BaseModel, table=True):
@@ -19,3 +19,8 @@ class Inventory(BaseModel, table=True):
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
+

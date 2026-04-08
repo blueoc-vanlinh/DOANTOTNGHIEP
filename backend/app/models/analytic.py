@@ -1,5 +1,5 @@
 import datetime as dt
-from sqlmodel import Field
+from sqlmodel import Boolean, Column, Field
 from sqlalchemy import UniqueConstraint
 from app.db.base_model import BaseModel
 
@@ -25,3 +25,8 @@ class DailyInventoryStats(BaseModel, table=True):
     total_import: int = 0
     total_export: int = 0
     inventory_value: float
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
+

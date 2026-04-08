@@ -1,4 +1,4 @@
-from sqlmodel import Field
+from sqlmodel import Boolean, Column, Field
 from app.db.base_model import BaseModel
 
 
@@ -10,6 +10,11 @@ class ImportOrder(BaseModel, table=True):
     status: str  # PENDING, COMPLETED, CANCELLED
 
     created_by: int | None = Field(default=None, foreign_key="users.id")
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
+
 
 
 class ImportOrderItem(BaseModel, table=True):

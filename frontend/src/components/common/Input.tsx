@@ -1,20 +1,53 @@
-import type { ReactNode } from "react";
+import React from "react";
 import { Input as AntdInput } from "antd";
-interface LabelProps {
-  children: ReactNode;
+import type { InputProps as AntdInputProps } from "antd";
+import type { FC } from "react";
+import { Label } from "./Label";
+
+interface InputProps extends AntdInputProps {
+  label?: React.ReactNode;
   required?: boolean;
+  help?: React.ReactNode;
 }
 
-export const Label = ({ children, required }: LabelProps) => (
-  <div style={{ marginBottom: 8, fontWeight: 500 }}>
-    {children} {required && <span style={{ color: 'red' }}>*</span>}
-  </div>
-);
+const Input: FC<InputProps> = ({
+  label,
+  required = false,
+  help,
+  style,
+  className,
+  ...rest
+}) => {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && (
+        <Label required={required}>
+          {label}
+        </Label>
+      )}
 
+      <AntdInput
+        {...rest}
+        className={className}
+        style={{
+          borderRadius: "8px",
+          height: rest.size === "large" ? 48 : 40,
+          ...style,
+        }}
+      />
 
-import type { InputProps } from "antd";
-
-const Input = (props: InputProps) => {
-  return <AntdInput {...props} style={{ borderRadius: 4, ...props.style }} />;
+      {help && (
+        <div style={{
+          fontSize: "12px",
+          color: "#8c8c8c",
+          marginTop: 4
+        }}>
+          {help}
+        </div>
+      )}
+    </div>
+  );
 };
+
+export { Label } from "./Label";
 export default Input;

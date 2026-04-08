@@ -1,15 +1,9 @@
+// src/pages/import/ImportPage.tsx
 import { useState } from "react";
-import {
-  Form,
-  InputNumber,
-  Button as AntButton,
-  Space,
-  message,
-  Card,
-} from "antd";
-//import type { FormInstance } from "antd";
+import { Form, InputNumber, Card, message } from "antd";
 
 import Button from "@/components/common/button";
+
 import { useImport } from "../hooks";
 import type { ImportItem, ImportInput } from "../types";
 
@@ -34,6 +28,10 @@ export default function ImportPage() {
   };
 
   const removeItem = (index: number) => {
+    if (items.length === 1) {
+      message.warning("Phải có ít nhất 1 sản phẩm");
+      return;
+    }
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -50,85 +48,148 @@ export default function ImportPage() {
   };
 
   const handleSubmit = async () => {
-    const values = await form.validateFields();
+    try {
+      const values = await form.validateFields();
 
-    const payload: ImportInput = {
-      supplier_id: values.supplier_id,
-      warehouse_id: values.warehouse_id,
-      items,
-    };
+      const payload: ImportInput = {
+        supplier_id: values.supplier_id,
+        warehouse_id: values.warehouse_id,
+        items: items.filter(item => item.product_id !== 0 && item.quantity > 0),
+      };
 
-    mutation.mutate(payload, {
-      onSuccess: () => {
-        message.success("Nhập hàng thành công");
-        form.resetFields();
-        setItems([{ product_id: 0, quantity: 0, unit_cost: 0 }]);
-      },
-    });
+      mutation.mutate(payload, {
+        onSuccess: () => {
+          message.success("Nhập hàng thành công!");
+          form.resetFields();
+          setItems([{ product_id: 0, quantity: 0, unit_cost: 0 }]);
+        },
+      });
+    } catch (error) {
+      console.error("Validate failed:", error);
+    }
   };
 
   return (
     <div>
-      <h2>Nhập hàng</h2>
+      {/* Header */}
+      <div
+        style={{
+          marginBottom: 24,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
+          Nhập kho
+        </h2>
+      </div>
 
-      <Card style={{ marginBottom: 16 }}>
+      <Card
+        title="Thông tin chung"
+        style={{ marginBottom: 24 }}
+      >
         <Form form={form} layout="vertical">
           <Form.Item
             name="supplier_id"
-            label="Supplier ID"
-            rules={[{ required: true, message: "Nhập supplier_id" }]}
+            label="Nhà cung cấp (Supplier ID)"
+            rules={[{ required: true, message: "Vui lòng nhập Supplier ID" }]}
           >
-            <InputNumber style={{ width: "100%" }} />
+            <InputNumber
+              style={{ width: "100%" }}
+              placeholder="Nhập ID nhà cung cấp"
+              min={1}
+            />
           </Form.Item>
 
           <Form.Item
             name="warehouse_id"
-            label="Warehouse ID"
-            rules={[{ required: true, message: "Nhập warehouse_id" }]}
+            label="Kho hàng (Warehouse ID)"
+            rules={[{ required: true, message: "Vui lòng nhập Warehouse ID" }]}
           >
-            <InputNumber style={{ width: "100%" }} />
+            <InputNumber
+              style={{ width: "100%" }}
+              placeholder="Nhập ID kho hàng"
+              min={1}
+            />
           </Form.Item>
         </Form>
       </Card>
-      <Card title="Danh sách sản phẩm">
+
+      <Card
+        title="Danh sách sản phẩm nhập kho"
+        style={{ marginBottom: 24 }}
+        extra={
+          <Button type="primary" onClick={addItem}>
+            + Thêm sản phẩm
+          </Button>
+        }
+      >
         {items.map((item, index) => (
-          <Space key={index} style={{ marginBottom: 8 }}>
-            <InputNumber
-              placeholder="Product ID"
-              value={item.product_id}
-              onChange={(v) =>
-                updateItem(index, "product_id", Number(v ?? 0))
-              }
-            />
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              gap: 12,
+              marginBottom: 16,
+              padding: 16,
+              border: "1px solid #f0f0f0",
+              borderRadius: "8px",
+              background: "#fafafa",
+            }}
+          >
+            <Form.Item label="Mã sản phẩm" style={{ flex: 1, marginBottom: 0 }}>
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Product ID"
+                value={item.product_id}
+                onChange={(v) => updateItem(index, "product_id", Number(v ?? 0))}
+                min={1}
+              />
+            </Form.Item>
 
-            <InputNumber
-              placeholder="Quantity"
-              value={item.quantity}
-              onChange={(v) =>
-                updateItem(index, "quantity", Number(v ?? 0))
-              }
-            />
+            <Form.Item label="Số lượng" style={{ flex: 1, marginBottom: 0 }}>
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Số lượng"
+                value={item.quantity}
+                onChange={(v) => updateItem(index, "quantity", Number(v ?? 0))}
+                min={1}
+              />
+            </Form.Item>
 
-            <InputNumber
-              placeholder="Unit Cost"
-              value={item.unit_cost}
-              onChange={(v) =>
-                updateItem(index, "unit_cost", Number(v ?? 0))
-              }
-            />
+            <Form.Item label="Đơn giá" style={{ flex: 1, marginBottom: 0 }}>
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Đơn giá"
+                value={item.unit_cost}
+                onChange={(v) => updateItem(index, "unit_cost", Number(v ?? 0))}
+                min={0}
+              />
+            </Form.Item>
 
-            <AntButton danger onClick={() => removeItem(index)}>
-              Xóa
-            </AntButton>
-          </Space>
+            <div style={{ display: "flex", alignItems: "flex-end", paddingBottom: 4 }}>
+              <Button
+                danger
+                size="small"
+                onClick={() => removeItem(index)}
+              >
+                Xóa
+              </Button>
+            </div>
+          </div>
         ))}
-
-        <Button onClick={addItem}>+ Thêm sản phẩm</Button>
       </Card>
 
-      <div style={{ marginTop: 16 }}>
-        <Button type="primary" onClick={handleSubmit}>
-          Submit Import
+      <div style={{ textAlign: "right" }}>
+        <Button
+          type="primary"
+          size="large"
+          onClick={handleSubmit}
+          loading={mutation.isPending}
+          style={{ minWidth: 200 }}
+        >
+          Xác nhận nhập kho
         </Button>
       </div>
     </div>
