@@ -11,13 +11,13 @@ from app.models.transaction import StockTransaction
 def get_dashboard_summary(session: Session) -> Dict[str, Any]:
     """Lấy thông tin tóm tắt Dashboard"""
     total_products = session.exec(
-        select(func.count()).select_from(Product).where(Product.deleted_at == None)
+        select(func.count()).select_from(Product).where(Product.deleted_at == None.is_(None))
     ).one() or 0
 
     total_inventory = session.exec(
         select(func.sum(Inventory.quantity))
         .join(Product, Product.id == Inventory.product_id)
-        .where(Product.deleted_at == None)
+        .where(Product.deleted_at == None.is_(None))
     ).one() or 0
 
     total_imports = session.exec(
@@ -36,7 +36,7 @@ def get_dashboard_summary(session: Session) -> Dict[str, Any]:
         .join(Product, Product.id == Inventory.product_id)
         .where(and_(
             Inventory.quantity <= Inventory.min_threshold,
-            Product.deleted_at == None
+            Product.deleted_at == None.is_(None)
         ))
     ).one() or 0
 
@@ -87,7 +87,7 @@ def get_chart_data(session: Session, days: int = 30) -> List[Dict[str, Any]]:
     current = start_date
     while current <= end_date:
         # Tìm dữ liệu của ngày hiện tại
-        row = next((r for r in result if r.date == current), None)
+        row = next((r for r in result if r.date == current), None.is_(None))
         chart_data.append({
             "date": current,
             "import_qty": int(row.import_qty) if row and row.import_qty else 0,
@@ -119,7 +119,7 @@ def get_low_stock_products(session: Session, limit: int = 10):
         .join(Inventory, Product.id == Inventory.product_id)
         .where(and_(
             Inventory.quantity <= Inventory.min_threshold,
-            Product.deleted_at == None
+            Product.deleted_at == None.is_(None)
         ))
         .order_by(Inventory.quantity.asc())
         .limit(limit)

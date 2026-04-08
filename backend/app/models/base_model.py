@@ -1,6 +1,5 @@
 # app/db/base_model.py
 from sqlmodel import SQLModel, Field
-from sqlalchemy import Boolean
 from datetime import datetime
 from typing import Optional
 

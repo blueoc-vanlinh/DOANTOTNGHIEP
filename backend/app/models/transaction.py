@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, CheckConstraint
+from sqlalchemy import CheckConstraint
 from sqlmodel import Boolean, Column, Field
 from app.db.base_model import BaseModel
 
