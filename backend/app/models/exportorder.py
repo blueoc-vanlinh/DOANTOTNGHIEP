@@ -1,4 +1,4 @@
-from sqlmodel import Field
+from sqlmodel import Boolean, Column, Field
 from app.db.base_model import BaseModel
 
 class ExportOrder(BaseModel, table=True):
@@ -8,6 +8,12 @@ class ExportOrder(BaseModel, table=True):
     total_amount: float
     status: str
     created_by: int | None = Field(default=None, foreign_key="users.id")
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
+
+
 
 
 class ExportOrderItem(BaseModel, table=True):
@@ -18,3 +24,8 @@ class ExportOrderItem(BaseModel, table=True):
 
     quantity: int
     price: float
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
+    

@@ -1,9 +1,9 @@
+// src/pages/inventory/InventoryPage.tsx
 import { useState } from "react";
-import { Space, Modal, Form, message, InputNumber, Tag } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { message } from "antd";
 
-import BaseTable from "@/components/common/BaseTable";
-import Button from "@/components/common/button";
+import InventoryTable from "../components/InventoryTable";
+import InventoryFormModal from "../components/InventoryFormModal";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 
@@ -14,101 +14,54 @@ export default function InventoryPage() {
   const { data, isLoading } = useInventory();
   const updateMutation = useUpdateInventory();
 
-  const [open, setOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Inventory | null>(null);
-  const [form] = Form.useForm();
 
   const handleEdit = (record: Inventory) => {
     setEditing(record);
-    form.setFieldsValue(record);
-    setOpen(true);
+    setModalOpen(true);
   };
 
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-
+  const handleSubmit = (values: { quantity: number }) => {
     if (editing) {
       updateMutation.mutate(
         { id: editing.id, data: values },
         {
           onSuccess: () => {
             message.success("Cập nhật tồn kho thành công");
-            setOpen(false);
+            setModalOpen(false);
           },
         }
       );
     }
   };
 
-  const columns: ColumnsType<Inventory> = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      width: 60,
-    },
-    {
-      title: "Product ID",
-      dataIndex: "product_id",
-      render: (id) => <Tag color="blue">{id}</Tag>,
-    },
-    {
-      title: "Warehouse ID",
-      dataIndex: "warehouse_id",
-      render: (id) => <Tag color="green">{id}</Tag>,
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      sorter: (a, b) => a.quantity - b.quantity,
-    },
-    {
-      title: "Trạng thái",
-      render: (_, record) =>
-        record.quantity > 0 ? (
-          <Tag color="success">Còn hàng</Tag>
-        ) : (
-          <Tag color="error">Hết hàng</Tag>
-        ),
-    },
-    {
-      title: "Thao tác",
-      render: (_, record) => (
-        <Space>
-          <Button size="small" onClick={() => handleEdit(record)}>
-            Sửa
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
   if (isLoading) return <LoadingPage />;
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-        <h2>Quản lý tồn kho</h2>
+      <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
+          Quản lý Tồn kho
+        </h2>
       </div>
 
       {data && data.length > 0 ? (
-        <BaseTable<Inventory> columns={columns} data={data} />
+        <InventoryTable
+          data={data}
+          onEdit={handleEdit}
+        />
       ) : (
-        <EmptyState description="Chưa có dữ liệu tồn kho" />
+        <EmptyState description="Chưa có dữ liệu tồn kho nào" />
       )}
 
-      <Modal
-        title="Cập nhật tồn kho"
-        open={open}
-        onOk={handleSubmit}
-        onCancel={() => setOpen(false)}
-        confirmLoading={updateMutation.isPending}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="quantity" label="Số lượng">
-            <InputNumber style={{ width: "100%" }} min={0} />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <InventoryFormModal
+        open={modalOpen}
+        editing={editing}
+        onCancel={() => setModalOpen(false)}
+        onSubmit={handleSubmit}
+        loading={updateMutation.isPending}
+      />
     </div>
   );
 }

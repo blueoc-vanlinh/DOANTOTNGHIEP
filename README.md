@@ -33,7 +33,7 @@ alembic upgrade head
 ▶️ Run Server
 cd backend
 uvicorn app.main:app --reload
-
+python -m py_compile seed.py
 👉 Swagger:
 http://127.0.0.1:8000/docs
 

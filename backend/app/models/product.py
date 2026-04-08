@@ -1,5 +1,5 @@
 from typing import Optional, Dict
-from sqlmodel import Field
+from sqlmodel import Boolean, Field
 from sqlalchemy import JSON, Column
 from datetime import datetime
 from app.db.base_model import BaseModel
@@ -8,6 +8,10 @@ class Category(BaseModel, table=True):
     __tablename__ = "categories"
     name: str
     description: Optional[str] = None
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
 
 
 class Product(BaseModel, table=True):
@@ -28,3 +32,8 @@ class Product(BaseModel, table=True):
 
     status: str = Field(default="ACTIVE")
     deleted_at: datetime | None = None
+    is_deleted: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, default=False, index=True)
+    )
+    

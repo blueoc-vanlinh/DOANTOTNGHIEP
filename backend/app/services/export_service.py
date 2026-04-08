@@ -21,7 +21,7 @@ def create_export_order(session: Session, data: dict, user_id: int):
         )
 
         session.add(order)
-        session.flush()  # 🔥 không commit
+        session.flush()  
 
         total_amount = 0
 

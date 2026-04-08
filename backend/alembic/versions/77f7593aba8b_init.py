@@ -1,18 +1,18 @@
-"""init full schema
+"""init
 
-Revision ID: 11c0f68b218a
+Revision ID: 77f7593aba8b
 Revises: 
-Create Date: 2026-03-25 02:33:36.003638
+Create Date: 2026-04-09 01:49:17.823231
 
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-import sqlmodel
+import sqlmodel.sql.sqltypes
 
 # revision identifiers, used by Alembic.
-revision: str = '11c0f68b218a'
+revision: str = '77f7593aba8b'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,20 +27,26 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_categories_is_deleted'), 'categories', ['is_deleted'], unique=False)
     op.create_table('permissions',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_index(op.f('ix_permissions_is_deleted'), 'permissions', ['is_deleted'], unique=False)
     op.create_table('roles',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_index(op.f('ix_roles_is_deleted'), 'roles', ['is_deleted'], unique=False)
     op.create_table('suppliers',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -49,16 +55,20 @@ def upgrade() -> None:
     sa.Column('phone', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('address', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_suppliers_is_deleted'), 'suppliers', ['is_deleted'], unique=False)
     op.create_table('warehouses',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('location', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_warehouses_is_deleted'), 'warehouses', ['is_deleted'], unique=False)
     op.create_table('products',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -74,18 +84,22 @@ def upgrade() -> None:
     sa.Column('dimensions', sa.JSON(), nullable=True),
     sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('barcode'),
     sa.UniqueConstraint('sku')
     )
+    op.create_index(op.f('ix_products_is_deleted'), 'products', ['is_deleted'], unique=False)
     op.create_table('role_permissions',
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.Column('permission_id', sa.Integer(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['permission_id'], ['permissions.id'], ),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
     sa.PrimaryKeyConstraint('role_id', 'permission_id')
     )
+    op.create_index(op.f('ix_role_permissions_is_deleted'), 'role_permissions', ['is_deleted'], unique=False)
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -96,10 +110,12 @@ def upgrade() -> None:
     sa.Column('role_id', sa.Integer(), nullable=True),
     sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    op.create_index(op.f('ix_users_is_deleted'), 'users', ['is_deleted'], unique=False)
     op.create_table('audit_logs',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -110,9 +126,11 @@ def upgrade() -> None:
     sa.Column('record_id', sa.Integer(), nullable=False),
     sa.Column('old_data', sa.JSON(), nullable=True),
     sa.Column('new_data', sa.JSON(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_audit_logs_is_deleted'), 'audit_logs', ['is_deleted'], unique=False)
     op.create_table('daily_inventory_stats',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -125,12 +143,14 @@ def upgrade() -> None:
     sa.Column('total_import', sa.Integer(), nullable=False),
     sa.Column('total_export', sa.Integer(), nullable=False),
     sa.Column('inventory_value', sa.Float(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
     sa.ForeignKeyConstraint(['warehouse_id'], ['warehouses.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('product_id', 'warehouse_id', 'date', name='uq_daily_inventory')
     )
     op.create_index(op.f('ix_daily_inventory_stats_date'), 'daily_inventory_stats', ['date'], unique=False)
+    op.create_index(op.f('ix_daily_inventory_stats_is_deleted'), 'daily_inventory_stats', ['is_deleted'], unique=False)
     op.create_table('export_orders',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -139,9 +159,11 @@ def upgrade() -> None:
     sa.Column('total_amount', sa.Float(), nullable=False),
     sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['created_by'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_export_orders_is_deleted'), 'export_orders', ['is_deleted'], unique=False)
     op.create_table('forecast_results',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -153,12 +175,14 @@ def upgrade() -> None:
     sa.Column('predicted_stock', sa.Integer(), nullable=False),
     sa.Column('days_to_out_of_stock', sa.Integer(), nullable=False),
     sa.Column('model_used', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
     sa.ForeignKeyConstraint(['warehouse_id'], ['warehouses.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('product_id', 'warehouse_id', 'forecast_date', name='uq_forecast')
     )
     op.create_index(op.f('ix_forecast_results_forecast_date'), 'forecast_results', ['forecast_date'], unique=False)
+    op.create_index(op.f('ix_forecast_results_is_deleted'), 'forecast_results', ['is_deleted'], unique=False)
     op.create_table('import_orders',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -167,10 +191,12 @@ def upgrade() -> None:
     sa.Column('total_amount', sa.Float(), nullable=False),
     sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['created_by'], ['users.id'], ),
     sa.ForeignKeyConstraint(['supplier_id'], ['suppliers.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_import_orders_is_deleted'), 'import_orders', ['is_deleted'], unique=False)
     op.create_table('inventory',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -181,11 +207,13 @@ def upgrade() -> None:
     sa.Column('oncoming_quantity', sa.Integer(), nullable=False),
     sa.Column('min_threshold', sa.Integer(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
     sa.ForeignKeyConstraint(['warehouse_id'], ['warehouses.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('product_id', 'warehouse_id', name='uq_inventory_product_warehouse')
     )
+    op.create_index(op.f('ix_inventory_is_deleted'), 'inventory', ['is_deleted'], unique=False)
     op.create_table('notifications',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -194,9 +222,11 @@ def upgrade() -> None:
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('message', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('is_read', sa.Boolean(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_notifications_is_deleted'), 'notifications', ['is_deleted'], unique=False)
     op.create_table('stock_transactions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -210,12 +240,14 @@ def upgrade() -> None:
     sa.Column('reference_id', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
     sa.Column('note', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.CheckConstraint("type IN ('IMPORT', 'EXPORT', 'ADJUST')", name='ck_stock_transactions_type'),
     sa.ForeignKeyConstraint(['created_by'], ['users.id'], ),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
     sa.ForeignKeyConstraint(['warehouse_id'], ['warehouses.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_stock_transactions_is_deleted'), 'stock_transactions', ['is_deleted'], unique=False)
     op.create_table('export_order_items',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -224,10 +256,12 @@ def upgrade() -> None:
     sa.Column('product_id', sa.Integer(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('price', sa.Float(), nullable=False),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['export_order_id'], ['export_orders.id'], ),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_export_order_items_is_deleted'), 'export_order_items', ['is_deleted'], unique=False)
     op.create_table('import_order_items',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -247,24 +281,41 @@ def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table('import_order_items')
+    op.drop_index(op.f('ix_export_order_items_is_deleted'), table_name='export_order_items')
     op.drop_table('export_order_items')
+    op.drop_index(op.f('ix_stock_transactions_is_deleted'), table_name='stock_transactions')
     op.drop_table('stock_transactions')
+    op.drop_index(op.f('ix_notifications_is_deleted'), table_name='notifications')
     op.drop_table('notifications')
+    op.drop_index(op.f('ix_inventory_is_deleted'), table_name='inventory')
     op.drop_table('inventory')
+    op.drop_index(op.f('ix_import_orders_is_deleted'), table_name='import_orders')
     op.drop_table('import_orders')
+    op.drop_index(op.f('ix_forecast_results_is_deleted'), table_name='forecast_results')
     op.drop_index(op.f('ix_forecast_results_forecast_date'), table_name='forecast_results')
     op.drop_table('forecast_results')
+    op.drop_index(op.f('ix_export_orders_is_deleted'), table_name='export_orders')
     op.drop_table('export_orders')
+    op.drop_index(op.f('ix_daily_inventory_stats_is_deleted'), table_name='daily_inventory_stats')
     op.drop_index(op.f('ix_daily_inventory_stats_date'), table_name='daily_inventory_stats')
     op.drop_table('daily_inventory_stats')
+    op.drop_index(op.f('ix_audit_logs_is_deleted'), table_name='audit_logs')
     op.drop_table('audit_logs')
+    op.drop_index(op.f('ix_users_is_deleted'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_role_permissions_is_deleted'), table_name='role_permissions')
     op.drop_table('role_permissions')
+    op.drop_index(op.f('ix_products_is_deleted'), table_name='products')
     op.drop_table('products')
+    op.drop_index(op.f('ix_warehouses_is_deleted'), table_name='warehouses')
     op.drop_table('warehouses')
+    op.drop_index(op.f('ix_suppliers_is_deleted'), table_name='suppliers')
     op.drop_table('suppliers')
+    op.drop_index(op.f('ix_roles_is_deleted'), table_name='roles')
     op.drop_table('roles')
+    op.drop_index(op.f('ix_permissions_is_deleted'), table_name='permissions')
     op.drop_table('permissions')
+    op.drop_index(op.f('ix_categories_is_deleted'), table_name='categories')
     op.drop_table('categories')
     # ### end Alembic commands ###
