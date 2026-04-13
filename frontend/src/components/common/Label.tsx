@@ -14,10 +14,9 @@ export const Label: FC<LabelProps> = ({
     style,
 }) => {
     return (
-        <div
+        <span
             className={className}
             style={{
-                marginBottom: 8,
                 fontWeight: 500,
                 fontSize: "14px",
                 color: "#1f1f1f",
@@ -28,6 +27,6 @@ export const Label: FC<LabelProps> = ({
             {required && (
                 <span style={{ color: "#ff4d4f", marginLeft: 4 }}>*</span>
             )}
-        </div>
+        </span>
     );
 };

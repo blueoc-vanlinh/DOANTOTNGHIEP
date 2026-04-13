@@ -63,18 +63,31 @@ export default function ProductTable({
         },
         {
             title: "Phân loại",
-            dataIndex: "category_id",
-            key: "category_id",
-            width: 130,
-            render: (id: number) => <Tag color="blue">Category #{id}</Tag>,
+            dataIndex: "category",
+            key: "category",
+            width: 150,
+            render: (category?: Product["category"]) =>
+                category ? (
+                    <Tag color="blue">{category.name}</Tag>
+                ) : (
+                    "-"
+                ),
         },
+
         {
             title: "Quy cách (D × R × C)",
             dataIndex: "dimensions",
             key: "dimensions",
             width: 200,
-            render: (dim?: { length: number; width: number; height: number }) =>
-                dim ? `${dim.length} × ${dim.width} × ${dim.height} cm` : "-",
+            render: (dim?: { width?: number; height?: number; depth?: number }) => {
+                if (!dim) return "-";
+
+                const { width, height, depth } = dim;
+
+                if (!width || !height || !depth) return "-";
+
+                return `${depth} × ${width} × ${height} cm`;
+            },
         },
         {
             title: "Cân nặng",
@@ -129,6 +142,7 @@ export default function ProductTable({
             rowKey="id"
             scroll={{ x: 1600 }}
             bordered
+            pagination={false}
         />
     );
 }

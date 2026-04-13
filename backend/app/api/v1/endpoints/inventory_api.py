@@ -1,27 +1,90 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
-from app.db.session import get_session
-from app.models.inventory import Inventory
-from app.services.inventory_service import get_inventory
+# app/api/v1/endpoints/inventory_api.py
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlmodel import Session
+from typing import Optional
 
-router = APIRouter()
+from app.db.session import get_session
+from app.services.inventory_service import (
+    get_inventories,
+    get_inventory_with_details,
+    increase_stock,
+    decrease_stock,
+    adjust_stock,
+)
+from app.models.inventory import Inventory   
+
+router = APIRouter(tags=["Inventory"])
+
 
 @router.get("/")
-def get_all_inventory(session: Session = Depends(get_session)):
-    return session.exec(select(Inventory)).all()
+def get_all_inventory(
+    session: Session = Depends(get_session),
+    product_id: Optional[int] = Query(None),
+    warehouse_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    pageSize: int = Query(10, ge=1, le=100),
+):
+    skip = (page - 1) * pageSize
+    return get_inventories(
+        session=session,
+        product_id=product_id,
+        warehouse_id=warehouse_id,
+        search=search,
+        skip=skip,
+        limit=pageSize,
+    )
 
-@router.get("/detail")
+
+@router.get("/{product_id}/{warehouse_id}")
 def get_inventory_detail(
     product_id: int,
     warehouse_id: int,
     session: Session = Depends(get_session)
 ):
-    inventory = get_inventory(session, product_id, warehouse_id)
-
-    if not inventory:
+    """Lấy chi tiết tồn kho của 1 sản phẩm trong 1 kho"""
+    result = get_inventory_with_details(session, product_id, warehouse_id)
+    if not result:
         raise HTTPException(status_code=404, detail="Inventory not found")
+    return result
 
-    return inventory
+
+@router.post("/increase")
+def increase_inventory(
+    product_id: int,
+    warehouse_id: int,
+    quantity: int,
+    session: Session = Depends(get_session)
+):
+    """Tăng tồn kho"""
+    if quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
+
+    try:
+        inventory = increase_stock(session, product_id, warehouse_id, quantity)
+        return inventory
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/decrease")
+def decrease_inventory(
+    product_id: int,
+    warehouse_id: int,
+    quantity: int,
+    session: Session = Depends(get_session)
+):
+    """Giảm tồn kho"""
+    if quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
+
+    try:
+        inventory = decrease_stock(session, product_id, warehouse_id, quantity)
+        return inventory
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.put("/adjust")
 def adjust_inventory(
     product_id: int,
@@ -29,25 +92,28 @@ def adjust_inventory(
     quantity: int,
     session: Session = Depends(get_session)
 ):
-    inventory = get_inventory(session, product_id, warehouse_id)
+    """Điều chỉnh tồn kho"""
+    if quantity < 0:
+        raise HTTPException(status_code=400, detail="Quantity cannot be negative")
 
-    if not inventory:
-        raise HTTPException(status_code=404, detail="Inventory not found")
+    try:
+        inventory = adjust_stock(session, product_id, warehouse_id, quantity)
+        return inventory
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-    inventory.quantity = quantity
 
-    session.commit()
-    session.refresh(inventory)
-
-    return inventory
 @router.delete("/{inventory_id}")
-def delete_inventory(inventory_id: int, session: Session = Depends(get_session)):
+def soft_delete_inventory(inventory_id: int, session: Session = Depends(get_session)):
+    """Xóa mềm tồn kho"""
     inventory = session.get(Inventory, inventory_id)
-
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
 
-    session.delete(inventory)
+    if getattr(inventory, 'is_deleted', False):
+        raise HTTPException(status_code=400, detail="Inventory already deleted")
+
+    inventory.is_deleted = True
     session.commit()
 
-    return {"message": "Deleted"}
+    return {"message": "Inventory has been soft deleted"}

@@ -1,11 +1,11 @@
 import apiClient from "@/lib/api";
 import type { Product } from "./types";
+import type { GetProductsParams, ProductInput, ProductsResponse } from "./types";
 
-
-export type ProductInput = Omit<Product, "id" | "created_at" | "updated_at">;
-
-export const getProducts = async (): Promise<Product[]> => {
-    const res = await apiClient.get<Product[]>("/products/");
+export const getProducts = async (
+    params?: GetProductsParams
+): Promise<ProductsResponse> => {
+    const res = await apiClient.get<ProductsResponse>("/products/", { params });
     return res.data;
 };
 
@@ -19,12 +19,13 @@ export const updateProduct = async ({
     data,
 }: {
     id: number;
-    data: ProductInput;
+    data: Partial<ProductInput>;
 }): Promise<Product> => {
     const res = await apiClient.put<Product>(`/products/${id}/`, data);
     return res.data;
 };
 
-export const deleteProduct = async (id: number): Promise<void> => {
-    await apiClient.delete(`/products/${id}/`);
+export const deleteProduct = async (id: number): Promise<Product> => {
+    const res = await apiClient.delete<Product>(`/products/${id}/`);
+    return res.data;
 };

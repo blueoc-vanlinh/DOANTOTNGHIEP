@@ -31,7 +31,7 @@ const Input: FC<InputProps> = ({
         className={className}
         style={{
           borderRadius: "8px",
-          height: rest.size === "large" ? 48 : 40,
+          height: rest.size === "large" ? 48 : 32,
           ...style,
         }}
       />

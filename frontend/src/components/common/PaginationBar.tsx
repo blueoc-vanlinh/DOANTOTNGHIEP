@@ -1,3 +1,4 @@
+// src/components/common/PaginationBar.tsx
 import { Pagination as AntdPagination } from "antd";
 import type { PaginationProps } from "antd";
 import type { FC } from "react";
@@ -5,11 +6,13 @@ import type { FC } from "react";
 interface PaginationBarProps extends PaginationProps {
   showTotalText?: (total: number, range: [number, number]) => string;
   bordered?: boolean;
+  shadowed?: boolean;
 }
 
 const PaginationBar: FC<PaginationBarProps> = ({
   showTotalText,
   bordered = true,
+  shadowed = true,
   style,
   className,
   ...rest
@@ -23,7 +26,7 @@ const PaginationBar: FC<PaginationBarProps> = ({
         borderTop: bordered ? "1px solid #f0f0f0" : "none",
         borderRadius: bordered ? "0 0 12px 12px" : "0",
         textAlign: "right",
-        boxShadow: bordered ? "0 -2px 6px rgba(0, 0, 0, 0.02)" : "none",
+        boxShadow: shadowed && bordered ? "0 -2px 8px rgba(0, 0, 0, 0.04)" : "none",
         ...style,
       }}
       className={className}

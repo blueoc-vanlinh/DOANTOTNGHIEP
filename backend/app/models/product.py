@@ -1,5 +1,5 @@
-from typing import Optional, Dict
-from sqlmodel import Boolean, Field
+from typing import List, Optional, Dict
+from sqlmodel import Boolean, Field, Relationship
 from sqlalchemy import JSON, Column
 from datetime import datetime
 from app.db.base_model import BaseModel
@@ -12,6 +12,7 @@ class Category(BaseModel, table=True):
         default=False,
         sa_column=Column(Boolean, default=False, index=True)
     )
+    products: List["Product"] = Relationship(back_populates="category")
 
 
 class Product(BaseModel, table=True):
@@ -23,7 +24,8 @@ class Product(BaseModel, table=True):
 
     price: float
     category_id: int | None = Field(default=None, foreign_key="categories.id")
-
+    
+    category: Optional["Category"] = Relationship(back_populates="products")
     brand: str | None = None
     unit: str | None = None
 
