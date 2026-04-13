@@ -124,5 +124,7 @@ def delete_product(session: Session, product_id: int):
 
 def count_products(session: Session):
     return session.exec(
-        select(func.count()).select_from(Product).where(Product.is_deleted == False)
+        select(func.count())
+        .select_from(Product)
+        .where(Product.is_deleted.is_(False))
     ).one()

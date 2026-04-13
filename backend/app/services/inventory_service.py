@@ -1,6 +1,5 @@
 from typing import List, Dict, Any, Optional
 from sqlmodel import Session, select, func, and_, or_
-from sqlalchemy.orm import selectinload
 
 from app.models.inventory import Inventory
 from app.models.product import Product
