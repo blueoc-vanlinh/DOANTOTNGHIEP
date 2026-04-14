@@ -70,7 +70,6 @@ def get_products(
 
 
 def get_product(session: Session, product_id: int):
-    """Lấy một sản phẩm theo ID"""
     return session.exec(
         select(Product)
         .options(selectinload(Product.category))
@@ -107,7 +106,6 @@ def update_product(session: Session, product_id: int, data: ProductCreate):
         raise
 
     session.refresh(product)
-    print("UPDATE DATA:", update_data)
     return product
 
 
