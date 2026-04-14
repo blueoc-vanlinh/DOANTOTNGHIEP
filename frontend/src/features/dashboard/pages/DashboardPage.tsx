@@ -25,7 +25,7 @@ export default function DashboardPage() {
 
     if (isLoading) return <LoadingPage />;
 
-    const summary = data?.summary || {};
+    //const summary = data?.summary || {};
     const chartData = data?.chartData || [];
 
     return (
@@ -44,7 +44,7 @@ export default function DashboardPage() {
                     <Card bordered={false} style={{ borderRadius: "12px" }}>
                         <Statistic
                             title="Tổng sản phẩm"
-                            value={summary.total_products || 0}
+                            //value={summary.total_products || 0}
                             prefix={<ShoppingOutlined style={{ color: "#1677ff" }} />}
                             valueStyle={{ color: "#1677ff", fontWeight: 600 }}
                         />
@@ -55,7 +55,7 @@ export default function DashboardPage() {
                     <Card bordered={false} style={{ borderRadius: "12px" }}>
                         <Statistic
                             title="Tổng tồn kho"
-                            value={summary.total_inventory || 0}
+                            //value={summary.total_inventory || 0}
                             prefix={<InboxOutlined style={{ color: "#52c41a" }} />}
                             valueStyle={{ color: "#52c41a", fontWeight: 600 }}
                         />
@@ -66,7 +66,7 @@ export default function DashboardPage() {
                     <Card bordered={false} style={{ borderRadius: "12px" }}>
                         <Statistic
                             title="Lượt nhập kho"
-                            value={summary.total_imports || 0}
+                            //value={summary.total_imports || 0}
                             prefix={<UploadOutlined style={{ color: "#1677ff" }} />}
                             valueStyle={{ color: "#1677ff", fontWeight: 600 }}
                         />
@@ -77,7 +77,7 @@ export default function DashboardPage() {
                     <Card bordered={false} style={{ borderRadius: "12px" }}>
                         <Statistic
                             title="Lượt xuất kho"
-                            value={summary.total_exports || 0}
+                            //value={summary.total_exports || 0}
                             prefix={<DownloadOutlined style={{ color: "#ff4d4f" }} />}
                             valueStyle={{ color: "#ff4d4f", fontWeight: 600 }}
                         />
