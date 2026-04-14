@@ -68,4 +68,3 @@ coverage.xml
 *.h5
 *.joblib
 models_checkpoint/
-package-lock.json
