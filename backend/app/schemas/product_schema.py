@@ -1,19 +1,42 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Dict, List
+from datetime import datetime
 
 
-class ProductCreate(BaseModel):
-    name: str
-    sku: str
-    price: float
-    category_id: Optional[int] = None
-
-
-class ProductRead(BaseModel):
+class CategoryRead(BaseModel):
     id: int
     name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductBase(BaseModel):
+    name: str
     sku: str
     price: float
+    barcode: Optional[str] = None
+    category_id: Optional[int] = None
+    status: str = "ACTIVE"
+    dimensions: Optional[Dict] = None
+    weight: Optional[float] = None
 
-    class Config:
-        from_attributes = True
+
+class ProductCreate(ProductBase):
+    pass
+
+
+class ProductRead(ProductBase):
+    id: int
+    category: Optional[CategoryRead] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    is_deleted: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductsResponse(BaseModel):
+    items: List[ProductRead]
+    total: int
+    page: int
+    page_size: int
