@@ -63,7 +63,7 @@ jobs:
     name: Deploy to DEV Server
     runs-on: [self-hosted, dev-runner]
     needs: [backend-ci, frontend-ci]
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/develop'
 
     steps:
       - name: Checkout code
