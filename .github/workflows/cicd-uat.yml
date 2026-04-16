@@ -1,19 +1,24 @@
 name: CI/CD UAT
+
 on:
     push:
         branches: ["uat"]
     pull_request:
         branches: ["uat"]
+
 jobs:
     backend-ci:
         name: Backend - Lint & Dependencies
         runs-on: ubuntu-latest
+
         steps:
             - uses: actions/checkout@v4
+
             - name: Set up Python 3.10
               uses: actions/setup-python@v5
               with:
                   python-version: "3.10"
+
             - name: Install Backend dependencies
               working-directory: ./backend
               run: |
@@ -25,13 +30,15 @@ jobs:
               run: |
                   pip install flake8
                   flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+
     frontend-ci:
         name: Frontend - Build
         runs-on: ubuntu-latest
+
         steps:
             - uses: actions/checkout@v4
 
-            - name: Set up Node.js
+            - name: Set up Node.js 20
               uses: actions/setup-node@v4
               with:
                   node-version: 20
@@ -66,12 +73,16 @@ jobs:
                   git reset --hard origin/uat
                   git clean -fd
 
-                  echo "Stopping old containers..."
-                  docker compose -p uat -f docker-compose.uat.yml down
+                  echo "Stopping and cleaning old containers..."
+                  docker compose -p uat -f docker-compose.uat.yml down -v --remove-orphans
+
+                  echo "Removing old images to force rebuild..."
+                  docker rmi uat-backend:latest uat-frontend:latest 2>/dev/null || true
 
                   echo "Building and starting new containers..."
                   docker compose -p uat -f docker-compose.uat.yml up -d --build
 
                   echo "✅ UAT deployment completed successfully at $(date)"
-                  echo "Backend: http://your-server-ip:8001/docs"
-                  echo "Frontend: http://your-server-ip:5174"
+                  echo "Backend → http://192.168.1.50:8001/docs"
+                  echo "Frontend → http://192.168.1.50:5174"
+                  echo "Check logs with: docker compose -p uat -f docker-compose.uat.yml logs -f backend"

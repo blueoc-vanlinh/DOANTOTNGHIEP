@@ -83,5 +83,5 @@ jobs:
           docker compose -p dev -f docker-compose.dev.yml up -d --build
 
           echo "✅ DEV deployment completed successfully at $(date)"
-          echo "Backend → http://your-dev-server:8000/docs"
-          echo "Frontend → http://your-dev-server:5173"
+          echo "Backend → http://192.168.1.50:8000/docs"
+          echo "Frontend → http://192.168.1.50:5173"
