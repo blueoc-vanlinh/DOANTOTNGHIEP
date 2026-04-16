@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Deploy
         run: |
-          cd ~/Desktop/Project/DOANTOTNGHIEP
+          cd /home/linh/doan/dev/DOANTOTNGHIEP
           git pull origin develop
           docker compose down
           docker compose up -d --build
