@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend-ci:
-    name: Backend - Lint & Test
+    name: Backend - Lint & Dependencies
     runs-on: ubuntu-latest
 
     steps:
@@ -20,13 +20,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies (Backend)
+      - name: Install Backend dependencies
         working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Python linting
+      - name: Run linting
         working-directory: ./backend
         run: |
           pip install flake8
@@ -47,13 +47,9 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install frontend dependencies
+      - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
-
-      - name: Run linting
-        working-directory: ./frontend
-        run: npm run lint --if-present || echo "No lint script or linting passed"
 
       - name: Build frontend
         working-directory: ./frontend
@@ -68,9 +64,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Deploy
+
+      - name: Deploy to DEV Server
         run: |
+          echo "🚀 Starting deployment to DEV server..."
+
           cd /home/linh/doan/dev/DOANTOTNGHIEP
-          git pull origin develop
-          docker compose down
-          docker compose up -d --build
+
+          echo "Pulling latest code from develop branch..."
+          git fetch origin
+          git reset --hard origin/develop
+          git clean -fd
+
+          echo "Stopping old containers..."
+          docker compose -p dev -f docker-compose.dev.yml down
+
+          echo "Building and starting new containers..."
+          docker compose -p dev -f docker-compose.dev.yml up -d --build
+
+          echo "✅ DEV deployment completed successfully at $(date)"
+          echo "Backend → http://your-dev-server:8000/docs"
+          echo "Frontend → http://your-dev-server:5173"

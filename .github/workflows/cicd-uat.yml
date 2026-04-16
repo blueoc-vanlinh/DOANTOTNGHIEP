@@ -67,10 +67,10 @@ jobs:
                   git clean -fd
 
                   echo "Stopping old containers..."
-                  docker compose -f docker-compose.uat.yml down
+                  docker compose -p uat -f docker-compose.uat.yml down
 
                   echo "Building and starting new containers..."
-                  docker compose -f docker-compose.uat.yml up -d --build
+                  docker compose -p uat -f docker-compose.uat.yml up -d --build
 
                   echo "✅ UAT deployment completed successfully at $(date)"
                   echo "Backend: http://your-server-ip:8001/docs"
