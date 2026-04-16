@@ -74,10 +74,10 @@ jobs:
                   git clean -fd
 
                   echo "Stopping and cleaning old containers..."
-                  docker compose -p uat -f docker-compose.uat.yml down -v --remove-orphans
+                  docker compose -p uat -f docker-compose.uat.yml down --remove-orphans
 
                   echo "Removing old images to force rebuild..."
-                  docker rmi uat-backend:latest uat-frontend:latest 2>/dev/null || true
+                  docker rm -f uat_db uat_backend uat_frontend 2>/dev/null || true
 
                   echo "Building and starting new containers..."
                   docker compose -p uat -f docker-compose.uat.yml up -d --build
