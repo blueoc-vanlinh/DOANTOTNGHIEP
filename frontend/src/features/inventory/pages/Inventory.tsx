@@ -12,6 +12,8 @@ import type { Inventory } from "../types";
 
 export default function InventoryPage() {
   const { data, isLoading } = useInventory();
+
+  const inventory: Inventory[] = Array.isArray(data) ? data : [];
   const updateMutation = useUpdateInventory();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,9 +48,9 @@ export default function InventoryPage() {
         </h2>
       </div>
 
-      {data && data.length > 0 ? (
+      {inventory.length > 0 ? (
         <InventoryTable
-          data={data}
+          data={inventory}
           onEdit={handleEdit}
         />
       ) : (
