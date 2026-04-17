@@ -91,7 +91,7 @@ const ProductFormModal: FC<ProductFormModalProps> = ({
                         >
                             <SearchCombobox
                                 placeholder="Chọn phân loại"
-                                options={categories.map((c) => ({
+                                options={(Array.isArray(categories) ? categories : []).map((c) => ({
                                     label: c.name,
                                     value: c.id,
                                 }))}
