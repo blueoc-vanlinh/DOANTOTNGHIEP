@@ -36,7 +36,8 @@ export default function ProductsPage() {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
+    console.log("responseData:", responseData);
+    console.log("products:", products);
     const createMutation = useCreateProduct();
     const updateMutation = useUpdateProduct();
     const deleteMutation = useDeleteProduct();
@@ -79,6 +80,7 @@ export default function ProductsPage() {
     if (isLoading) return <LoadingPage />;
 
     return (
+
         <div>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
