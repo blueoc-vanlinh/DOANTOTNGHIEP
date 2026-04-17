@@ -6,7 +6,7 @@ services:
     container_name: uat_db
     restart: always
     environment:
-      POSTGRES_DB: inventory_db
+      POSTGRES_DB: inventory_uat
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Seta2022!
     ports:
