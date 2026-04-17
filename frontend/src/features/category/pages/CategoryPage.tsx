@@ -25,7 +25,7 @@ interface CategoryFormValues {
 export default function CategoryPage() {
   const { data, isLoading } = useCategories();
 
-  const categories = Array.isArray(data) ? data : [];
+  const categories: Category[] = Array.isArray(data) ? data : [];
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
