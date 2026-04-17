@@ -7,5 +7,3 @@ export interface Category {
 }
 
 export type CategoryInput = Omit<Category, "id" | "created_at" | "updated_at">;
-
-
