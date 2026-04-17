@@ -25,6 +25,7 @@ interface CategoryFormValues {
 export default function CategoryPage() {
   const { data, isLoading } = useCategories();
 
+  const categories = Array.isArray(data) ? data : [];
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
@@ -94,9 +95,9 @@ export default function CategoryPage() {
         </Button>
       </div>
 
-      {data && data.length > 0 ? (
+      {categories.length > 0 ? (
         <CategoryTable
-          data={data}
+          data={categories}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
