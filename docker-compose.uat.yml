@@ -38,12 +38,7 @@ services:
         echo 'Running Alembic migrations...' &&
         alembic upgrade head &&
         echo 'Starting FastAPI with Gunicorn...' &&
-        gunicorn --worker-class uvicorn.workers.UvicornWorker \
-                --workers 4 \
-                --bind 0.0.0.0:8000 \
-                --access-logfile - \
-                --error-logfile - \
-                app.main:app
+        gunicorn --worker-class uvicorn.workers.UvicornWorker --workers 4 --bind 0.0.0.0:8000 --access-logfile - --error-logfile - app.main:app
       "
 
   frontend:
