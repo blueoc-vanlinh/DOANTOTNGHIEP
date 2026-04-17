@@ -7,16 +7,17 @@ import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 
 import { useTransactions } from "../hooks";
-import type { TransactionType } from "../types";
+import type { Transaction, TransactionType } from "../types";
 
 export default function TransactionPage() {
     const { data, isLoading } = useTransactions();
+    const transactions: Transaction[] = Array.isArray(data) ? data : [];
     const [filter, setFilter] = useState<TransactionType | "ALL">("ALL");
 
     const filteredData =
         filter === "ALL"
-            ? data
-            : data?.filter((t) => t.type === filter) || [];
+            ? transactions
+            : transactions?.filter((t) => t.type === filter) || [];
 
     if (isLoading) return <LoadingPage />;
 

@@ -25,6 +25,7 @@ interface WarehouseFormValues {
 
 export default function WarehousePage() {
     const { data, isLoading } = useWarehouses();
+    const warehouses: Warehouse[] = Array.isArray(data) ? data : [];
 
     const createMutation = useCreateWarehouse();
     const updateMutation = useUpdateWarehouse();
@@ -94,9 +95,9 @@ export default function WarehousePage() {
                     + Thêm kho
                 </Button>
             </div>
-            {data && data.length > 0 ? (
+            {warehouses.length > 0 ? (
                 <WarehouseTable
-                    data={data}
+                    data={warehouses}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                 />

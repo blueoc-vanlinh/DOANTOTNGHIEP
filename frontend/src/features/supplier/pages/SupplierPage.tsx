@@ -26,6 +26,7 @@ interface SupplierFormValues {
 export default function SupplierPage() {
     const { data, isLoading } = useSuppliers();
 
+    const suppliers: Supplier[] = Array.isArray(data) ? data : [];
     const createMutation = useCreateSupplier();
     const updateMutation = useUpdateSupplier();
     const deleteMutation = useDeleteSupplier();
@@ -94,9 +95,9 @@ export default function SupplierPage() {
                     + Thêm nhà cung cấp
                 </Button>
             </div>
-            {data && data.length > 0 ? (
+            {suppliers.length > 0 ? (
                 <SupplierTable
-                    data={data}
+                    data={suppliers}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                 />
