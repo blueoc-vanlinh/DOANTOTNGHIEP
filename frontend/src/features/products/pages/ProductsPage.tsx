@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import ProductTable from "../components/ProductTable";
 import ProductFormModal from "../components/ProductFormModal";
@@ -58,7 +58,9 @@ export default function ProductsPage() {
         }
         setModalOpen(false);
     };
-
+    useEffect(() => {
+        console.log("🔥 ENV:", import.meta.env.VITE_API_URL);
+    }, []);
     const confirmDelete = (id: number) => {
         ModalConfirm({
             title: "Xác nhận xóa sản phẩm",

@@ -19,7 +19,6 @@ def get_products(
         select(Product)
         .options(selectinload(Product.category))
         .where(Product.is_deleted.is_(False))
-        .order_by(Product.id.desc())
     )
     if category_id is not None:
         query = query.where(Product.category_id == category_id)
@@ -34,21 +33,20 @@ def get_products(
     if sort_by and hasattr(Product, sort_by):
         column = getattr(Product, sort_by)
         query = query.order_by(asc(column) if order.lower() == "asc" else desc(column))
-    count_query = select(func.count()).select_from(
-        select(Product)
-        .where(Product.is_deleted.is_(False))
-        .subquery()
-    )
-
-    if category_id is not None:
-        count_query = count_query.where(Product.category_id == category_id)
-    if search:
-        count_query = count_query.where(
-            or_(
-                Product.name.ilike(f"%{search}%"),
-                Product.sku.ilike(f"%{search}%"),
-            )
+        count_query = select(func.count()).select_from(Product).where(
+            Product.is_deleted.is_(False)
         )
+
+        if category_id is not None:
+            count_query = count_query.where(Product.category_id == category_id)
+
+        if search:
+            count_query = count_query.where(
+                or_(
+                    Product.name.ilike(f"%{search}%"),
+                    Product.sku.ilike(f"%{search}%"),
+                )
+            )
 
     total = session.exec(count_query).one() or 0
     query = query.offset(skip).limit(limit)
