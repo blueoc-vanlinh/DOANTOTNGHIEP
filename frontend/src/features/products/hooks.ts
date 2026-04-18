@@ -24,20 +24,26 @@ export const useProducts = (params?: {
             params?.category_id,
         ],
 
-        queryFn: () =>
-            getProducts({
+        queryFn: async () => {
+            const res = await getProducts({
                 search: params?.search,
                 category_id: params?.category_id,
                 page: params?.page || 1,
                 pageSize: params?.pageSize || 10,
-            }),
+            });
+
+            console.log("🔥 API:", res); // 👈 debug tại đây
+
+            return res;
+        },
+
         initialData: {
             items: [],
             total: 0,
             page: params?.page || 1,
             page_size: params?.pageSize || 10,
         },
-        placeholderData: (prev) => prev,
+
         staleTime: 0,
     });
 };
@@ -102,19 +108,15 @@ export const useDeleteProduct = () => {
         onMutate: async (id: number) => {
             await qc.cancelQueries({ queryKey: ["products"] });
 
-            const previous = qc.getQueriesData({ queryKey: ["products"] });
 
-            qc.setQueriesData({ queryKey: ["products"] }, (old: Product[] | undefined) => {
+            qc.setQueriesData({ queryKey: ["products"] }, (old: ProductsResponse | undefined) => {
                 if (!old) return old;
-                return old.filter((p: Product) => p.id !== id);
-            });
 
-            return { previous };
-        },
-
-        onError: (_err, _id, context) => {
-            context?.previous.forEach(([key, data]) => {
-                qc.setQueryData(key, data);
+                return {
+                    ...old,
+                    items: old.items.filter((p: Product) => p.id !== id),
+                    total: old.total - 1,
+                };
             });
         },
 
