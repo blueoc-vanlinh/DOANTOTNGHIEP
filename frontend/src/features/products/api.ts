@@ -5,8 +5,15 @@ import type { GetProductsParams, ProductInput, ProductsResponse } from "./types"
 export const getProducts = async (
     params?: GetProductsParams
 ): Promise<ProductsResponse> => {
-    const res = await apiClient.get<ProductsResponse>("/products/", { params });
-    return res.data;
+    const res = await apiClient.get("/products/", { params });
+
+    const data = res.data;
+    return {
+        items: data.items ?? data.data?.items ?? [],
+        total: data.total ?? data.data?.total ?? 0,
+        page: data.page ?? data.data?.page ?? 1,
+        page_size: data.page_size ?? data.data?.page_size ?? 10,
+    };
 };
 
 export const createProduct = async (data: ProductInput): Promise<Product> => {

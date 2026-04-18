@@ -28,15 +28,16 @@ export const useProducts = (params?: {
             getProducts({
                 search: params?.search,
                 category_id: params?.category_id,
-                page: (params?.page || 1),
+                page: params?.page || 1,
                 pageSize: params?.pageSize || 10,
             }),
-
-        select: (response: ProductsResponse) => ({
-            items: response.items || [],
-            total: response.total || 0,
-        }),
-        placeholderData: (previousData) => previousData,
+        initialData: {
+            items: [],
+            total: 0,
+            page: params?.page || 1,
+            page_size: params?.pageSize || 10,
+        },
+        placeholderData: (prev) => prev,
         staleTime: 0,
     });
 };
@@ -47,9 +48,14 @@ export const useCreateProduct = () => {
         mutationFn: createProduct,
 
         onSuccess: (newProduct) => {
-            qc.setQueriesData({ queryKey: ["products"] }, (old: Product[] | undefined) => {
-                if (!old) return [newProduct];
-                return [newProduct, ...old];
+            qc.setQueriesData({ queryKey: ["products"] }, (old: ProductsResponse | undefined) => {
+                if (!old) return { items: [newProduct], total: 1 };
+
+                return {
+                    ...old,
+                    items: [newProduct, ...(old.items || [])],
+                    total: (old.total || 0) + 1,
+                };
             });
         },
     });
@@ -65,21 +71,24 @@ export const useUpdateProduct = () => {
         mutationFn: updateProduct,
 
         onSuccess: (updatedProduct) => {
-            qc.setQueriesData<Product[]>({ queryKey: ["products"] }, (old) => {
+            qc.setQueriesData({ queryKey: ["products"] }, (old: ProductsResponse | undefined) => {
                 if (!old) return old;
 
-                return old.map((p) => {
-                    if (p.id !== updatedProduct.id) return p;
+                return {
+                    ...old,
+                    items: old.items.map((p: Product) => {
+                        if (p.id !== updatedProduct.id) return p;
 
-                    return {
-                        ...p,
-                        ...updatedProduct,
-                        category: {
-                            id: updatedProduct.category_id || 0,
-                            name: findCategoryName(updatedProduct.category_id),
-                        },
-                    } as Product;
-                });
+                        return {
+                            ...p,
+                            ...updatedProduct,
+                            category: {
+                                id: updatedProduct.category_id || 0,
+                                name: findCategoryName(updatedProduct.category_id),
+                            },
+                        };
+                    }),
+                };
             });
         },
     });
