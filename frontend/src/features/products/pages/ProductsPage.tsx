@@ -36,8 +36,6 @@ export default function ProductsPage() {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    console.log("responseData:", responseData);
-    console.log("products:", products);
     const createMutation = useCreateProduct();
     const updateMutation = useUpdateProduct();
     const deleteMutation = useDeleteProduct();

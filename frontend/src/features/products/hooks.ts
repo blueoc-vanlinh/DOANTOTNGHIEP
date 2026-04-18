@@ -24,18 +24,13 @@ export const useProducts = (params?: {
             params?.category_id,
         ],
 
-        queryFn: async () => {
-            const res = await getProducts({
+        queryFn: () =>
+            getProducts({
                 search: params?.search,
                 category_id: params?.category_id,
                 page: params?.page || 1,
                 pageSize: params?.pageSize || 10,
-            });
-
-            console.log("🔥 API:", res); // 👈 debug tại đây
-
-            return res;
-        },
+            }),
 
         initialData: {
             items: [],
