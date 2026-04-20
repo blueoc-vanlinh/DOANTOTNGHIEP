@@ -62,3 +62,8 @@ rc/
 ├── theme/
 ├── utils/
 ├── constants/
+
+$ docker exec -it dev_backend bash
+$ docker exec -it uat_backend bash
+
+docker exec -it inventory_db psql -U postgres
