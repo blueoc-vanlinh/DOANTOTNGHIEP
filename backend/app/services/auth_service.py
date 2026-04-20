@@ -10,8 +10,6 @@ def login_service(session: Session, email: str, password: str):
 
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    print("INPUT:", password)
-    print("DB HASH:", user.password)
     if not verify_password(password, user.password):
         raise HTTPException(status_code=401, detail="Wrong password")
 
