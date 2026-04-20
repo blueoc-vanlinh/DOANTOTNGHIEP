@@ -1,4 +1,4 @@
-from .auth import Role as Role, Permission as Permission, RolePermission as RolePermission
+from .auth import Role as Role, Permission as Permission, RolePermission as RolePermission, UserRole as UserRole
 from .user import User as User
 from .product import Product as Product
 from .inventory import Inventory as Inventory
