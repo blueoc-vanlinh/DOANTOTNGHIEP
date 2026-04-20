@@ -1,6 +1,5 @@
 import { BASE_URL } from '@/constants/config';
 import axios from 'axios';
-//import { useAuthStore } from '@/modules/auth/store/auth.store';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -11,98 +10,49 @@ export const apiClient = axios.create({
   },
 });
 
-// REQUEST INTERCEPTOR
-// apiClient.interceptors.request.use(
-//   function (config) {
-//     if (config.url && config.url.includes('/auth/login')) {
-//       return config;
-//     }
-//     const storageData = localStorage.getItem('auth-storage');
-//     let token = null;
+apiClient.interceptors.request.use(
+  (config) => {
+    if (config.url?.includes('/auth/login')) {
+      return config;
+    }
 
-//     if (storageData) {
-//       try {
-//         const parsedData = JSON.parse(storageData);
-//         token = parsedData?.state?.accessToken;
-//       } catch (e) {
-//         token = null;
-//       }
-//     }
+    try {
+      const storage = localStorage.getItem('auth-storage');
+      const token = JSON.parse(storage || '{}')?.state?.accessToken;
 
-//     if (!token) {
-//       if (window.location.pathname !== '/login') {
-//         useAuthStore.getState().logout();
-//       }
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.error('Token parse error:', e);
+    }
 
-//       const controller = new AbortController();
-//       config.signal = controller.signal;
-//       controller.abort();
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-//       return Promise.reject({
-//         message: 'Token not found or invalid in storage',
-//         code: 401,
-//         custom: true,
-//       });
-//     }
+apiClient.interceptors.response.use(
+  (response) => response,
 
-//     if (config.headers) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      localStorage.removeItem('auth-storage');
 
-//     return config;
-//   },
-//   function (error) {
-//     return Promise.reject(error);
-//   },
-// );
-
-// RESPONSE INTERCEPTOR
-// apiClient.interceptors.response.use(
-//   function (response) {
-//     return response;
-//   },
-//   async function (error) {
-//     const status = error?.response?.status;
-
-//     if (status === 401) {
-//       if (window.location.pathname !== '/login') {
-//         useAuthStore.getState().logout();
-//       }
-//       return Promise.reject({
-//         message: error.response?.data?.message || 'Unauthorized',
-//         code: 401,
-//         custom: true,
-//       });
-//     }
-
-//     if (status === 403) {
-//       return Promise.reject({
-//         message: error.response?.data?.message || 'No access to labelling admin tool',
-//         code: 403,
-//         custom: true,
-//       });
-//     }
-
-//     if (status === 404) {
-//       return Promise.reject({
-//         message: 'Not Found',
-//         code: 404,
-//         custom: true,
-//         data: error.response?.data,
-//       });
-//     }
-
-//     if (status === 500) {
-//       return Promise.reject({
-//         message: 'Internal Server Error',
-//         code: 500,
-//         custom: true,
-//         data: error.response?.data,
-//       });
-//     }
-
-//     return Promise.reject(error);
-//   },
-// );
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject({
+      message:
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        'Something went wrong',
+      code: status,
+      data: error?.response?.data,
+    });
+  }
+);
 
 export default apiClient;

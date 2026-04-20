@@ -4,6 +4,10 @@ from sqlalchemy import engine_from_config, pool
 from app.db import base  # noqa: F401
 from sqlmodel import SQLModel
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 config = context.config
 
 if config.config_file_name is not None:
