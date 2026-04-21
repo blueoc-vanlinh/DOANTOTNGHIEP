@@ -92,3 +92,15 @@ def update_supplier(session: Session, supplier_id: int, data: dict):
     session.refresh(obj)
 
     return obj
+
+def delete_suppliers(session: Session, supplier_id: int):
+    obj = session.get(Supplier, supplier_id)
+
+    if not obj or obj.is_deleted:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    obj.is_deleted = True
+
+    session.add(obj)
+    session.commit()
+
+    return {"message": "Deleted successfully"}
