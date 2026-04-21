@@ -3,9 +3,7 @@ from sqlmodel import Session
 from typing import Optional
 
 from app.db.session import get_session
-from app.models.supplier import Supplier
 from app.services.supplier_service import (
-    get_suppliers,
     get_suppliers,
     create_supplier,
     update_supplier,
