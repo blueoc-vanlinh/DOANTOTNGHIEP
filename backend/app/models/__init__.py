@@ -1,6 +1,6 @@
 from .auth import Role as Role, Permission as Permission, RolePermission as RolePermission, UserRole as UserRole
 from .user import User as User
-from .product import Product as Product
+from .product import Product as Product, Category as Category
 from .inventory import Inventory as Inventory
 from .transaction import StockTransaction as StockTransaction
 from .importorder import ImportOrder as ImportOrder, ImportOrderItem as ImportOrderItem
