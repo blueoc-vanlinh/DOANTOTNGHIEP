@@ -4,7 +4,7 @@ import Error403 from "@/components/error/error403";
 import Error404 from "@/components/error/error404";
 import Dashboard from "@/features/dashboard/pages/DashboardPage";
 import Products from "@/features/products/pages/ProductsPage";
-import Inventory from "@/features/inventory/pages/Inventory";
+import Inventory from "@/features/inventory/pages/InventoryPage";
 import ImportPage from "@/features/import/pages/ImportPage";
 import ExportPage from "@/features/export/pages/ExportPage";
 import ForecastPage from "@/features/forecast/pages/Forecastpage";

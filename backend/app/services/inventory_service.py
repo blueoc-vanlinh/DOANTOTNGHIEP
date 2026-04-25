@@ -44,8 +44,23 @@ def get_inventories(
         .join(Product, Product.id == Inventory.product_id)
         .join(Warehouse, Warehouse.id == Inventory.warehouse_id)
         .where(Inventory.is_deleted.is_(False))
-        .subquery()
     )
+
+    if product_id:
+        count_subq = count_subq.where(Inventory.product_id == product_id)
+
+    if warehouse_id:
+        count_subq = count_subq.where(Inventory.warehouse_id == warehouse_id)
+
+    if search:
+        count_subq = count_subq.where(
+            or_(
+                Product.name.ilike(f"%{search}%"),
+                Warehouse.name.ilike(f"%{search}%"),
+            )
+        )
+
+    count_subq = count_subq.subquery()
 
     count_query = select(func.count()).select_from(count_subq)
 

@@ -1,16 +1,5 @@
 import apiClient from "@/lib/api";
-import type { Supplier, SupplierInput } from "./types";
-
-
-
-export interface SupplierResponse {
-    items: Supplier[];
-    meta: {
-        total: number;
-        page: number;
-        page_size: number;
-    };
-}
+import type { Supplier, SupplierInput, SupplierResponse } from "./types";
 
 export const getSuppliers = async (params: {
     page: number;

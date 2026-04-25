@@ -1,4 +1,3 @@
-// src/pages/inventory/InventoryPage.tsx
 import { useState } from "react";
 import { message } from "antd";
 
@@ -6,14 +5,26 @@ import InventoryTable from "../components/InventoryTable";
 import InventoryFormModal from "../components/InventoryFormModal";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
+import PaginationBar from "@/components/common/PaginationBar";
 
 import { useInventory, useUpdateInventory } from "../hooks";
 import type { Inventory } from "../types";
 
 export default function InventoryPage() {
-  const { data, isLoading } = useInventory();
 
-  const inventory: Inventory[] = Array.isArray(data) ? data : [];
+  // ✅ state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // ✅ API
+  const { data, isLoading } = useInventory({
+    page,
+    page_size: pageSize,
+  });
+
+  const inventory = data?.items || [];
+  const total = data?.total || 0;
+
   const updateMutation = useUpdateInventory();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,21 +49,38 @@ export default function InventoryPage() {
     }
   };
 
+  // ✅ pagination handler (đặt SAU useState)
+  const handlePageChange = (page: number, pageSize: number) => {
+    setPage(page);
+    setPageSize(pageSize);
+  };
+
   if (isLoading) return <LoadingPage />;
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
-          Quản lý Tồn kho
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 600 }}>
+          Quản lý Tồn kho ({total})
         </h2>
       </div>
 
       {inventory.length > 0 ? (
-        <InventoryTable
-          data={inventory}
-          onEdit={handleEdit}
-        />
+        <>
+          <InventoryTable
+            data={inventory}
+            onEdit={handleEdit}
+          />
+
+          {/* ✅ FIX: thêm pagination */}
+          <PaginationBar
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={handlePageChange}
+            showSizeChanger
+          />
+        </>
       ) : (
         <EmptyState description="Chưa có dữ liệu tồn kho nào" />
       )}

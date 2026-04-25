@@ -1,14 +1,17 @@
 import apiClient from "@/lib/api";
-import type { Inventory } from "./types";
+import type { Inventory, InventoryInput } from "./types";
+export interface InventoryResponse {
+    items: Inventory[];
+    total: number;
+    page: number;
+    page_size: number;
+}
 
-export type InventoryInput = {
-    product_id: number;
-    warehouse_id: number;
-    quantity: number;
-};
-
-export const getInventory = async (): Promise<Inventory[]> => {
-    const res = await apiClient.get<Inventory[]>("/inventory/");
+export const getInventory = async (params: {
+    page: number;
+    page_size: number;
+}): Promise<InventoryResponse> => {
+    const res = await apiClient.get("/inventory/", { params });
     return res.data;
 };
 

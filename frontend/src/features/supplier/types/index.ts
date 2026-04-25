@@ -6,6 +6,13 @@ export interface Supplier {
     created_at?: string;
     updated_at?: string;
 }
-
+export interface SupplierResponse {
+    items: Supplier[];
+    meta: {
+        total: number;
+        page: number;
+        page_size: number;
+    };
+}
 
 export type SupplierInput = Omit<Supplier, "id" | "created_at" | "updated_at">;

@@ -1,10 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getInventory, updateInventory } from "./api";
 
-export const useInventory = () => {
+export const useInventory = (params: {
+    page: number;
+    page_size: number;
+}) => {
     return useQuery({
-        queryKey: ["inventory"],
-        queryFn: getInventory,
+        queryKey: ["inventory", params],
+        queryFn: () => getInventory(params),
     });
 };
 

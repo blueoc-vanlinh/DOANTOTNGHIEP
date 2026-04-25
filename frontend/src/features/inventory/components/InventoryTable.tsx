@@ -26,18 +26,28 @@ export default function InventoryTable({
             align: "center",
         },
         {
-            title: "Product ID",
-            dataIndex: "product_id",
-            key: "product_id",
-            width: 140,
-            render: (id: number) => <Tag color="blue">SP#{id}</Tag>,
+            title: "Sản phẩm",
+            dataIndex: "product_name",
+            key: "product_name",
+            width: 260,
+            render: (name: string, record) => (
+                <div>
+                    <div style={{ fontWeight: 600 }}>{name}</div>
+                    <Tag color="blue">ID: {record.product_id}</Tag>
+                </div>
+            ),
         },
         {
-            title: "Warehouse ID",
-            dataIndex: "warehouse_id",
-            key: "warehouse_id",
-            width: 140,
-            render: (id: number) => <Tag color="green">Kho#{id}</Tag>,
+            title: "Kho",
+            dataIndex: "warehouse_name",
+            key: "warehouse_name",
+            width: 200,
+            render: (name: string, record) => (
+                <div>
+                    <div style={{ fontWeight: 500 }}>{name}</div>
+                    <Tag color="green">ID: {record.warehouse_id}</Tag>
+                </div>
+            ),
         },
         {
             title: "Số lượng tồn",
