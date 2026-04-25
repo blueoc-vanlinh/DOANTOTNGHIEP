@@ -78,6 +78,7 @@ export default function SupplierTable({
             loading={loading}
             rowKey="id"
             scroll={{ x: 1000 }}
+            pagination={false}
         />
     );
 }

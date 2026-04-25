@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel
 
 from app.db.session import engine
@@ -214,36 +215,150 @@ def seed_users(session: Session, roles: list[Role]):
 
 def seed_products(session: Session, categories: list[Category]):
     products = [
+        # Electronics
         Product(name="Laptop HP Pavilion 15", sku="LT001", barcode="8934501039485", price=15999999.00, category_id=categories[0].id, brand="HP", unit="chiếc", weight=2.1, dimensions={"width": 357, "height": 235, "depth": 18}, status="ACTIVE"),
         Product(name="Bàn phím cơ RGB Fantech", sku="KB001", barcode="8934584939402", price=599999.00, category_id=categories[0].id, brand="Fantech", unit="chiếc", weight=0.8, dimensions={"width": 450, "height": 150, "depth": 30}, status="ACTIVE"),
         Product(name="Chuột không dây Logitech MX Master", sku="MS001", barcode="8934959303945", price=1299999.00, category_id=categories[0].id, brand="Logitech", unit="chiếc", weight=0.24, dimensions={"width": 125, "height": 80, "depth": 50}, status="ACTIVE"),
-        Product(name="Ấm điện Philips 1.7L", sku="AP001", barcode="8934501294850", price=149999.00, category_id=categories[3].id, brand="Philips", unit="chiếc", weight=1.2, dimensions={"width": 220, "height": 260, "depth": 150}, status="ACTIVE"),
-        Product(name="Bộ tô cơm sứ 6 cái", sku="DW001", barcode="8934584920384", price=249999.00, category_id=categories[3].id, brand="Luminarc", unit="bộ", weight=2.0, dimensions={"width": 180, "height": 180, "depth": 100}, status="ACTIVE"),
-        Product(name="Áo sơ mi nam Oxford", sku="CL001", barcode="8934502384950", price=349999.00, category_id=categories[4].id, brand="Việt Tiến", unit="chiếc", weight=0.25, dimensions={"width": 60, "height": 70, "depth": 10}, status="ACTIVE"),
-        Product(name="Kem dưỡng ẩm Nivea", sku="BC001", barcode="8934950293845", price=89999.00, category_id=categories[5].id, brand="Nivea", unit="hộp", weight=0.3, dimensions={"width": 80, "height": 60, "depth": 60}, status="ACTIVE"),
-        Product(name="Máy khoan pin 20V DeWalt", sku="TL001", barcode="8934029384950", price=2999999.00, category_id=categories[6].id, brand="DeWalt", unit="chiếc", weight=3.5, dimensions={"width": 190, "height": 210, "depth": 100}, status="ACTIVE"),
-        Product(name="IC Chip ARMv8 STM32", sku="IC001", barcode="8934589394950", price=299999.00, category_id=categories[7].id, brand="STMicroelectronics", unit="cái", weight=0.05, dimensions={"width": 40, "height": 40, "depth": 5}, status="ACTIVE"),
-        Product(name="Đồ chơi xếp hình LEGO Creator", sku="TOY001", barcode="8934029384029", price=799999.00, category_id=categories[8].id, brand="LEGO", unit="bộ", weight=1.5, dimensions={"width": 350, "height": 260, "depth": 150}, status="ACTIVE"),
-        Product(name="Giày chạy bộ Nike Running", sku="SH001", barcode="8934501049384", price=2499999.00, category_id=categories[9].id, brand="Nike", unit="đôi", weight=0.5, dimensions={"width": 120, "height": 80, "depth": 140}, status="ACTIVE"),
-        Product(name="Sách Lập trình Python", sku="BK001", barcode="8934584039485", price=299000.00, category_id=categories[10].id, brand="Nhà xuất bản Đại học", unit="quyển", weight=0.8, dimensions={"width": 210, "height": 297, "depth": 20}, status="ACTIVE"),
-        Product(name="Nước khoáng Vimajax 1.5L", sku="WR001", barcode="8934950384950", price=15000.00, category_id=categories[11].id, brand="Vimajax", unit="chai", weight=1.6, dimensions={"width": 80, "height": 80, "depth": 220}, status="ACTIVE"),
-        Product(name="Cà chua Việt Nam 1kg", sku="VG001", barcode="8934501384950", price=45000.00, category_id=categories[12].id, brand="Trang trại Quê Hương", unit="kg", weight=1.0, dimensions={"width": 250, "height": 250, "depth": 200}, status="ACTIVE"),
-        Product(name="Bộ dụng cụ làm vườn 5 cái", sku="GN001", barcode="8934584949384", price=299999.00, category_id=categories[13].id, brand="Garden Pro", unit="bộ", weight=2.5, dimensions={"width": 320, "height": 200, "depth": 100}, status="ACTIVE"),
-        Product(name="Bàn gỗ tự nhiên 120x80", sku="FR001", barcode="8934950294950", price=3999999.00, category_id=categories[14].id, brand="Woodcraft", unit="chiếc", weight=60.0, dimensions={"width": 1200, "height": 800, "depth": 750}, status="ACTIVE"),
-        Product(name="Đèn LED thông minh WiFi", sku="LM001", barcode="8934501949384", price=599999.00, category_id=categories[15].id, brand="Philips Hue", unit="chiếc", weight=0.4, dimensions={"width": 100, "height": 100, "depth": 120}, status="ACTIVE"),
-        Product(name="Camera Hikvision 2MP", sku="CM001", barcode="8934584849385", price=1299999.00, category_id=categories[16].id, brand="Hikvision", unit="chiếc", weight=0.3, dimensions={"width": 60, "height": 55, "depth": 180}, status="ACTIVE"),
-        Product(name="Dầu nhớt Castrol Edge 5L", sku="OL001", barcode="8934950384851", price=599999.00, category_id=categories[17].id, brand="Castrol", unit="can", weight=5.2, dimensions={"width": 150, "height": 150, "depth": 250}, status="ACTIVE"),
-        Product(name="Thức ăn chó Pedigree 20kg", sku="PT001", barcode="8934501384851", price=449999.00, category_id=categories[18].id, brand="Pedigree", unit="túi", weight=20.0, dimensions={"width": 300, "height": 200, "depth": 100}, status="ACTIVE"),
-        Product(name="Lốp xe Michelin 185/65R15", sku="TR001", barcode="8934584939485", price=2199999.00, category_id=categories[19].id, brand="Michelin", unit="chiếc", weight=8.5, dimensions={"width": 600, "height": 600, "depth": 200}, status="ACTIVE"),
         Product(name="Màn hình Dell 27 inch IPS", sku="MN001", barcode="8934950294851", price=5999999.00, category_id=categories[0].id, brand="Dell", unit="chiếc", weight=4.5, dimensions={"width": 620, "height": 560, "depth": 200}, status="ACTIVE"),
         Product(name="Tai nghe Sony WH1000XM4", sku="HD001", barcode="8934501949385", price=7999999.00, category_id=categories[0].id, brand="Sony", unit="chiếc", weight=0.25, dimensions={"width": 200, "height": 200, "depth": 80}, status="ACTIVE"),
-        Product(name="Bộ quần áo Adidas 3 cái", sku="CL002", barcode="8934584949385", price=1299999.00, category_id=categories[4].id, brand="Adidas", unit="bộ", weight=0.75, dimensions={"width": 300, "height": 200, "depth": 50}, status="ACTIVE"),
-        Product(name="Mặt nạ dưỡng da SK-II", sku="BC002", barcode="8934950384952", price=999999.00, category_id=categories[5].id, brand="SK-II", unit="hộp", weight=0.4, dimensions={"width": 120, "height": 120, "depth": 80}, status="ACTIVE"),
-        Product(name="Máy hút bụi Dyson V15", sku="AP002", barcode="8934501384952", price=19999999.00, category_id=categories[3].id, brand="Dyson", unit="chiếc", weight=2.3, dimensions={"width": 250, "height": 1200, "depth": 160}, status="ACTIVE"),
-        Product(name="Bàn làm việc gỗ veneer", sku="FR002", barcode="8934584949386", price=2999999.00, category_id=categories[14].id, brand="Nội thất An Phú", unit="chiếc", weight=35.0, dimensions={"width": 1400, "height": 700, "depth": 750}, status="ACTIVE"),
         Product(name="Router WiFi 6 ASUS", sku="NW001", barcode="8934950294952", price=1999999.00, category_id=categories[0].id, brand="ASUS", unit="chiếc", weight=0.8, dimensions={"width": 240, "height": 150, "depth": 120}, status="ACTIVE"),
+        Product(name="Điện thoại Samsung Galaxy S23", sku="PH001", barcode="8934501039486", price=22999999.00, category_id=categories[0].id, brand="Samsung", unit="chiếc", weight=0.17, dimensions={"width": 70, "height": 146, "depth": 7.6}, status="ACTIVE"),
+        Product(name="Máy tính bảng iPad Pro 12.9", sku="TB001", barcode="8934584939403", price=34999999.00, category_id=categories[0].id, brand="Apple", unit="chiếc", weight=0.98, dimensions={"width": 214, "height": 280, "depth": 5.3}, status="ACTIVE"),
+        Product(name="Ổ cứng SSD Samsung 1TB", sku="SS001", barcode="8934959303946", price=2999999.00, category_id=categories[0].id, brand="Samsung", unit="chiếc", weight=0.05, dimensions={"width": 70, "height": 100, "depth": 7}, status="ACTIVE"),
+        Product(name="Webcam Logitech C920", sku="WC001", barcode="8934501294851", price=1499999.00, category_id=categories[0].id, brand="Logitech", unit="chiếc", weight=0.16, dimensions={"width": 90, "height": 70, "depth": 40}, status="ACTIVE"),
+        
+        # Office Supplies
+        Product(name="Bút bi Parker", sku="PN001", barcode="8934584920385", price=299999.00, category_id=categories[1].id, brand="Parker", unit="cây", weight=0.02, dimensions={"width": 10, "height": 140, "depth": 10}, status="ACTIVE"),
+        Product(name="Giấy A4 500 tờ", sku="PP001", barcode="8934502384951", price=149999.00, category_id=categories[1].id, brand="Double A", unit="ram", weight=2.5, dimensions={"width": 210, "height": 297, "depth": 50}, status="ACTIVE"),
+        Product(name="Băng dính văn phòng", sku="TP001", barcode="8934950293846", price=49999.00, category_id=categories[1].id, brand="3M", unit="cuốn", weight=0.1, dimensions={"width": 50, "height": 50, "depth": 20}, status="ACTIVE"),
+        Product(name="Kẹp giấy 100 cái", sku="CLP001", barcode="8934029384951", price=29999.00, category_id=categories[1].id, brand="Generic", unit="hộp", weight=0.2, dimensions={"width": 100, "height": 50, "depth": 30}, status="ACTIVE"),
+        Product(name="Máy tính bỏ túi Casio", sku="CA001", barcode="8934589394951", price=199999.00, category_id=categories[1].id, brand="Casio", unit="chiếc", weight=0.1, dimensions={"width": 80, "height": 120, "depth": 10}, status="ACTIVE"),
+        
+        # Food & Beverages
+        Product(name="Cà phê hòa tan Nescafe", sku="CF001", barcode="8934029384020", price=89999.00, category_id=categories[2].id, brand="Nescafe", unit="hộp", weight=0.2, dimensions={"width": 80, "height": 100, "depth": 50}, status="ACTIVE"),
+        Product(name="Trà xanh Lipton", sku="TE001", barcode="8934501049385", price=59999.00, category_id=categories[2].id, brand="Lipton", unit="hộp", weight=0.15, dimensions={"width": 70, "height": 90, "depth": 40}, status="ACTIVE"),
+        Product(name="Bánh quy Oreo", sku="CK001", barcode="8934584039486", price=49999.00, category_id=categories[2].id, brand="Oreo", unit="hộp", weight=0.3, dimensions={"width": 100, "height": 150, "depth": 50}, status="ACTIVE"),
+        Product(name="Nước ngọt Coca Cola 1.5L", sku="SD002", barcode="8934950384951", price=19999.00, category_id=categories[2].id, brand="Coca Cola", unit="chai", weight=1.6, dimensions={"width": 80, "height": 300, "depth": 80}, status="ACTIVE"),
+        Product(name="Sữa tươi Vinamilk", sku="MK001", barcode="8934501384951", price=29999.00, category_id=categories[2].id, brand="Vinamilk", unit="hộp", weight=1.0, dimensions={"width": 60, "height": 200, "depth": 60}, status="ACTIVE"),
+        
+        # Household Goods
+        Product(name="Ấm điện Philips 1.7L", sku="AP001", barcode="8934501294850", price=149999.00, category_id=categories[3].id, brand="Philips", unit="chiếc", weight=1.2, dimensions={"width": 220, "height": 260, "depth": 150}, status="ACTIVE"),
+        Product(name="Bộ tô cơm sứ 6 cái", sku="DW001", barcode="8934584920384", price=249999.00, category_id=categories[3].id, brand="Luminarc", unit="bộ", weight=2.0, dimensions={"width": 180, "height": 180, "depth": 100}, status="ACTIVE"),
+        Product(name="Máy hút bụi Dyson V15", sku="AP002", barcode="8934501384952", price=19999999.00, category_id=categories[3].id, brand="Dyson", unit="chiếc", weight=2.3, dimensions={"width": 250, "height": 1200, "depth": 160}, status="ACTIVE"),
+        Product(name="Nồi cơm điện Sharp", sku="RC001", barcode="8934584949387", price=899999.00, category_id=categories[3].id, brand="Sharp", unit="chiếc", weight=3.0, dimensions={"width": 250, "height": 300, "depth": 200}, status="ACTIVE"),
+        Product(name="Máy lọc không khí Xiaomi", sku="AC001", barcode="8934950294953", price=2999999.00, category_id=categories[3].id, brand="Xiaomi", unit="chiếc", weight=5.0, dimensions={"width": 240, "height": 520, "depth": 240}, status="ACTIVE"),
+        
+        # Fashion & Clothing
+        Product(name="Áo sơ mi nam Oxford", sku="CLS001", barcode="8934502384950", price=349999.00, category_id=categories[4].id, brand="Việt Tiến", unit="chiếc", weight=0.25, dimensions={"width": 60, "height": 70, "depth": 10}, status="ACTIVE"),
+        Product(name="Bộ quần áo Adidas 3 cái", sku="CL002", barcode="8934584949385", price=1299999.00, category_id=categories[4].id, brand="Adidas", unit="bộ", weight=0.75, dimensions={"width": 300, "height": 200, "depth": 50}, status="ACTIVE"),
         Product(name="Túi du lịch Samsonite", sku="BG001", barcode="8934501949386", price=4999999.00, category_id=categories[4].id, brand="Samsonite", unit="chiếc", weight=3.5, dimensions={"width": 500, "height": 300, "depth": 250}, status="ACTIVE"),
+        Product(name="Giày sneaker Nike Air Max", sku="SH003", barcode="8934584849387", price=3999999.00, category_id=categories[4].id, brand="Nike", unit="đôi", weight=0.8, dimensions={"width": 120, "height": 80, "depth": 140}, status="ACTIVE"),
+        Product(name="Nón bảo hiểm Shoei", sku="HE001", barcode="8934950384852", price=1999999.00, category_id=categories[4].id, brand="Shoei", unit="chiếc", weight=1.5, dimensions={"width": 250, "height": 300, "depth": 250}, status="ACTIVE"),
+        
+        # Health & Beauty
+        Product(name="Kem dưỡng ẩm Nivea", sku="BC001", barcode="8934950293845", price=89999.00, category_id=categories[5].id, brand="Nivea", unit="hộp", weight=0.3, dimensions={"width": 80, "height": 60, "depth": 60}, status="ACTIVE"),
+        Product(name="Mặt nạ dưỡng da SK-II", sku="BC002", barcode="8934950384952", price=999999.00, category_id=categories[5].id, brand="SK-II", unit="hộp", weight=0.4, dimensions={"width": 120, "height": 120, "depth": 80}, status="ACTIVE"),
         Product(name="Kính bảo vệ Blue Light", sku="GP001", barcode="8934584849386", price=799999.00, category_id=categories[5].id, brand="Cyxus", unit="chiếc", weight=0.03, dimensions={"width": 140, "height": 50, "depth": 130}, status="ACTIVE"),
+        Product(name="Dầu gội Head & Shoulders", sku="SH004", barcode="8934501384852", price=79999.00, category_id=categories[5].id, brand="Head & Shoulders", unit="chai", weight=0.4, dimensions={"width": 60, "height": 200, "depth": 60}, status="ACTIVE"),
+        Product(name="Sữa rửa mặt Cetaphil", sku="FC001", barcode="8934584939486", price=149999.00, category_id=categories[5].id, brand="Cetaphil", unit="chai", weight=0.3, dimensions={"width": 50, "height": 150, "depth": 50}, status="ACTIVE"),
+        
+        # Industrial Equipment
+        Product(name="Máy khoan pin 20V DeWalt", sku="TL001", barcode="8934029384950", price=2999999.00, category_id=categories[6].id, brand="DeWalt", unit="chiếc", weight=3.5, dimensions={"width": 190, "height": 210, "depth": 100}, status="ACTIVE"),
+        Product(name="Máy hàn TIG Lincoln", sku="WG001", barcode="8934589394952", price=14999999.00, category_id=categories[6].id, brand="Lincoln", unit="chiếc", weight=15.0, dimensions={"width": 400, "height": 200, "depth": 300}, status="ACTIVE"),
+        Product(name="Bộ dụng cụ sửa chữa Bosch", sku="TK001", barcode="8934029384030", price=1999999.00, category_id=categories[6].id, brand="Bosch", unit="bộ", weight=5.0, dimensions={"width": 300, "height": 200, "depth": 100}, status="ACTIVE"),
+        Product(name="Máy cắt cỏ Honda", sku="LW001", barcode="8934501049386", price=7999999.00, category_id=categories[6].id, brand="Honda", unit="chiếc", weight=25.0, dimensions={"width": 500, "height": 400, "depth": 300}, status="ACTIVE"),
+        Product(name="Máy nén khí Ingersoll Rand", sku="CP001", barcode="8934584039487", price=24999999.00, category_id=categories[6].id, brand="Ingersoll Rand", unit="chiếc", weight=50.0, dimensions={"width": 600, "height": 800, "depth": 400}, status="ACTIVE"),
+        
+        # Accessories & Parts
+        Product(name="IC Chip ARMv8 STM32", sku="IC001", barcode="8934589394950", price=299999.00, category_id=categories[7].id, brand="STMicroelectronics", unit="cái", weight=0.05, dimensions={"width": 40, "height": 40, "depth": 5}, status="ACTIVE"),
+        Product(name="Pin lithium 18650", sku="BT001", barcode="8934950384953", price=49999.00, category_id=categories[7].id, brand="Panasonic", unit="cái", weight=0.05, dimensions={"width": 18, "height": 65, "depth": 18}, status="ACTIVE"),
+        Product(name="Cáp USB Type-C 2m", sku="CB001", barcode="8934501384953", price=99999.00, category_id=categories[7].id, brand="Anker", unit="cuốn", weight=0.1, dimensions={"width": 50, "height": 50, "depth": 200}, status="ACTIVE"),
+        Product(name="Adapter sạc nhanh 65W", sku="AD001", barcode="8934584949388", price=599999.00, category_id=categories[7].id, brand="Belkin", unit="chiếc", weight=0.2, dimensions={"width": 60, "height": 30, "depth": 100}, status="ACTIVE"),
+        Product(name="Ống dẫn nước PVC 1m", sku="PI001", barcode="8934950294954", price=49999.00, category_id=categories[7].id, brand="Generic", unit="ống", weight=0.5, dimensions={"width": 20, "height": 20, "depth": 1000}, status="ACTIVE"),
+        
+        # Toys & Games
+        Product(name="Đồ chơi xếp hình LEGO Creator", sku="TOY001", barcode="8934029384029", price=799999.00, category_id=categories[8].id, brand="LEGO", unit="bộ", weight=1.5, dimensions={"width": 350, "height": 260, "depth": 150}, status="ACTIVE"),
+        Product(name="Búp bê Barbie", sku="DO001", barcode="8934501949387", price=299999.00, category_id=categories[8].id, brand="Barbie", unit="chiếc", weight=0.3, dimensions={"width": 150, "height": 300, "depth": 50}, status="ACTIVE"),
+        Product(name="Bộ bài Uno", sku="GA001", barcode="8934584849388", price=149999.00, category_id=categories[8].id, brand="Uno", unit="bộ", weight=0.2, dimensions={"width": 100, "height": 150, "depth": 30}, status="ACTIVE"),
+        Product(name="Xe điều khiển từ xa", sku="RC002", barcode="8934950384853", price=499999.00, category_id=categories[8].id, brand="Generic", unit="chiếc", weight=0.5, dimensions={"width": 200, "height": 150, "depth": 100}, status="ACTIVE"),
+        Product(name="Puzzle 1000 mảnh", sku="PZ001", barcode="8934501384853", price=199999.00, category_id=categories[8].id, brand="Ravensburger", unit="bộ", weight=0.8, dimensions={"width": 300, "height": 400, "depth": 50}, status="ACTIVE"),
+        
+        # Sports Equipment
+        Product(name="Giày chạy bộ Nike Running", sku="SH005", barcode="8934501049384", price=2499999.00, category_id=categories[9].id, brand="Nike", unit="đôi", weight=0.5, dimensions={"width": 120, "height": 80, "depth": 140}, status="ACTIVE"),
+        Product(name="Quả bóng đá Adidas", sku="BL001", barcode="8934584939487", price=399999.00, category_id=categories[9].id, brand="Adidas", unit="quả", weight=0.4, dimensions={"width": 220, "height": 220, "depth": 220}, status="ACTIVE"),
+        Product(name="Vợt cầu lông Yonex", sku="RA001", barcode="8934950294852", price=1499999.00, category_id=categories[9].id, brand="Yonex", unit="chiếc", weight=0.1, dimensions={"width": 200, "height": 30, "depth": 10}, status="ACTIVE"),
+        Product(name="Thảm yoga", sku="YT001", barcode="8934501949388", price=299999.00, category_id=categories[9].id, brand="Manduka", unit="tấm", weight=1.0, dimensions={"width": 610, "height": 1830, "depth": 5}, status="ACTIVE"),
+        Product(name="Máy tập thể dục tại nhà", sku="EQ001", barcode="8934584849389", price=4999999.00, category_id=categories[9].id, brand="Peloton", unit="chiếc", weight=50.0, dimensions={"width": 600, "height": 1200, "depth": 400}, status="ACTIVE"),
+        
+        # Books & Documents
+        Product(name="Sách Lập trình Python", sku="BK001", barcode="8934584039485", price=299000.00, category_id=categories[10].id, brand="Nhà xuất bản Đại học", unit="quyển", weight=0.8, dimensions={"width": 210, "height": 297, "depth": 20}, status="ACTIVE"),
+        Product(name="Từ điển Anh-Việt", sku="DC001", barcode="8934950384954", price=199999.00, category_id=categories[10].id, brand="Oxford", unit="quyển", weight=1.2, dimensions={"width": 150, "height": 230, "depth": 50}, status="ACTIVE"),
+        Product(name="Sổ tay ghi chú Moleskine", sku="NB001", barcode="8934501384954", price=149999.00, category_id=categories[10].id, brand="Moleskine", unit="quyển", weight=0.2, dimensions={"width": 90, "height": 140, "depth": 10}, status="ACTIVE"),
+        Product(name="Bút chì màu Faber-Castell", sku="PC001", barcode="8934584949389", price=299999.00, category_id=categories[10].id, brand="Faber-Castell", unit="hộp", weight=0.3, dimensions={"width": 100, "height": 50, "depth": 30}, status="ACTIVE"),
+        Product(name="Báo cáo tài chính mẫu", sku="RP001", barcode="8934950294955", price=99999.00, category_id=categories[10].id, brand="Generic", unit="quyển", weight=0.5, dimensions={"width": 210, "height": 297, "depth": 10}, status="ACTIVE"),
+        
+        # Water & Energy
+        Product(name="Nước khoáng Vimajax 1.5L", sku="WR001", barcode="8934950384950", price=15000.00, category_id=categories[11].id, brand="Vimajax", unit="chai", weight=1.6, dimensions={"width": 80, "height": 80, "depth": 220}, status="ACTIVE"),
+        Product(name="Pin mặt trời 100W", sku="SP001", barcode="8934501384955", price=2999999.00, category_id=categories[11].id, brand="Renogy", unit="tấm", weight=5.0, dimensions={"width": 500, "height": 1000, "depth": 30}, status="ACTIVE"),
+        Product(name="Bình nước nóng năng lượng mặt trời", sku="WH001", barcode="8934584949390", price=7999999.00, category_id=categories[11].id, brand="Sunpro Solar", unit="chiếc", weight=20.0, dimensions={"width": 400, "height": 1500, "depth": 200}, status="ACTIVE"),
+        Product(name="Máy lọc nước RO", sku="FW001", barcode="8934950294956", price=4999999.00, category_id=categories[11].id, brand="Coway", unit="chiếc", weight=10.0, dimensions={"width": 300, "height": 400, "depth": 150}, status="ACTIVE"),
+        Product(name="Đèn LED năng lượng mặt trời", sku="SL001", barcode="8934501949389", price=299999.00, category_id=categories[11].id, brand="Generic", unit="chiếc", weight=0.5, dimensions={"width": 100, "height": 200, "depth": 100}, status="ACTIVE"),
+        
+        # Agriculture
+        Product(name="Cà chua Việt Nam 1kg", sku="VG001", barcode="8934501384950", price=45000.00, category_id=categories[12].id, brand="Trang trại Quê Hương", unit="kg", weight=1.0, dimensions={"width": 250, "height": 250, "depth": 200}, status="ACTIVE"),
+        Product(name="Gạo ST25 5kg", sku="RI001", barcode="8934584849390", price=149999.00, category_id=categories[12].id, brand="Vinasoy", unit="bao", weight=5.0, dimensions={"width": 300, "height": 400, "depth": 100}, status="ACTIVE"),
+        Product(name="Trái cam Valencia", sku="FR001", barcode="8934950384854", price=79999.00, category_id=categories[12].id, brand="Generic", unit="kg", weight=1.0, dimensions={"width": 200, "height": 200, "depth": 200}, status="ACTIVE"),
+        Product(name="Rau muống tươi", sku="VE001", barcode="8934501384854", price=29999.00, category_id=categories[12].id, brand="Trang trại Xanh", unit="kg", weight=0.5, dimensions={"width": 300, "height": 200, "depth": 100}, status="ACTIVE"),
+        Product(name="Hạt giống cà rốt", sku="SD001", barcode="8934584939488", price=49999.00, category_id=categories[12].id, brand="Generic", unit="gói", weight=0.01, dimensions={"width": 50, "height": 100, "depth": 5}, status="ACTIVE"),
+        
+        # Gardening Tools
+        Product(name="Bộ dụng cụ làm vườn 5 cái", sku="GN001", barcode="8934584949384", price=299999.00, category_id=categories[13].id, brand="Garden Pro", unit="bộ", weight=2.5, dimensions={"width": 320, "height": 200, "depth": 100}, status="ACTIVE"),
+        Product(name="Xẻng đào đất", sku="SH001", barcode="8934950294853", price=149999.00, category_id=categories[13].id, brand="Generic", unit="chiếc", weight=1.5, dimensions={"width": 200, "height": 1000, "depth": 150}, status="ACTIVE"),
+        Product(name="Máy cắt cỏ điện", sku="LM001", barcode="8934501949390", price=1999999.00, category_id=categories[13].id, brand="Greenworks", unit="chiếc", weight=15.0, dimensions={"width": 400, "height": 300, "depth": 200}, status="ACTIVE"),
+        Product(name="Chậu hoa nhựa 20L", sku="PT001", barcode="8934584849391", price=99999.00, category_id=categories[13].id, brand="Generic", unit="chiếc", weight=0.5, dimensions={"width": 300, "height": 250, "depth": 300}, status="ACTIVE"),
+        Product(name="Phân bón hữu cơ", sku="FE001", barcode="8934950384855", price=199999.00, category_id=categories[13].id, brand="BioFert", unit="bao", weight=10.0, dimensions={"width": 400, "height": 300, "depth": 100}, status="ACTIVE"),
+        
+        # Furniture
+        Product(name="Bàn gỗ tự nhiên 120x80", sku="FR003", barcode="8934950294950", price=3999999.00, category_id=categories[14].id, brand="Woodcraft", unit="chiếc", weight=60.0, dimensions={"width": 1200, "height": 800, "depth": 750}, status="ACTIVE"),
+        Product(name="Bàn làm việc gỗ veneer", sku="FR002", barcode="8934584949386", price=2999999.00, category_id=categories[14].id, brand="Nội thất An Phú", unit="chiếc", weight=35.0, dimensions={"width": 1400, "height": 700, "depth": 750}, status="ACTIVE"),
+        Product(name="Ghế văn phòng ergonomic", sku="CH001", barcode="8934950294957", price=4999999.00, category_id=categories[14].id, brand="Herman Miller", unit="chiếc", weight=15.0, dimensions={"width": 600, "height": 1000, "depth": 600}, status="ACTIVE"),
+        Product(name="Tủ sách 5 tầng", sku="CB002", barcode="8934501949391", price=7999999.00, category_id=categories[14].id, brand="IKEA", unit="chiếc", weight=50.0, dimensions={"width": 800, "height": 1800, "depth": 300}, status="ACTIVE"),
+        Product(name="Giường ngủ gỗ 1m6", sku="BD001", barcode="8934584849392", price=14999999.00, category_id=categories[14].id, brand="Generic", unit="chiếc", weight=80.0, dimensions={"width": 1600, "height": 2000, "depth": 800}, status="ACTIVE"),
+        
+        # Lighting
+        Product(name="Đèn LED thông minh WiFi", sku="LM002", barcode="8934501949384", price=599999.00, category_id=categories[15].id, brand="Philips Hue", unit="chiếc", weight=0.4, dimensions={"width": 100, "height": 100, "depth": 120}, status="ACTIVE"),
+        Product(name="Đèn hắt sân vườn 50W", sku="FL001", barcode="8934584949391", price=299999.00, category_id=categories[15].id, brand="Generic", unit="chiếc", weight=1.0, dimensions={"width": 200, "height": 150, "depth": 100}, status="ACTIVE"),
+        Product(name="Đèn bàn đọc sách", sku="DL001", barcode="8934950294958", price=499999.00, category_id=categories[15].id, brand="IKEA", unit="chiếc", weight=2.0, dimensions={"width": 150, "height": 400, "depth": 200}, status="ACTIVE"),
+        Product(name="Dải đèn LED RGB", sku="SL002", barcode="8934501949392", price=399999.00, category_id=categories[15].id, brand="Philips", unit="mét", weight=0.1, dimensions={"width": 10, "height": 5, "depth": 1000}, status="ACTIVE"),
+        Product(name="Đèn chùm pha lê", sku="CLD001", barcode="8934584849393", price=9999999.00, category_id=categories[15].id, brand="Crystal Light", unit="chiếc", weight=10.0, dimensions={"width": 500, "height": 600, "depth": 500}, status="ACTIVE"),
+        
+        # Security Equipment
+        Product(name="Camera Hikvision 2MP", sku="CM001", barcode="8934584849385", price=1299999.00, category_id=categories[16].id, brand="Hikvision", unit="chiếc", weight=0.3, dimensions={"width": 60, "height": 55, "depth": 180}, status="ACTIVE"),
+        Product(name="Khóa cửa điện tử", sku="LK001", barcode="8934950384856", price=1999999.00, category_id=categories[16].id, brand="Yale", unit="chiếc", weight=2.0, dimensions={"width": 50, "height": 200, "depth": 50}, status="ACTIVE"),
+        Product(name="Hệ thống báo động nhà", sku="AL001", barcode="8934501384855", price=4999999.00, category_id=categories[16].id, brand="ADT", unit="bộ", weight=5.0, dimensions={"width": 300, "height": 200, "depth": 100}, status="ACTIVE"),
+        Product(name="Camera giám sát ngoài trời", sku="OC001", barcode="8934584939489", price=2499999.00, category_id=categories[16].id, brand="Arlo", unit="chiếc", weight=0.5, dimensions={"width": 80, "height": 100, "depth": 150}, status="ACTIVE"),
+        Product(name="Cảm biến chuyển động", sku="MS002", barcode="8934950294854", price=499999.00, category_id=categories[16].id, brand="Ring", unit="chiếc", weight=0.2, dimensions={"width": 60, "height": 40, "depth": 30}, status="ACTIVE"),
+        
+        # Oil & Chemicals
+        Product(name="Dầu nhớt Castrol Edge 5L", sku="OL001", barcode="8934950384851", price=599999.00, category_id=categories[17].id, brand="Castrol", unit="can", weight=5.2, dimensions={"width": 150, "height": 150, "depth": 250}, status="ACTIVE"),
+        Product(name="Hóa chất tẩy rửa sàn", sku="CL003", barcode="8934501384856", price=149999.00, category_id=categories[17].id, brand="Mr. Clean", unit="can", weight=2.0, dimensions={"width": 100, "height": 200, "depth": 100}, status="ACTIVE"),
+        Product(name="Keo dán epoxy", sku="GL001", barcode="8934584949392", price=99999.00, category_id=categories[17].id, brand="Araldite", unit="tube", weight=0.1, dimensions={"width": 30, "height": 150, "depth": 30}, status="ACTIVE"),
+        Product(name="Thuốc diệt cỏ", sku="HE002", barcode="8934950294959", price=199999.00, category_id=categories[17].id, brand="Roundup", unit="chai", weight=1.0, dimensions={"width": 50, "height": 200, "depth": 50}, status="ACTIVE"),
+        Product(name="Dầu hỏa 1L", sku="KF001", barcode="8934501949393", price=79999.00, category_id=categories[17].id, brand="Generic", unit="chai", weight=0.8, dimensions={"width": 60, "height": 150, "depth": 60}, status="ACTIVE"),
+        
+        # Pet Supplies
+        Product(name="Thức ăn chó Pedigree 20kg", sku="PT002", barcode="8934501384851", price=449999.00, category_id=categories[18].id, brand="Pedigree", unit="túi", weight=20.0, dimensions={"width": 300, "height": 200, "depth": 100}, status="ACTIVE"),
+        Product(name="Lồng chó nhựa", sku="CG001", barcode="8934584849394", price=799999.00, category_id=categories[18].id, brand="Generic", unit="chiếc", weight=5.0, dimensions={"width": 600, "height": 400, "depth": 500}, status="ACTIVE"),
+        Product(name="Vòng cổ chó da", sku="CC001", barcode="8934950384857", price=199999.00, category_id=categories[18].id, brand="Generic", unit="chiếc", weight=0.2, dimensions={"width": 50, "height": 400, "depth": 5}, status="ACTIVE"),
+        Product(name="Sữa tắm chó", sku="SB001", barcode="8934501384857", price=149999.00, category_id=categories[18].id, brand="Generic", unit="chai", weight=0.5, dimensions={"width": 60, "height": 150, "depth": 60}, status="ACTIVE"),
+        Product(name="Đồ chơi bóng cho chó", sku="TB002", barcode="8934584939490", price=99999.00, category_id=categories[18].id, brand="Kong", unit="chiếc", weight=0.1, dimensions={"width": 70, "height": 70, "depth": 70}, status="ACTIVE"),
+        
+        # Automotive
+        Product(name="Lốp xe Michelin 185/65R15", sku="TR001", barcode="8934584939485", price=2199999.00, category_id=categories[19].id, brand="Michelin", unit="chiếc", weight=8.5, dimensions={"width": 600, "height": 600, "depth": 200}, status="ACTIVE"),
+        Product(name="Dầu phanh DOT 4", sku="BF001", barcode="8934950294855", price=299999.00, category_id=categories[19].id, brand="Castrol", unit="chai", weight=1.0, dimensions={"width": 60, "height": 150, "depth": 60}, status="ACTIVE"),
+        Product(name="Bộ lọc gió xe hơi", sku="AF001", barcode="8934501949394", price=499999.00, category_id=categories[19].id, brand="Generic", unit="chiếc", weight=0.5, dimensions={"width": 200, "height": 150, "depth": 50}, status="ACTIVE"),
+        Product(name="Chổi gạt mưa", sku="WW001", barcode="8934584849395", price=199999.00, category_id=categories[19].id, brand="Bosch", unit="chiếc", weight=0.3, dimensions={"width": 500, "height": 50, "depth": 10}, status="ACTIVE"),
+        Product(name="Dầu động cơ 5W30", sku="MO001", barcode="8934950384858", price=399999.00, category_id=categories[19].id, brand="Mobil", unit="can", weight=4.0, dimensions={"width": 150, "height": 200, "depth": 100}, status="ACTIVE"),
     ]
 
     session.add_all(products)
@@ -254,7 +369,7 @@ def seed_products(session: Session, categories: list[Category]):
 def seed_inventory(session: Session, products: list[Product], warehouses: list[Warehouse]):
     inventory_rows = [
         Inventory(product_id=products[i % len(products)].id, warehouse_id=warehouses[i % len(warehouses)].id, quantity=50 + i * 10, reserved_quantity=5 + i, oncoming_quantity=10 + i, min_threshold=15)
-        for i in range(1, 31)
+        for i in range(1, 101)
     ]
 
     session.add_all(inventory_rows)
@@ -270,7 +385,7 @@ def seed_import_export_orders(session: Session, suppliers: list[Supplier], users
             status="COMPLETED" if i % 2 == 0 else "PENDING",
             created_by=users[4].id,
         )
-        for i in range(1, 21)
+        for i in range(1, 51)
     ]
 
     export_orders = [
@@ -280,7 +395,7 @@ def seed_import_export_orders(session: Session, suppliers: list[Supplier], users
             status="COMPLETED" if i % 2 == 0 else "PENDING",
             created_by=users[5].id,
         )
-        for i in range(1, 21)
+        for i in range(1, 51)
     ]
 
     session.add_all(import_orders + export_orders)
@@ -293,7 +408,7 @@ def seed_import_export_orders(session: Session, suppliers: list[Supplier], users
             quantity=5 + i * 2,
             unit_cost=100000 + i * 50000,
         )
-        for i in range(1, 31)
+        for i in range(1, 151)
     ]
 
     export_order_items = [
@@ -303,7 +418,7 @@ def seed_import_export_orders(session: Session, suppliers: list[Supplier], users
             quantity=3 + i,
             price=150000 + i * 60000,
         )
-        for i in range(1, 31)
+        for i in range(1, 151)
     ]
 
     session.add_all(import_order_items + export_order_items)
@@ -325,7 +440,7 @@ def seed_stock_transactions(session: Session, products: list[Product], warehouse
             created_by=users[4].id if i % 2 == 0 else users[5].id,
             note=f"Giao dịch hàng tồn kho {i}",
         )
-        for i in range(1, 31)
+        for i in range(1, 201)
     ]
 
     session.add_all(transactions)
@@ -345,7 +460,7 @@ def seed_forecast_results(session: Session, products: list[Product], warehouses:
             days_to_out_of_stock=50 + i,
             model_used="ARIMA" if i % 2 == 0 else "LSTM",
         )
-        for i in range(1, 31)
+        for i in range(1, 201)
     ]
 
     session.add_all(forecasts)
@@ -366,7 +481,7 @@ def seed_daily_inventory_stats(session: Session, products: list[Product], wareho
             total_export=10 + i,
             inventory_value=round((110 + i * 5) * (10000 + i * 100000), 2),
         )
-        for i in range(1, 31)
+        for i in range(1, 201)
     ]
 
     session.add_all(stats)
@@ -382,7 +497,7 @@ def seed_notifications(session: Session, users: list[User]):
             message=f"Nội dung thông báo quan trọng #{i}",
             is_read=(i % 2 == 0),
         )
-        for i in range(1, 21)
+        for i in range(1, 101)
     ]
 
     session.add_all(notifications)
@@ -400,7 +515,7 @@ def seed_audit_logs(session: Session, users: list[User]):
             old_data={"field": f"old_value_{i}"} if i % 2 == 1 else None,
             new_data={"field": f"new_value_{i}"},
         )
-        for i in range(1, 26)
+        for i in range(1, 101)
     ]
 
     session.add_all(audit_logs)
@@ -408,8 +523,41 @@ def seed_audit_logs(session: Session, users: list[User]):
     return audit_logs
 
 
+def reset_database():
+    """Drop and recreate all tables to ensure a clean database"""
+    import sys
+    try:
+        print("Starting database reset...", flush=True, file=sys.stderr)
+        
+        # Use raw SQL to forcefully drop all tables
+        with engine.connect() as conn:
+            conn.execute(text("""
+            DO $$ DECLARE
+                r RECORD;
+            BEGIN
+                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                END LOOP;
+            END $$;
+            """))
+            conn.commit()
+            print("✓ Database tables dropped", flush=True, file=sys.stderr)
+        
+        # Dispose of the engine's connection pool to clear any cached connections
+        engine.dispose()
+        
+        # Recreate all tables
+        SQLModel.metadata.create_all(engine)
+        print("✓ Database tables recreated", flush=True, file=sys.stderr)
+    except Exception as e:
+        print(f"⚠ Error during reset: {type(e).__name__}: {e}", flush=True, file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        
+
 def main():
-    SQLModel.metadata.create_all(engine)
+    # Reset database before seeding
+    reset_database()
 
     with Session(engine) as session:
         roles, permissions = seed_roles_permissions(session)
@@ -425,19 +573,19 @@ def main():
         seed_audit_logs(session, users)
 
     print("✓ Seed data đã được chèn thành công!")
-    print("  - 10 Danh mục sản phẩm")
+    print("  - 20 Danh mục sản phẩm")
     print("  - 20 Kho lưu trữ")
     print("  - 20 Nhà cung cấp")
     print("  - 10 Người dùng")
-    print("  - 30 Sản phẩm")
-    print("  - 30 Tồn kho")
-    print("  - 20 Đơn nhập hàng + 30 Chi tiết đơn nhập")
-    print("  - 20 Đơn xuất hàng + 30 Chi tiết đơn xuất")
-    print("  - 30 Giao dịch hàng tồn kho")
-    print("  - 30 Kết quả dự báo")
-    print("  - 30 Thống kê hàng tồn kho hàng ngày")
-    print("  - 20 Thông báo")
-    print("  - 25 Nhật ký kiểm toán")
+    print("  - 100 Sản phẩm")
+    print("  - 100 Tồn kho")
+    print("  - 50 Đơn nhập hàng + 150 Chi tiết đơn nhập")
+    print("  - 50 Đơn xuất hàng + 150 Chi tiết đơn xuất")
+    print("  - 200 Giao dịch hàng tồn kho")
+    print("  - 200 Kết quả dự báo")
+    print("  - 200 Thống kê hàng tồn kho hàng ngày")
+    print("  - 100 Thông báo")
+    print("  - 100 Nhật ký kiểm toán")
 
 
 if __name__ == "__main__":

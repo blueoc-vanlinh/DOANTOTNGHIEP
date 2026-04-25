@@ -6,10 +6,13 @@ import {
     deleteSupplier,
 } from "./api";
 
-export const useSuppliers = () => {
+export const useSuppliers = (params: {
+    page: number;
+    page_size: number;
+}) => {
     return useQuery({
-        queryKey: ["suppliers"],
-        queryFn: getSuppliers,
+        queryKey: ["suppliers", params],
+        queryFn: () => getSuppliers(params),
     });
 };
 

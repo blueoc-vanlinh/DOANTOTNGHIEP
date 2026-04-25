@@ -7,7 +7,7 @@ from app.services.supplier_service import (
     get_suppliers,
     create_supplier,
     update_supplier,
-    delete_suppliers,
+    delete_supplier,
 )
 
 router = APIRouter(tags=["Suppliers"])
@@ -62,4 +62,4 @@ def delete_one_supplier(
     supplier_id: int,
     session: Session = Depends(get_session),
 ):
-    return delete_suppliers(session, supplier_id)
+    return delete_supplier(session, supplier_id)

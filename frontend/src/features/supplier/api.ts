@@ -3,8 +3,22 @@ import type { Supplier, SupplierInput } from "./types";
 
 
 
-export const getSuppliers = async (): Promise<Supplier[]> => {
-    const res = await apiClient.get<Supplier[]>("/suppliers/");
+export interface SupplierResponse {
+    items: Supplier[];
+    meta: {
+        total: number;
+        page: number;
+        page_size: number;
+    };
+}
+
+export const getSuppliers = async (params: {
+    page: number;
+    page_size: number;
+}) => {
+    const res = await apiClient.get<SupplierResponse>("/suppliers/", {
+        params,
+    });
     return res.data;
 };
 

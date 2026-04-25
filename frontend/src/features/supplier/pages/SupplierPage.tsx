@@ -16,6 +16,7 @@ import {
 } from "../hooks";
 
 import type { Supplier } from "../types";
+import PaginationBar from "@/components/common/PaginationBar";
 
 interface SupplierFormValues {
     name: string;
@@ -24,9 +25,20 @@ interface SupplierFormValues {
 }
 
 export default function SupplierPage() {
-    const { data, isLoading } = useSuppliers();
+    const handlePageChange = (page: number, pageSize: number) => {
+        setPage(page);
+        setPageSize(pageSize);
+    };
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
-    const suppliers: Supplier[] = Array.isArray(data) ? data : [];
+    const { data, isLoading } = useSuppliers({
+        page,
+        page_size: pageSize,
+    });
+
+    const suppliers = data?.items || [];
+    const total = data?.meta?.total || 0;
     const createMutation = useCreateSupplier();
     const updateMutation = useUpdateSupplier();
     const deleteMutation = useDeleteSupplier();
@@ -96,11 +108,25 @@ export default function SupplierPage() {
                 </Button>
             </div>
             {suppliers.length > 0 ? (
-                <SupplierTable
-                    data={suppliers}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                />
+                <>
+                    <SupplierTable
+                        data={suppliers}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+
+                    />
+                    <PaginationBar
+                        current={page}
+                        pageSize={pageSize}
+                        total={total}
+                        onChange={handlePageChange}
+                        showSizeChanger
+                        showQuickJumper
+                        showTotal={(total) => `Tổng cộng ${total} sản phẩm`}
+                    />
+                </>
+
+
             ) : (
                 <EmptyState description="Chưa có nhà cung cấp nào">
                     <Button type="primary" onClick={handleCreate}>
