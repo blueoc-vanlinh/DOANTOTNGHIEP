@@ -13,60 +13,101 @@ export default function TransactionTable({
     data,
     loading = false,
 }: TransactionTableProps) {
+
+    const getTypeTag = (type: TransactionType) => {
+        switch (type) {
+            case "IMPORT":
+                return <Tag color="green">NHẬP KHO</Tag>;
+            case "EXPORT":
+                return <Tag color="red">XUẤT KHO</Tag>;
+            case "ADJUST":
+                return <Tag color="orange">ĐIỀU CHỈNH</Tag>;
+            default:
+                return <Tag>{type}</Tag>;
+        }
+    };
+
     const columns: ColumnsType<Transaction> = [
         {
             title: "ID",
             dataIndex: "id",
-            key: "id",
-            width: 80,
+            width: 70,
             align: "center",
         },
+
         {
-            title: "Loại giao dịch",
+            title: "Loại",
             dataIndex: "type",
-            key: "type",
-            width: 160,
-            render: (type: TransactionType) => (
-                <Tag
-                    color={type === "IMPORT" ? "green" : "red"}
-                    style={{ fontSize: "13px", padding: "4px 12px" }}
-                >
-                    {type === "IMPORT" ? "NHẬP KHO" : "XUẤT KHO"}
-                </Tag>
-            ),
+            width: 140,
+            align: "center",
+            render: (type: TransactionType) => getTypeTag(type),
         },
         {
             title: "Sản phẩm",
-            dataIndex: "product_id",
-            key: "product_id",
-            render: (id: number) => <strong>SP#{id}</strong>,
-            width: 180,
+            dataIndex: "product_name",
+            width: 220,
+            render: (name: string) => (
+                <strong style={{ color: "#1677ff" }}>{name}</strong>
+            ),
         },
+
         {
-            title: "Kho hàng",
-            dataIndex: "warehouse_id",
-            key: "warehouse_id",
-            render: (id: number) => <span>Kho#{id}</span>,
-            width: 140,
+            title: "Kho",
+            dataIndex: "warehouse_name",
+            width: 180,
         },
         {
             title: "Số lượng",
             dataIndex: "quantity",
-            key: "quantity",
             width: 140,
-            sorter: (a, b) => a.quantity - b.quantity,
-            render: (qty: number) => (
-                <b style={{ fontSize: "15px", color: "#1677ff" }}>{qty.toLocaleString()}</b>
-            ),
             align: "center",
+            sorter: (a, b) => a.quantity - b.quantity,
+            render: (qty: number, record) => {
+                const isImport = record.type === "IMPORT";
+                const isExport = record.type === "EXPORT";
+
+                return (
+                    <b
+                        style={{
+                            fontSize: 15,
+                            color: isImport
+                                ? "#52c41a"
+                                : isExport
+                                    ? "#ff4d4f"
+                                    : "#fa8c16",
+                        }}
+                    >
+                        {isImport ? "+" : isExport ? "-" : ""}
+                        {qty.toLocaleString()}
+                    </b>
+                );
+            },
         },
+
+        // ✅ tồn kho sau giao dịch
         {
-            title: "Ngày giao dịch",
+            title: "Tồn sau",
+            dataIndex: "balance_after",
+            width: 140,
+            align: "center",
+            render: (val: number) => (
+                <b
+                    style={{
+                        color: val > 0 ? "#1677ff" : "#ff4d4f",
+                    }}
+                >
+                    {val.toLocaleString()}
+                </b>
+            ),
+        },
+
+        {
+            title: "Ngày",
             dataIndex: "created_at",
-            key: "created_at",
             width: 180,
             sorter: (a, b) =>
-                new Date(a.created_at || "").getTime() - new Date(b.created_at || "").getTime(),
+                new Date(a.created_at || "").getTime() -
+                new Date(b.created_at || "").getTime(),
             render: (date: string) =>
                 date ? new Date(date).toLocaleString("vi-VN") : "-",
         },
@@ -78,7 +119,8 @@ export default function TransactionTable({
             data={data}
             loading={loading}
             rowKey="id"
-            scroll={{ x: 1100 }}
+            scroll={{ x: 1200 }}
+            pagination={false}
         />
     );
 }

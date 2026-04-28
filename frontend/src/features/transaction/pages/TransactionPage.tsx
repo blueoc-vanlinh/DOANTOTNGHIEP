@@ -1,23 +1,32 @@
-// src/pages/transactions/TransactionPage.tsx
 import { useState } from "react";
 import { Select, Space } from "antd";
 
 import TransactionTable from "../components/TransactionTable";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
+import PaginationBar from "@/components/common/PaginationBar";
 
 import { useTransactions } from "../hooks";
-import type { Transaction, TransactionType } from "../types";
+import type { TransactionType } from "../types";
 
 export default function TransactionPage() {
-    const { data, isLoading } = useTransactions();
-    const transactions: Transaction[] = Array.isArray(data) ? data : [];
+
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [filter, setFilter] = useState<TransactionType | "ALL">("ALL");
 
-    const filteredData =
-        filter === "ALL"
-            ? transactions
-            : transactions?.filter((t) => t.type === filter) || [];
+    const { data, isLoading } = useTransactions({
+        page,
+        page_size: pageSize,
+        type: filter === "ALL" ? undefined : filter,
+    });
+    const transactions = data?.items || [];
+    const total = data?.meta?.total || 0;
+
+    const handlePageChange = (page: number, pageSize: number) => {
+        setPage(page);
+        setPageSize(pageSize);
+    };
 
     if (isLoading) return <LoadingPage />;
 
@@ -31,35 +40,47 @@ export default function TransactionPage() {
                     alignItems: "center",
                 }}
             >
-                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
-                    Lịch sử Giao dịch
+                <h2 style={{ fontSize: 24, fontWeight: 600 }}>
+                    Lịch sử Giao dịch ({total})
                 </h2>
+
                 <Space>
-                    <span style={{ fontWeight: 500, color: "#666" }}>Lọc theo loại:</span>
+                    <span style={{ fontWeight: 500, color: "#666" }}>
+                        Lọc theo loại:
+                    </span>
+
                     <Select
                         value={filter}
-                        onChange={(value) => setFilter(value as TransactionType | "ALL")}
+                        onChange={(value) => {
+                            setFilter(value);
+                            setPage(1); // 🔥 reset page
+                        }}
                         style={{ width: 180 }}
                         options={[
                             { label: "Tất cả giao dịch", value: "ALL" },
                             { label: "Nhập kho", value: "IMPORT" },
                             { label: "Xuất kho", value: "EXPORT" },
+                            { label: "Điều chỉnh", value: "ADJUST" },
                         ]}
                     />
                 </Space>
             </div>
-            {filteredData && filteredData.length > 0 ? (
-                <TransactionTable
-                    data={filteredData}
-                />
+
+            {transactions.length > 0 ? (
+                <>
+                    <TransactionTable data={transactions} />
+                    <PaginationBar
+                        current={page}
+                        pageSize={pageSize}
+                        total={total}
+                        onChange={handlePageChange}
+                        showSizeChanger
+                        showQuickJumper
+                        showTotal={(total) => `Tổng cộng ${total} giao dịch`}
+                    />
+                </>
             ) : (
-                <EmptyState
-                    description={
-                        filter === "ALL"
-                            ? "Chưa có giao dịch nào"
-                            : `Chưa có giao dịch ${filter === "IMPORT" ? "nhập kho" : "xuất kho"} nào`
-                    }
-                />
+                <EmptyState description="Chưa có giao dịch nào" />
             )}
         </div>
     );

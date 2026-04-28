@@ -6,13 +6,15 @@ import {
     deleteWarehouse,
 } from "./api";
 
-export const useWarehouses = () => {
+export const useWarehouses = (params: {
+    page: number;
+    page_size: number;
+}) => {
     return useQuery({
-        queryKey: ["warehouses"],
-        queryFn: getWarehouses,
+        queryKey: ["warehouses", params],
+        queryFn: () => getWarehouses(params),
     });
 };
-
 export const useCreateWarehouse = () => {
     const qc = useQueryClient();
     return useMutation({

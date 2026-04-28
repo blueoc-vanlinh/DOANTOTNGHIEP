@@ -1,40 +1,66 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
-from app.db.session import get_session
-from app.services.warehouse_service import get_warehouses, get_warehouse, create_warehouse, update_warehouse, delete_warehouse
+from typing import Optional
 
-router = APIRouter()
+from app.db.session import get_session
+from app.services.warehouse_service import (
+    get_warehouses,
+    get_warehouse,
+    create_warehouse,
+    update_warehouse,
+    delete_warehouse,
+)
+
+router = APIRouter(tags=["Warehouses"])
 
 
 @router.get("/")
-def get_all(session: Session = Depends(get_session)):
-    return get_warehouses(session)
+def list_warehouses(
+    session: Session = Depends(get_session),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, le=100),
+    search: Optional[str] = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+):
+    return get_warehouses(
+        session=session,
+        page=page,
+        page_size=page_size,
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
 
 
 @router.get("/{warehouse_id}")
-def get_one(warehouse_id: int, session: Session = Depends(get_session)):
-    warehouse = get_warehouse(session, warehouse_id)
-    if not warehouse:
-        raise HTTPException(404, "Warehouse not found")
-    return warehouse
+def get_one_warehouse(
+    warehouse_id: int,
+    session: Session = Depends(get_session),
+):
+    return get_warehouse(session, warehouse_id)
 
 
 @router.post("/")
-def create(data: dict, session: Session = Depends(get_session)):
+def create_new_warehouse(
+    data: dict,
+    session: Session = Depends(get_session),
+):
     return create_warehouse(session, data)
 
 
 @router.put("/{warehouse_id}")
-def update(warehouse_id: int, data: dict, session: Session = Depends(get_session)):
-    warehouse = update_warehouse(session, warehouse_id, data)
-    if not warehouse:
-        raise HTTPException(404, "Warehouse not found")
-    return warehouse
+def update_one_warehouse(
+    warehouse_id: int,
+    data: dict,
+    session: Session = Depends(get_session),
+):
+    return update_warehouse(session, warehouse_id, data)
 
 
 @router.delete("/{warehouse_id}")
-def delete(warehouse_id: int, session: Session = Depends(get_session)):
-    ok = delete_warehouse(session, warehouse_id)
-    if not ok:
-        raise HTTPException(404, "Warehouse not found")
-    return {"message": "Deleted"}
+def delete_one_warehouse(
+    warehouse_id: int,
+    session: Session = Depends(get_session),
+):
+    return delete_warehouse(session, warehouse_id)

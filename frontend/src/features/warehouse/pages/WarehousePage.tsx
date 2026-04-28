@@ -7,6 +7,7 @@ import Button from "@/components/common/button";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import ModalConfirm from "@/components/common/ModalConfirm";
+import PaginationBar from "@/components/common/PaginationBar";
 
 import {
     useWarehouses,
@@ -24,8 +25,17 @@ interface WarehouseFormValues {
 }
 
 export default function WarehousePage() {
-    const { data, isLoading } = useWarehouses();
-    const warehouses: Warehouse[] = Array.isArray(data) ? data : [];
+
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const { data, isLoading } = useWarehouses({
+        page,
+        page_size: pageSize,
+    });
+
+    const warehouses = data?.items || [];
+    const total = data?.meta?.total || 0;
 
     const createMutation = useCreateWarehouse();
     const updateMutation = useUpdateWarehouse();
@@ -68,12 +78,17 @@ export default function WarehousePage() {
     const handleDelete = (id: number) => {
         ModalConfirm({
             title: "Xác nhận xóa kho",
-            content: "Bạn có chắc chắn muốn xóa kho này? Hành động này không thể hoàn tác.",
+            content: "Bạn có chắc chắn muốn xóa kho này?",
             onOk: () =>
                 deleteMutation.mutate(id, {
                     onSuccess: () => message.success("Đã xóa kho thành công"),
                 }),
         });
+    };
+
+    const handlePageChange = (page: number, pageSize: number) => {
+        setPage(page);
+        setPageSize(pageSize);
     };
 
     if (isLoading) return <LoadingPage />;
@@ -88,19 +103,34 @@ export default function WarehousePage() {
                     alignItems: "center",
                 }}
             >
-                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
-                    Quản lý Kho hàng
+                <h2 style={{ fontSize: 24, fontWeight: 600 }}>
+                    Quản lý Kho hàng ({total})
                 </h2>
+
                 <Button type="primary" onClick={handleCreate}>
                     + Thêm kho
                 </Button>
             </div>
+
             {warehouses.length > 0 ? (
-                <WarehouseTable
-                    data={warehouses}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                />
+                <>
+                    <WarehouseTable
+                        data={warehouses}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                    />
+
+                    {/* ✅ PAGINATION */}
+                    <PaginationBar
+                        current={page}
+                        pageSize={pageSize}
+                        total={total}
+                        onChange={handlePageChange}
+                        showSizeChanger
+                        showQuickJumper
+                        showTotal={(total) => `Tổng cộng ${total} kho`}
+                    />
+                </>
             ) : (
                 <EmptyState description="Chưa có kho hàng nào">
                     <Button type="primary" onClick={handleCreate}>
@@ -108,6 +138,7 @@ export default function WarehousePage() {
                     </Button>
                 </EmptyState>
             )}
+
             <WarehouseFormModal
                 open={modalOpen}
                 editing={editing}

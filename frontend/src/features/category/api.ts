@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api";
-import type { Category, CategoryInput } from "./types";
+import type { Category, CategoryInput, CategoryResponse } from "./types";
 
 export const createCategory = async (data: CategoryInput): Promise<Category> => {
     const res = await apiClient.post<Category>("/categories/", data);
@@ -7,8 +7,11 @@ export const createCategory = async (data: CategoryInput): Promise<Category> => 
 };
 
 
-export const getCategories = async (): Promise<Category[]> => {
-    const res = await apiClient.get<Category[]>("/categories/");
+export const getCategories = async (params: {
+    page: number;
+    page_size: number;
+}): Promise<CategoryResponse> => {
+    const res = await apiClient.get("/categories/", { params });
     return res.data;
 };
 export const updateCategory = async ({

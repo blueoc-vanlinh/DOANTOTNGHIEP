@@ -3,9 +3,14 @@ import {
     getTransactions,
 } from "./api";
 
-export const useTransactions = () => {
+export const useTransactions = (params: {
+    page: number;
+    page_size: number;
+    search?: string;
+    type?: string;
+}) => {
     return useQuery({
-        queryKey: ["transactions"],
-        queryFn: getTransactions,
+        queryKey: ["transactions", params],
+        queryFn: () => getTransactions(params),
     });
 };

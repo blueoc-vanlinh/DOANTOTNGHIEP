@@ -7,6 +7,7 @@ import Button from "@/components/common/button";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import ModalConfirm from "@/components/common/ModalConfirm";
+import PaginationBar from "@/components/common/PaginationBar";
 
 import {
   useCategories,
@@ -23,9 +24,21 @@ interface CategoryFormValues {
 }
 
 export default function CategoryPage() {
-  const { data, isLoading } = useCategories();
 
-  const categories: Category[] = Array.isArray(data) ? data : [];
+  // ✅ pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // ✅ gọi API có params
+  const { data, isLoading } = useCategories({
+    page,
+    page_size: pageSize,
+  });
+
+  // ✅ fix data
+  const categories = data?.items || [];
+  const total = data?.meta?.total || 0;
+
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
@@ -75,6 +88,12 @@ export default function CategoryPage() {
     });
   };
 
+  // ✅ pagination handler
+  const handlePageChange = (page: number, pageSize: number) => {
+    setPage(page);
+    setPageSize(pageSize);
+  };
+
   if (isLoading) return <LoadingPage />;
 
   return (
@@ -88,19 +107,33 @@ export default function CategoryPage() {
         }}
       >
         <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
-          Quản lý Danh mục
+          Quản lý Danh mục ({total})
         </h2>
+
         <Button type="primary" onClick={handleCreate}>
           + Thêm danh mục
         </Button>
       </div>
 
       {categories.length > 0 ? (
-        <CategoryTable
-          data={categories}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <>
+          <CategoryTable
+            data={categories}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+
+          {/* ✅ pagination giống products */}
+          <PaginationBar
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={handlePageChange}
+            showSizeChanger
+            showQuickJumper
+            showTotal={(total) => `Tổng cộng ${total} danh mục`}
+          />
+        </>
       ) : (
         <EmptyState description="Chưa có danh mục nào">
           <Button type="primary" onClick={handleCreate}>

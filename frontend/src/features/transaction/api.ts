@@ -1,10 +1,16 @@
 import apiClient from "@/lib/api";
-import type { Transaction } from "./types";
+import type { TransactionResponse } from "./types";
 
 
-
-export const getTransactions = async (): Promise<Transaction[]> => {
-    const res = await apiClient.get<Transaction[]>("/transactions/");
+export const getTransactions = async (params: {
+    page: number;
+    page_size: number;
+    search?: string;
+    product_id?: number;
+    warehouse_id?: number;
+    type?: string;
+}): Promise<TransactionResponse> => {
+    const res = await apiClient.get("/transactions/", { params });
     return res.data;
 };
 

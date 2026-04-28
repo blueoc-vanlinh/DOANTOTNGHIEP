@@ -31,8 +31,12 @@ export default function ProductsPage() {
     const products: Product[] = responseData?.items || [];
     const total: number = responseData?.total || 0;
 
-    const { data } = useCategories();
-    const categories = Array.isArray(data) ? data : [];
+    const { data: categoryRes } = useCategories({
+        page: 1,
+        page_size: 1000,
+    });
+
+    const categories = categoryRes?.items || [];
 
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);

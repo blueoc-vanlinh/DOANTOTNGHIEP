@@ -79,6 +79,7 @@ export default function WarehouseTable({
             loading={loading}
             rowKey="id"
             scroll={{ x: 1000 }}
+            pagination={false}
         />
     );
 }

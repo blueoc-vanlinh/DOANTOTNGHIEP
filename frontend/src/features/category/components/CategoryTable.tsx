@@ -79,6 +79,7 @@ export default function CategoryTable({
             loading={loading}
             rowKey="id"
             scroll={{ x: 1000 }}
+            pagination={false}
         />
     );
 }
