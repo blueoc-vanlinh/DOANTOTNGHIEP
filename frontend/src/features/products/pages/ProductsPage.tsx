@@ -33,11 +33,10 @@ export default function ProductsPage() {
 
     const { data: categoryRes } = useCategories({
         page: 1,
-        page_size: 1000,
+        page_size: 100,
     });
 
     const categories = categoryRes?.items || [];
-
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const createMutation = useCreateProduct();
