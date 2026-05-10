@@ -63,34 +63,52 @@ export const useCreateProduct = () => {
 };
 export const useUpdateProduct = () => {
     const qc = useQueryClient();
-    const { data: categories = [] } = useCategories();
+    const { data: categoryRes } = useCategories({
+        page: 1,
+        page_size: 1000,
+    });
+
+    const categories = categoryRes?.items || [];
+
     const findCategoryName = (id?: number | null) => {
         const cat = categories.find((c) => c.id === id);
         return cat?.name || "";
     };
+
     return useMutation({
         mutationFn: updateProduct,
 
         onSuccess: (updatedProduct) => {
-            qc.setQueriesData({ queryKey: ["products"] }, (old: ProductsResponse | undefined) => {
-                if (!old) return old;
+            qc.setQueriesData(
+                { queryKey: ["products"] },
+                (old: ProductsResponse | undefined) => {
 
-                return {
-                    ...old,
-                    items: old.items.map((p: Product) => {
-                        if (p.id !== updatedProduct.id) return p;
+                    if (!old) return old;
 
-                        return {
-                            ...p,
-                            ...updatedProduct,
-                            category: {
-                                id: updatedProduct.category_id || 0,
-                                name: findCategoryName(updatedProduct.category_id),
-                            },
-                        };
-                    }),
-                };
-            });
+                    return {
+                        ...old,
+
+                        items: old.items.map((p: Product) => {
+
+                            if (p.id !== updatedProduct.id) {
+                                return p;
+                            }
+
+                            return {
+                                ...p,
+                                ...updatedProduct,
+
+                                category: {
+                                    id: updatedProduct.category_id || 0,
+                                    name: findCategoryName(
+                                        updatedProduct.category_id
+                                    ),
+                                },
+                            };
+                        }),
+                    };
+                }
+            );
         },
     });
 };
