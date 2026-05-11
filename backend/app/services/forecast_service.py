@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from sqlalchemy import func
 
 from app.models.product import Product
 from app.models.transaction import StockTransaction
