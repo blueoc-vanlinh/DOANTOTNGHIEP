@@ -13,6 +13,7 @@ import SupplierPage from "@/features/supplier/pages/SupplierPage";
 import WarehousePage from "@/features/warehouse/pages/WarehousePage";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
+import UsersPage from "@/features/users/pages/UserPage";
 import {
   homeUrl,
   error403Url,
@@ -27,6 +28,7 @@ import {
   suppliersUrl,
   transactionsUrl,
   loginUrl,
+  usersUrl,
 
 } from "./urls";
 import TransactionPage from "@/features/transaction/pages/TransactionPage";
@@ -53,6 +55,7 @@ export const router = createBrowserRouter([
           { path: importUrl, element: <ImportPage /> },
           { path: exportUrl, element: <ExportPage /> },
           { path: forecastUrl, element: <ForecastPage /> },
+          { path: usersUrl, element: <UsersPage /> },
         ],
       },
     ],

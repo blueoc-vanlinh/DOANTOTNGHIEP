@@ -1,52 +1,42 @@
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Dict, List
 from datetime import datetime
-from pydantic import BaseModel
-from app.schemas.common import BaseSchema, PaginationMeta
 
 
-class ProductBase(BaseSchema):
+class CategoryRead(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductBase(BaseModel):
     name: str
     sku: str
-    barcode: Optional[str] = None
-
     price: float
-
+    barcode: Optional[str] = None
     category_id: Optional[int] = None
-
-    brand: Optional[str] = None
-    unit: Optional[str] = None
-
-    weight: Optional[float] = None
-    dimensions: Optional[Dict] = None
-
     status: str = "ACTIVE"
+    dimensions: Optional[Dict] = None
+    weight: Optional[float] = None
 
 
 class ProductCreate(ProductBase):
     pass
 
 
-class ProductUpdate(BaseSchema):
-    name: Optional[str] = None
-    sku: Optional[str] = None
-    barcode: Optional[str] = None
-    price: Optional[float] = None
-    category_id: Optional[int] = None
-    brand: Optional[str] = None
-    unit: Optional[str] = None
-    weight: Optional[float] = None
-    dimensions: Optional[Dict] = None
-    status: Optional[str] = None
-
-
-class ProductResponse(ProductBase):
+class ProductRead(ProductBase):
     id: int
-    category_name: Optional[str] = None
+    category: Optional[CategoryRead] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    is_deleted: bool = False
 
-    created_at: datetime
-    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
 
-class ProductListResponse(BaseModel):
-    items: List[ProductResponse]
-    meta: PaginationMeta
+class ProductsResponse(BaseModel):
+    items: List[ProductRead]
+    total: int
+    page: int
+    page_size: int

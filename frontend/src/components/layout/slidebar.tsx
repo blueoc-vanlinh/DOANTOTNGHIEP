@@ -12,7 +12,7 @@ import {
   SwapOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, productsUrl, suppliersUrl, transactionsUrl, warehouseUrl } from "@/routes/urls";
+import { categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, productsUrl, suppliersUrl, transactionsUrl, usersUrl, warehouseUrl } from "@/routes/urls";
 import type { FC } from "react";
 
 const { Sider } = Layout;
@@ -36,8 +36,8 @@ const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
     { key: importUrl, icon: <UploadOutlined />, label: "Nhập kho" },
     { key: exportUrl, icon: <DownloadOutlined />, label: "Xuất kho" },
     { key: forecastUrl, icon: <LineChartOutlined />, label: "Dự báo AI" },
+    { key: usersUrl, icon: <UserSwitchOutlined />, label: "Người dùng" },
   ];
-
   return (
     <Sider
       trigger={null}

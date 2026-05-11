@@ -190,7 +190,11 @@ def toggle_user_status(
             detail="User not found",
         )
 
-    user.is_active = not user.is_active
+    user.status = (
+        "INACTIVE"
+        if user.status == "ACTIVE"
+        else "ACTIVE"
+    )
 
     session.add(user)
     session.commit()
@@ -198,7 +202,7 @@ def toggle_user_status(
 
     return {
         "message": "Status updated successfully",
-        "is_active": user.is_active,
+        "status": user.status,
     }
 def delete_user(
     session: Session,
