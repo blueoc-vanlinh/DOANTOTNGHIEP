@@ -6,9 +6,6 @@ from app.services.transaction_service import create_transaction
 
 def create_export_order(session: Session, data: dict, user_id: int):
 
-    if "warehouse_id" not in data:
-        raise Exception("warehouse_id is required")
-
     if "items" not in data:
         raise Exception("items required")
 
@@ -30,7 +27,7 @@ def create_export_order(session: Session, data: dict, user_id: int):
             inventory = get_inventory(
                 session,
                 item["product_id"],
-                data["warehouse_id"]
+                item["warehouse_id"]
             )
 
             if not inventory or inventory.quantity < item["quantity"]:
@@ -45,13 +42,13 @@ def create_export_order(session: Session, data: dict, user_id: int):
             decrease_stock(
                 session,
                 item["product_id"],
-                data["warehouse_id"],
+                item["warehouse_id"],
                 item["quantity"]
             )
             create_transaction(
                 session=session,
                 product_id=item["product_id"],
-                warehouse_id=data["warehouse_id"],
+                warehouse_id=item["warehouse_id"],
                 type="EXPORT",
                 quantity=item["quantity"],
                 reference_type="EXPORT_ORDER",

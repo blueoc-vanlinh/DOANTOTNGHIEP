@@ -13,15 +13,15 @@ def get_all(
     search: str | None = Query(None),
     category_id: int | None = Query(None),
     page: int = Query(1, ge=1),
-    pageSize: int = Query(10, ge=1, le=100),
+    page_size: int = Query(10, ge=1, le=1000),
 ):
-    skip = (page - 1) * pageSize
+    skip = (page - 1) * page_size
     return get_products(
         session=session,
         search=search,
         category_id=category_id,
         skip=skip,
-        limit=pageSize,
+        limit=page_size,
     )
 
 

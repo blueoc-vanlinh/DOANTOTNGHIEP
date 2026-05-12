@@ -26,6 +26,7 @@ export default function ProductsPage() {
     const { data: responseData, isLoading } = useProducts({
         page,
         pageSize,
+        search: "",
     });
 
     const products: Product[] = responseData?.items || [];
@@ -34,7 +35,9 @@ export default function ProductsPage() {
     const { data: categoryRes } = useCategories({
         page: 1,
         page_size: 100,
+        search: "",
     });
+
 
     const categories = categoryRes?.items || [];
     const [modalOpen, setModalOpen] = useState(false);

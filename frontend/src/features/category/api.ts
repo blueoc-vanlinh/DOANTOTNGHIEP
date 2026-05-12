@@ -10,6 +10,7 @@ export const createCategory = async (data: CategoryInput): Promise<Category> => 
 export const getCategories = async (params: {
     page: number;
     page_size: number;
+    search?: string;
 }): Promise<CategoryResponse> => {
     const res = await apiClient.get("/categories/", { params });
     return res.data;

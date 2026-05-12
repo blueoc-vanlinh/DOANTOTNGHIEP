@@ -5,3 +5,16 @@ export const createExport = async (data: ExportInput) => {
     const res = await apiClient.post("/export/", data);
     return res.data;
 };
+export const checkStock = async (
+    product_id: number,
+    warehouse_id: number
+) => {
+    const res = await apiClient.get("/inventory/check-stock", {
+        params: {
+            product_id,
+            warehouse_id,
+        },
+    });
+
+    return res.data;
+};

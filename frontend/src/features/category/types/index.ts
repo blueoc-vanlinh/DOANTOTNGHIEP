@@ -11,7 +11,8 @@ export interface CategoryResponse {
     meta: {
         total: number;
         page: number;
-        page_size: number;
+        pageSize: number;
+        search?: string;
     };
 }
 

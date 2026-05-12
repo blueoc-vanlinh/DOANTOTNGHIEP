@@ -1,4 +1,5 @@
 from typing import List, Dict, Any, Optional
+from fastapi import HTTPException
 from sqlmodel import Session, select, func, and_, or_
 
 from app.models.inventory import Inventory
@@ -237,5 +238,34 @@ def get_inventory(session: Session, product_id: int, warehouse_id: int) -> Optio
             )
         )
     ).first()
-    
-    
+def check_product_stock(
+    session: Session,
+    product_id: int,
+    warehouse_id: int,
+):
+    inventory = session.exec(
+        select(Inventory)
+        .where(
+            Inventory.product_id == product_id,
+            Inventory.warehouse_id == warehouse_id,
+            Inventory.is_deleted.is_(False),
+        )
+    ).first()
+
+    product = session.get(Product, product_id)
+
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found",
+        )
+
+    quantity = inventory.quantity if inventory else 0
+
+    return {
+        "product_id": product.id,
+        "product_name": product.name,
+        "warehouse_id": warehouse_id,
+        "available_quantity": quantity,
+        "in_stock": quantity > 0,
+    }

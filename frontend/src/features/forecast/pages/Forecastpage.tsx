@@ -1,11 +1,21 @@
-// src/pages/forecast/ForecastPage.tsx
 import { useState } from "react";
-import { Card, InputNumber, Space, Typography } from "antd";
+
+import {
+  Card,
+  Space,
+  Typography,
+  Alert,
+  Statistic,
+  Row,
+  Col,
+} from "antd";
 
 import Button from "@/components/common/button";
 import EmptyState from "@/components/common/EmptyState";
-
+import SearchCombobox from "@/components/common/SearchCombobox";
+import { useProducts } from "@/features/products/hooks";
 import { useForecast } from "../hooks";
+
 import {
   LineChart,
   Line,
@@ -14,14 +24,22 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
 } from "recharts";
 
 const { Title, Text } = Typography;
 
 export default function ForecastPage() {
-  const [productId, setProductId] = useState<number>(1);
-  const { data, isLoading } = useForecast(productId);
+  const [productId, setProductId] = useState<number | undefined>();
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useForecast(productId || 0);
+  const { data: productsRes } = useProducts({
+    page: 1,
+    pageSize: 20,
+    search,
+  });
 
+  const products = productsRes?.items || [];
   const chartData = data?.data || [];
 
   return (
@@ -36,113 +54,176 @@ export default function ForecastPage() {
       >
         <div>
           <Title level={2} style={{ margin: 0 }}>
-            Dự báo tồn kho (AI)
+            Dự báo tồn kho AI
           </Title>
-          <Text type="secondary">Dự đoán nhu cầu và tồn kho tương lai bằng trí tuệ nhân tạo</Text>
+
+          <Text type="secondary">
+            Dự đoán nhu cầu nhập hàng bằng AI Forecasting
+          </Text>
         </div>
       </div>
+
       <Card style={{ marginBottom: 24 }}>
-        <Space align="center" size="large">
+        <Space size="large" align="end">
           <div>
             <Text strong style={{ display: "block", marginBottom: 8 }}>
-              Chọn sản phẩm để dự báo
+              Product ID
             </Text>
-            <Space>
-              <InputNumber
-                value={productId}
-                onChange={(v) => setProductId(Number(v ?? 1))}
-                min={1}
-                style={{ width: 180 }}
-                placeholder="Nhập Product ID"
-              />
-              <Button
-                type="primary"
-                onClick={() => { }}
-              >
-                Xem dự báo
-              </Button>
-            </Space>
+
+            <SearchCombobox
+              value={productId}
+              onChange={(value) => setProductId(Number(value))}
+              onSearch={(value) => setSearch(value)}
+              placeholder="Tìm kiếm sản phẩm"
+              style={{ width: 380 }}
+              options={products.map((p) => ({
+                value: p.id,
+
+                label: (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>{p.name}</span>
+
+                    <span
+                      style={{
+                        color: "#999",
+                        fontSize: 12,
+                      }}
+                    >
+                      #{p.id}
+                    </span>
+                  </div>
+                ),
+
+                searchText: `${p.id} ${p.name}`,
+              }))}
+            />
           </div>
 
-          {data && (
-            <div>
-              <Text type="secondary">Sản phẩm ID: </Text>
-              <Text strong>{productId}</Text>
-            </div>
-          )}
+          <Button type="primary">
+            Xem dự báo
+          </Button>
         </Space>
       </Card>
+
+      {data?.warning && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 24 }}
+          message={data.warning}
+          description="AI chưa đủ dữ liệu lịch sử để huấn luyện chính xác. Hệ thống đang dùng chế độ dự đoán tạm thời."
+        />
+      )}
+
+      {data && (
+        <Row gutter={16} style={{ marginBottom: 24 }}>
+          <Col span={8}>
+            <Card>
+              <Statistic
+                title="Sản phẩm"
+                value={data.product_name}
+              />
+            </Card>
+          </Col>
+
+          <Col span={8}>
+            <Card>
+              <Statistic
+                title="Số ngày dự báo"
+                value={data.forecast_days}
+              />
+            </Card>
+          </Col>
+
+          <Col span={8}>
+            <Card>
+              <Statistic
+                title="Đề xuất nhập hàng"
+                value={data.recommended_import}
+              />
+            </Card>
+          </Col>
+        </Row>
+      )}
+
       <Card
-        title={`Biểu đồ dự báo tồn kho - Sản phẩm ID ${productId}`}
+        title={`Biểu đồ AI Forecast`}
         loading={isLoading}
       >
         {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={420}>
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <ResponsiveContainer width="100%" height={450}>
+            <LineChart
+              data={chartData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 20,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => value?.slice(5) || value} // Hiển thị ngắn gọn hơn
+                tickFormatter={(value) =>
+                  value?.slice(5)
+                }
               />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                label={{ value: 'Số lượng dự báo', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                }}
-              />
+
+              <YAxis />
+
+              <Tooltip />
+
+              <Legend />
+
               <Line
                 type="monotone"
                 dataKey="predicted"
                 stroke="#1677ff"
                 strokeWidth={3}
-                dot={{ fill: "#1677ff", r: 5 }}
-                activeDot={{ r: 7 }}
-                name="Dự báo tồn kho"
+                name="AI Prediction"
               />
-              {'actual' in (data?.data?.[0] || {}) && (
-                <Line
-                  type="monotone"
-                  dataKey="actual"
-                  stroke="#52c41a"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  name="Thực tế"
-                />
-              )}
+
+              <Line
+                type="monotone"
+                dataKey="trend"
+                stroke="#52c41a"
+                strokeWidth={2}
+                name="Trend"
+              />
+
+              <Line
+                type="monotone"
+                dataKey="upper_bound"
+                stroke="#faad14"
+                strokeDasharray="5 5"
+                dot={false}
+                name="Upper Bound"
+              />
+
+              <Line
+                type="monotone"
+                dataKey="lower_bound"
+                stroke="#ff4d4f"
+                strokeDasharray="5 5"
+                dot={false}
+                name="Lower Bound"
+              />
             </LineChart>
           </ResponsiveContainer>
         ) : (
           <div style={{ padding: "60px 0" }}>
             <EmptyState
-              description="Chưa có dữ liệu dự báo cho sản phẩm này"
+              description="Không có dữ liệu forecast"
             />
           </div>
         )}
       </Card>
-
-      {/* Legend / Info */}
-      {chartData.length > 0 && (
-        <Card style={{ marginTop: 16 }}>
-          <Space size="large">
-            <Space>
-              <div style={{ width: 16, height: 3, background: "#1677ff" }} />
-              <Text>Dự báo AI (Predicted)</Text>
-            </Space>
-            {'actual' in (data?.data?.[0] || {}) && (
-              <Space>
-                <div style={{ width: 16, height: 3, background: "#52c41a", border: "1px dashed" }} />
-                <Text>Thực tế (Actual)</Text>
-              </Space>
-            )}
-          </Space>
-        </Card>
-      )}
     </div>
   );
 }

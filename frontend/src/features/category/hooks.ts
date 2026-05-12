@@ -4,6 +4,7 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from ".
 export const useCategories = (params: {
     page: number;
     page_size: number;
+    search?: string;
 }) => {
     return useQuery({
         queryKey: ["categories", params],

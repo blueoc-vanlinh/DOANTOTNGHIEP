@@ -24,6 +24,7 @@ export interface InventoryResponse {
     total: number;
     page: number;
     page_size: number;
+    warehouse_id?: number;
 }
 export interface InventoryInput {
     product_id: number;

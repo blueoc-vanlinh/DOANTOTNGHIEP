@@ -5,7 +5,7 @@ from prophet import Prophet
 from fastapi import HTTPException
 
 from sqlmodel import Session, select
-
+from datetime import datetime, timedelta
 from app.models.product import Product
 from app.models.transaction import StockTransaction
 
@@ -55,6 +55,57 @@ def ai_forecast_product(
         .sum()
         .reset_index()
     )
+    if len(df) < 2:
+        fake_result = []
+
+        last_quantity = float(
+                df["y"].iloc[-1]
+        ) if len(df) > 0 else 0.0
+
+        for i in range(1, 15):
+
+            fake_result.append({
+                "date": (
+                    datetime.now() + timedelta(days=i)
+                ).strftime("%Y-%m-%d"),
+
+                "predicted": round(
+                    last_quantity,
+                    2,
+                ),
+
+                "trend": round(
+                    last_quantity,
+                    2,
+                ),
+
+                "lower_bound": round(
+                    last_quantity * 0.9,
+                    2,
+                ),
+
+                "upper_bound": round(
+                    last_quantity * 1.1,
+                    2,
+                ),
+            })
+
+        return {
+            "product_id": product.id,
+
+            "product_name": product.name,
+
+            "forecast_days": 14,
+
+            "recommended_import": round(
+                last_quantity * 10,
+                2,
+            ),
+
+            "warning": "Not enough historical data for AI training",
+
+            "data": fake_result,
+        }
     model = Prophet(
         daily_seasonality=True,
     )

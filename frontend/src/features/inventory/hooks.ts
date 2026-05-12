@@ -4,6 +4,8 @@ import { getInventory, updateInventory } from "./api";
 export const useInventory = (params: {
     page: number;
     page_size: number;
+    search?: string;
+    warehouse_id?: number;
 }) => {
     return useQuery({
         queryKey: ["inventory", params],

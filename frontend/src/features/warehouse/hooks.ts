@@ -9,6 +9,7 @@ import {
 export const useWarehouses = (params: {
     page: number;
     page_size: number;
+    search?: string;
 }) => {
     return useQuery({
         queryKey: ["warehouses", params],

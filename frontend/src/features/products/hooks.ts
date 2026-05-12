@@ -37,6 +37,7 @@ export const useProducts = (params?: {
             total: 0,
             page: params?.page || 1,
             page_size: params?.pageSize || 10,
+            search: params?.search,
         },
 
         staleTime: 0,

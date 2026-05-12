@@ -35,6 +35,7 @@ export interface ProductsResponse {
     total: number;
     page: number;
     page_size: number;
+    search?: string;
 }
 
 export type ProductInput = {

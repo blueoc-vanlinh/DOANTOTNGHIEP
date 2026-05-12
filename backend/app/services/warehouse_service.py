@@ -18,11 +18,10 @@ def get_warehouses(
         query = query.where(
             or_(
                 Warehouse.name.ilike(f"%{search}%"),
-                Warehouse.address.ilike(f"%{search}%"),
+                Warehouse.location.ilike(f"%{search}%"),
             )
         )
 
-    # 🔽 SORT
     column = getattr(Warehouse, sort_by, Warehouse.created_at)
     query = query.order_by(column.desc() if sort_order == "desc" else column.asc())
 
@@ -32,7 +31,7 @@ def get_warehouses(
         count_query = count_query.where(
             or_(
                 Warehouse.name.ilike(f"%{search}%"),
-                Warehouse.address.ilike(f"%{search}%"),
+                Warehouse.location.ilike(f"%{search}%"),
             )
         )
 

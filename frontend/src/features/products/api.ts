@@ -13,6 +13,7 @@ export const getProducts = async (
         total: data.total ?? data.data?.total ?? 0,
         page: data.page ?? data.data?.page ?? 1,
         page_size: data.page_size ?? data.data?.page_size ?? 10,
+        search: data.search ?? data.data?.search ?? "",
     };
 };
 

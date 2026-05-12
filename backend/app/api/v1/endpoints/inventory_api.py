@@ -5,6 +5,7 @@ from typing import Optional
 
 from app.db.session import get_session
 from app.services.inventory_service import (
+    check_product_stock,
     get_inventories,
     get_inventory_with_details,
     increase_stock,
@@ -23,16 +24,16 @@ def get_all_inventory(
     warehouse_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    pageSize: int = Query(10, ge=1, le=100),
+    page_size: int = Query(10, ge=1, le=1000),
 ):
-    skip = (page - 1) * pageSize
+    skip = (page - 1) * page_size
     return get_inventories(
         session=session,
         product_id=product_id,
         warehouse_id=warehouse_id,
         search=search,
         skip=skip,
-        limit=pageSize,
+        limit=page_size,
     )
 
 
@@ -117,3 +118,15 @@ def soft_delete_inventory(inventory_id: int, session: Session = Depends(get_sess
     session.commit()
 
     return {"message": "Inventory has been soft deleted"}
+
+@router.get("/check-stock")
+def check_stock(
+    product_id: int,
+    warehouse_id: int,
+    session: Session = Depends(get_session),
+):
+    return check_product_stock(
+        session,
+        product_id,
+        warehouse_id,
+    )
