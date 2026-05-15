@@ -6,9 +6,6 @@ from app.services.transaction_service import create_transaction
 
 def create_import_order(session: Session, data: dict, user_id: int):
 
-    if "warehouse_id" not in data:
-        raise Exception("warehouse_id is required")
-
     if "items" not in data or not data["items"]:
         raise Exception("items is required")
 
@@ -47,14 +44,14 @@ def create_import_order(session: Session, data: dict, user_id: int):
             increase_stock(
                 session,
                 item["product_id"],
-                data["warehouse_id"],
+                item["warehouse_id"],
                 item["quantity"]
             )
 
             create_transaction(
                 session=session,
                 product_id=item["product_id"],
-                warehouse_id=data["warehouse_id"],
+                warehouse_id=item["warehouse_id"],
                 type="IMPORT",
                 quantity=item["quantity"],
                 reference_type="IMPORT_ORDER",

@@ -56,7 +56,7 @@ export default function ProductTable({
             width: 160,
             align: "right",
             render: (value: number) => (
-                <b style={{ color: "#1677ff", fontSize: "15px" }}>
+                <b style={{ color: "#334371", fontSize: "15px" }}>
                     {value?.toLocaleString("vi-VN")} ₫
                 </b>
             ),

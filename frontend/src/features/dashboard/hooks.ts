@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-    getDashboardData,
-} from "./api";
 
-export const useDashboardData = () => {
-    return useQuery({
-        queryKey: ["dashboard"],
-        queryFn: getDashboardData,
-    });
-};
+import { getDashboard } from "./api";
 
+export const useDashboardData =
+    () => {
+        return useQuery({
+            queryKey: ["dashboard"],
+
+            queryFn: getDashboard,
+
+            staleTime: 1000 * 60,
+        });
+    };

@@ -63,7 +63,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #1677ff 0%, #4096ff 100%)",
+          background: "linear-gradient(135deg, #334371 0%, #4096ff 100%)",
           color: "#fff",
           fontWeight: 700,
           fontSize: collapsed ? "22px" : "21px",

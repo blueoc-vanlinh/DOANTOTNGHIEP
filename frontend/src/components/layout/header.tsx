@@ -123,7 +123,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, setCollapsed }) => {
             <Avatar
               size={42}
               style={{
-                backgroundColor: "#1677ff",
+                backgroundColor: "#334371",
                 boxShadow: "0 0 0 3px rgba(22, 119, 255, 0.15)",
               }}
             >

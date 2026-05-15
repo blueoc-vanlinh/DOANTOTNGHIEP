@@ -184,9 +184,9 @@ export default function ForecastPage() {
               <Line
                 type="monotone"
                 dataKey="predicted"
-                stroke="#1677ff"
+                stroke="#334371"
                 strokeWidth={3}
-                name="AI Prediction"
+                name="Dự đoán AI"
               />
 
               <Line
@@ -194,7 +194,7 @@ export default function ForecastPage() {
                 dataKey="trend"
                 stroke="#52c41a"
                 strokeWidth={2}
-                name="Trend"
+                name="Xu hướng"
               />
 
               <Line
@@ -203,7 +203,7 @@ export default function ForecastPage() {
                 stroke="#faad14"
                 strokeDasharray="5 5"
                 dot={false}
-                name="Upper Bound"
+                name="Giới hạn trên"
               />
 
               <Line
@@ -212,7 +212,7 @@ export default function ForecastPage() {
                 stroke="#ff4d4f"
                 strokeDasharray="5 5"
                 dot={false}
-                name="Lower Bound"
+                name="Giới hạn dưới"
               />
             </LineChart>
           </ResponsiveContainer>

@@ -47,7 +47,7 @@ export default function TransactionTable({
             dataIndex: "product_name",
             width: 220,
             render: (name: string) => (
-                <strong style={{ color: "#1677ff" }}>{name}</strong>
+                <strong style={{ color: "#334371" }}>{name}</strong>
             ),
         },
 
@@ -93,7 +93,7 @@ export default function TransactionTable({
             render: (val: number) => (
                 <b
                     style={{
-                        color: val > 0 ? "#1677ff" : "#ff4d4f",
+                        color: val > 0 ? "#334371" : "#ff4d4f",
                     }}
                 >
                     {val.toLocaleString()}
