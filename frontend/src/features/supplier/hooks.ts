@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+} from "@tanstack/react-query";
+
 import {
     getSuppliers,
     createSupplier,
@@ -6,36 +11,76 @@ import {
     deleteSupplier,
 } from "./api";
 
-export const useSuppliers = (params: {
-    page: number;
-    page_size: number;
-}) => {
+export const useSuppliers = (
+    params?: {
+        page?: number;
+        page_size?: number;
+        search?: string;
+    }
+) => {
     return useQuery({
-        queryKey: ["suppliers", params],
-        queryFn: () => getSuppliers(params),
+        queryKey: [
+            "suppliers",
+            params,
+        ],
+
+        queryFn: () =>
+            getSuppliers(params),
+
+        staleTime: 1000 * 60,
     });
 };
 
-export const useCreateSupplier = () => {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: createSupplier,
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
-    });
-};
+export const useCreateSupplier =
+    () => {
+        const qc =
+            useQueryClient();
 
-export const useUpdateSupplier = () => {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: updateSupplier,
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
-    });
-};
+        return useMutation({
+            mutationFn:
+                createSupplier,
 
-export const useDeleteSupplier = () => {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: deleteSupplier,
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
-    });
-};
+            onSuccess: () =>
+                qc.invalidateQueries({
+                    queryKey: [
+                        "suppliers",
+                    ],
+                }),
+        });
+    };
+
+export const useUpdateSupplier =
+    () => {
+        const qc =
+            useQueryClient();
+
+        return useMutation({
+            mutationFn:
+                updateSupplier,
+
+            onSuccess: () =>
+                qc.invalidateQueries({
+                    queryKey: [
+                        "suppliers",
+                    ],
+                }),
+        });
+    };
+
+export const useDeleteSupplier =
+    () => {
+        const qc =
+            useQueryClient();
+
+        return useMutation({
+            mutationFn:
+                deleteSupplier,
+
+            onSuccess: () =>
+                qc.invalidateQueries({
+                    queryKey: [
+                        "suppliers",
+                    ],
+                }),
+        });
+    };

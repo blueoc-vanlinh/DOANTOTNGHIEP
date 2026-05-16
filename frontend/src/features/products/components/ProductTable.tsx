@@ -1,4 +1,3 @@
-// src/pages/products/components/ProductTable.tsx
 import { Space, Badge, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 

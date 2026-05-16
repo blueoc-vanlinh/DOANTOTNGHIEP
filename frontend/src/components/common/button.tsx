@@ -23,8 +23,17 @@ const Button: FC<CustomButtonProps> = ({
   style,
   className,
   block = false,
+  danger = false,
   ...rest
 }) => {
+  const dangerStyle = danger
+    ? {
+      backgroundColor: "#8b0000",
+      borderColor: "#8b0000",
+      color: "#ffffff",
+    }
+    : {};
+
   const content = (
     <>
       {iconPosition === "start" && icon}
@@ -45,6 +54,7 @@ const Button: FC<CustomButtonProps> = ({
       size={size}
       block={block}
       className={className}
+      danger={danger}
       style={{
         borderRadius: "8px",
         fontWeight: 500,
@@ -52,9 +62,10 @@ const Button: FC<CustomButtonProps> = ({
         alignItems: "center",
         justifyContent: "center",
         padding: size === "large" ? "0 24px" : size === "small" ? "0 12px" : "0 20px",
+        ...dangerStyle,
         ...style,
       }}
-      icon={iconPosition === "start" ? icon : undefined} // Antd vẫn cần icon này để xử lý loading
+      icon={iconPosition === "start" ? icon : undefined}
       {...rest}
     >
       {content}

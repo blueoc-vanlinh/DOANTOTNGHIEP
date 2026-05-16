@@ -28,7 +28,7 @@ const ModalConfirm = ({
 }: ModalConfirmProps): void => {
   Modal.confirm({
     title,
-    icon: <ExclamationCircleFilled style={{ color: "#ff4d4f" }} />,
+    icon: <ExclamationCircleFilled style={{ color: "#8b0000" }} />,
     content,
     okText,
     cancelText,

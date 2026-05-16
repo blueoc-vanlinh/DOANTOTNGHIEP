@@ -227,12 +227,12 @@ export default function DashboardPage() {
                             prefix={
                                 <DownloadOutlined
                                     style={{
-                                        color: "#ff4d4f",
+                                        color: "#8b0000",
                                     }}
                                 />
                             }
                             valueStyle={{
-                                color: "#ff4d4f",
+                                color: "#8b0000",
                                 fontWeight: 600,
                             }}
                         />
@@ -342,7 +342,7 @@ export default function DashboardPage() {
                             <Line
                                 type="monotone"
                                 dataKey="export"
-                                stroke="#ff4d4f"
+                                stroke="#8b0000"
                                 strokeWidth={3}
                                 name="Xuất"
                             />

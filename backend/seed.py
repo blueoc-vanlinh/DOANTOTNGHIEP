@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import text
 from sqlmodel import Session, SQLModel
@@ -427,21 +427,48 @@ def seed_import_export_orders(session: Session, suppliers: list[Supplier], users
 
 
 def seed_stock_transactions(session: Session, products: list[Product], warehouses: list[Warehouse], users: list[User]):
-    transaction_types = ["IMPORT", "EXPORT", "ADJUST"]
-    transactions = [
-        StockTransaction(
-            product_id=products[i % len(products)].id,
-            warehouse_id=warehouses[i % len(warehouses)].id,
-            type=transaction_types[i % len(transaction_types)],
-            quantity=10 + i * 2,
-            balance_after=100 + i * 5,
-            reference_type="IMPORT_ORDER" if i % 2 == 0 else "EXPORT_ORDER",
-            reference_id=i,
-            created_by=users[4].id if i % 2 == 0 else users[5].id,
-            note=f"Giao dịch hàng tồn kho {i}",
+    today = datetime.utcnow()
+    transactions = []
+
+    for i in range(1, 2401):
+        product = products[i % len(products)]
+        warehouse = warehouses[i % len(warehouses)]
+
+        if i % 10 == 0:
+            transaction_type = "ADJUST"
+        elif i % 2 == 0:
+            transaction_type = "EXPORT"
+        else:
+            transaction_type = "IMPORT"
+
+        created_at = today - timedelta(days=(i % 180))
+        quantity = 5 + (i * 3) % 50
+        balance_after = 50 + (i * 7) % 250
+        reference_type = (
+            "IMPORT_ORDER" if transaction_type == "IMPORT"
+            else "EXPORT_ORDER" if transaction_type == "EXPORT"
+            else "MANUAL"
         )
-        for i in range(1, 201)
-    ]
+        created_by = (
+            users[4].id if transaction_type == "IMPORT"
+            else users[5].id if transaction_type == "EXPORT"
+            else users[6].id
+        )
+
+        transactions.append(
+            StockTransaction(
+                product_id=product.id,
+                warehouse_id=warehouse.id,
+                type=transaction_type,
+                quantity=quantity,
+                balance_after=balance_after,
+                reference_type=reference_type,
+                reference_id=i if transaction_type in ("IMPORT", "EXPORT") else None,
+                created_by=created_by,
+                note=f"Giao dịch hàng tồn kho {i}",
+                created_at=created_at,
+            )
+        )
 
     session.add_all(transactions)
     session.commit()
@@ -581,7 +608,7 @@ def main():
     print("  - 100 Tồn kho")
     print("  - 50 Đơn nhập hàng + 150 Chi tiết đơn nhập")
     print("  - 50 Đơn xuất hàng + 150 Chi tiết đơn xuất")
-    print("  - 200 Giao dịch hàng tồn kho")
+    print("  - 2.400 Giao dịch hàng tồn kho")
     print("  - 200 Kết quả dự báo")
     print("  - 200 Thống kê hàng tồn kho hàng ngày")
     print("  - 100 Thông báo")

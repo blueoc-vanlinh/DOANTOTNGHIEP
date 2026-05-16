@@ -5,6 +5,7 @@ import {
   InputNumber,
   Card,
   message,
+  notification,
 } from "antd";
 
 import Button from "@/components/common/button";
@@ -48,7 +49,7 @@ export default function ImportPage() {
   const { data: supplierRes } =
     useSuppliers({
       page: 1,
-      page_size: 999,
+      page_size: 100,
     });
 
   const suppliers =
@@ -58,7 +59,7 @@ export default function ImportPage() {
   const { data: warehouseRes } =
     useWarehouses({
       page: 1,
-      page_size: 999,
+      page_size: 100,
     });
 
   const warehouses =
@@ -68,7 +69,7 @@ export default function ImportPage() {
   const { data: productsRes } =
     useProducts({
       page: 1,
-      pageSize: 999,
+      pageSize: 100,
     });
 
   const products =
@@ -84,8 +85,14 @@ export default function ImportPage() {
         unit_cost: 0,
       },
     ]);
-  };
+    notification.success({
+      message:
+        "Thêm sản phẩm thành công",
 
+      description:
+        "Bạn có thể tiếp tục thêm sản phẩm khác.",
+    });
+  };
   const removeItem = (
     index: number
   ) => {

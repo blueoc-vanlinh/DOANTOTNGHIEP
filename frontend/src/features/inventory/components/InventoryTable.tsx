@@ -56,7 +56,7 @@ export default function InventoryTable({
             width: 160,
             sorter: (a, b) => a.quantity - b.quantity,
             render: (qty: number) => (
-                <b style={{ fontSize: "16px", color: qty > 0 ? "#52c41a" : "#ff4d4f" }}>
+                <b style={{ fontSize: "16px", color: qty > 0 ? "#52c41a" : "#8b0000" }}>
                     {qty.toLocaleString()}
                 </b>
             ),

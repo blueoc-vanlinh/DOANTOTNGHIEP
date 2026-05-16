@@ -209,7 +209,7 @@ export default function ForecastPage() {
               <Line
                 type="monotone"
                 dataKey="lower_bound"
-                stroke="#ff4d4f"
+                stroke="#8b0000"
                 strokeDasharray="5 5"
                 dot={false}
                 name="Giới hạn dưới"

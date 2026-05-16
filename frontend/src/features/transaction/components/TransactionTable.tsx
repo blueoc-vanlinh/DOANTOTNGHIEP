@@ -73,7 +73,7 @@ export default function TransactionTable({
                             color: isImport
                                 ? "#52c41a"
                                 : isExport
-                                    ? "#ff4d4f"
+                                    ? "#8b0000"
                                     : "#fa8c16",
                         }}
                     >
@@ -93,7 +93,7 @@ export default function TransactionTable({
             render: (val: number) => (
                 <b
                     style={{
-                        color: val > 0 ? "#334371" : "#ff4d4f",
+                        color: val > 0 ? "#334371" : "#8b0000",
                     }}
                 >
                     {val.toLocaleString()}

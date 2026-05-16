@@ -25,7 +25,7 @@ export const Label: FC<LabelProps> = ({
         >
             {children}
             {required && (
-                <span style={{ color: "#ff4d4f", marginLeft: 4 }}>*</span>
+                <span style={{ color: "#8b0000", marginLeft: 4 }}>*</span>
             )}
         </span>
     );
