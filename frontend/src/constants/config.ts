@@ -6,5 +6,7 @@ const portMap: Record<string, string> = {
 
 const backendPort = portMap[window.location.port] || "8000";
 
-export const BASE_URL =
+export const VITE_API_URL =
     `${window.location.protocol}//${window.location.hostname}:${backendPort}/api/v1`;
+
+export const BASE_URL = VITE_API_URL;

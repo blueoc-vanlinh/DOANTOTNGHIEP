@@ -10,3 +10,18 @@ export interface ExportInput {
 
     items: ExportItem[];
 }
+
+export interface ExportResponse {
+    order: {
+        id: number;
+        customer_name: string;
+        total_amount: number;
+        status: string;
+    };
+    invoice: {
+        id: number;
+        invoice_number: string;
+        grand_total: number;
+        status: string;
+    };
+}

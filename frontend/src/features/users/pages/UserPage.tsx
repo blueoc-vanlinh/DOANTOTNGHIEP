@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { message } from "antd";
+import { Input, message } from "antd";
+import { useDebounce } from "use-debounce";
 
 import Button from "@/components/common/button";
 import LoadingPage from "@/components/common/LoadingPage";
@@ -30,7 +31,8 @@ export default function UsersPage() {
 
     const [pageSize, setPageSize] = useState(10);
 
-    const [search] = useState("");
+    const [search, setSearch] = useState("");
+    const [debouncedSearch] = useDebounce(search, 500);
 
     const [modalOpen, setModalOpen] =
         useState(false);
@@ -45,7 +47,7 @@ export default function UsersPage() {
     } = useUsers({
         page,
         page_size: pageSize,
-        search,
+        search: debouncedSearch,
     });
 
     const users = data?.items || [];
@@ -135,6 +137,18 @@ export default function UsersPage() {
                     + Thêm tài khoản
                 </Button>
 
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+                <Input.Search
+                    allowClear
+                    value={search}
+                    placeholder="Tìm theo tên hoặc email tài khoản"
+                    onChange={(event) => {
+                        setSearch(event.target.value);
+                        setPage(1);
+                    }}
+                />
             </div>
 
 

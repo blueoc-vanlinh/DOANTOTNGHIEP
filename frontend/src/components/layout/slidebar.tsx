@@ -6,14 +6,19 @@ import {
   UploadOutlined,
   DownloadOutlined,
   LineChartOutlined,
+  RobotOutlined,
+  BarcodeOutlined,
+  FileTextOutlined,
   TagsOutlined,
   UserSwitchOutlined,
+  SafetyCertificateOutlined,
   HomeOutlined,
   SwapOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, productsUrl, suppliersUrl, transactionsUrl, usersUrl, warehouseUrl } from "@/routes/urls";
+import { aiDataUrl, categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, invoicesUrl, productsUrl, rolesUrl, suppliersUrl, transactionsUrl, usersUrl, warehouseAutomationUrl, warehouseUrl } from "@/routes/urls";
 import type { FC } from "react";
+import { useAuthStore } from "@/store/auth.store";
 
 const { Sider } = Layout;
 
@@ -24,6 +29,8 @@ interface SidebarProps {
 const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.roles?.includes("Admin");
 
   const menuItems = [
     { key: dashboardUrl, icon: <DashboardOutlined />, label: "Tổng quan" },
@@ -35,9 +42,13 @@ const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
     { key: transactionsUrl, icon: <SwapOutlined />, label: "Giao dịch" },
     { key: importUrl, icon: <UploadOutlined />, label: "Nhập kho" },
     { key: exportUrl, icon: <DownloadOutlined />, label: "Xuất kho" },
+    { key: invoicesUrl, icon: <FileTextOutlined />, label: "Hóa đơn" },
     { key: forecastUrl, icon: <LineChartOutlined />, label: "Dự báo AI" },
-    { key: usersUrl, icon: <UserSwitchOutlined />, label: "Người dùng" },
-  ];
+    { key: aiDataUrl, icon: <RobotOutlined />, label: "Dữ liệu AI", adminOnly: true },
+    { key: warehouseAutomationUrl, icon: <BarcodeOutlined />, label: "Tự động kho", adminOnly: true },
+    { key: usersUrl, icon: <UserSwitchOutlined />, label: "Nhân viên", adminOnly: true },
+    { key: rolesUrl, icon: <SafetyCertificateOutlined />, label: "Vai trò", adminOnly: true },
+  ].filter((item) => isAdmin || !item.adminOnly);
   return (
     <Sider
       trigger={null}

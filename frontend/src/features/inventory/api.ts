@@ -10,6 +10,8 @@ export interface InventoryResponse {
 export const getInventory = async (params: {
     page: number;
     page_size: number;
+    search?: string;
+    warehouse_id?: number;
 }): Promise<InventoryResponse> => {
     const res = await apiClient.get("/inventory/", { params });
     return res.data;

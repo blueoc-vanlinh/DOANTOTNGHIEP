@@ -5,10 +5,10 @@ from app.schemas.common import BaseSchema, PaginationMeta
 
 
 class UserBase(BaseSchema):
-    full_name: str
+    name: str
     email: EmailStr
-    phone: Optional[str] = None
-    is_active: bool = True
+    role_id: Optional[int] = None
+    status: str = "ACTIVE"
 
 
 class UserCreate(UserBase):
@@ -16,10 +16,11 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseSchema):
-    full_name: Optional[str] = None
-    phone: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    role_id: Optional[int] = None
+    status: Optional[str] = None
     password: Optional[str] = None
-    is_active: Optional[bool] = None
 
 
 class UserResponse(UserBase):

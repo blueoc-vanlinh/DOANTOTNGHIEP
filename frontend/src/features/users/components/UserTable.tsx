@@ -40,8 +40,9 @@ export default function UserTable({
         },
 
         {
-            title: "SĐT",
-            dataIndex: "phone",
+            title: "Vai trò",
+            dataIndex: "role_name",
+            render: (_: string, record) => record.role_name || `Role #${record.role_id || "-"}`,
         },
 
         {
@@ -82,7 +83,7 @@ export default function UserTable({
                         size="small"
                         onClick={() => onToggle(record.id)}
                     >
-                        {record.is_active ? "Khóa" : "Mở"}
+                        {record.status === "ACTIVE" ? "Khóa" : "Mở"}
                     </Button>
 
                     <Button

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { message } from "antd";
+import { Input, message } from "antd";
+import { useDebounce } from "use-debounce";
 
 import InventoryTable from "../components/InventoryTable";
 import InventoryFormModal from "../components/InventoryFormModal";
@@ -15,11 +16,14 @@ export default function InventoryPage() {
   // ✅ state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
 
   // ✅ API
   const { data, isLoading } = useInventory({
     page,
     page_size: pageSize,
+    search: debouncedSearch,
   });
 
   const inventory = data?.items || [];
@@ -63,6 +67,18 @@ export default function InventoryPage() {
         <h2 style={{ fontSize: 24, fontWeight: 600 }}>
           Quản lý Tồn kho ({total})
         </h2>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          allowClear
+          value={search}
+          placeholder="Tìm theo sản phẩm hoặc kho"
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setPage(1);
+          }}
+        />
       </div>
 
       {inventory.length > 0 ? (

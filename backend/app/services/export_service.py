@@ -1,6 +1,7 @@
 from sqlmodel import Session
 from app.models.exportorder import ExportOrder, ExportOrderItem
 from app.services.inventory_service import decrease_stock, get_inventory
+from app.services.invoice_service import create_invoice_from_order
 from app.services.transaction_service import create_transaction
 
 
@@ -62,8 +63,17 @@ def create_export_order(session: Session, data: dict, user_id: int):
 
         session.commit()
         session.refresh(order)
+        invoice = create_invoice_from_order(
+            session=session,
+            invoice_type="EXPORT",
+            order_id=order.id,
+            user_id=user_id,
+        )
 
-        return order
+        return {
+            "order": order,
+            "invoice": invoice,
+        }
 
     except Exception as e:
         session.rollback()

@@ -33,3 +33,4 @@ typing_extensions==4.15.0
 uvicorn==0.42.0
 virtualenv==21.2.0
 gunicorn
+locust

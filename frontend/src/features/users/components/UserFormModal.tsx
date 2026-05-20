@@ -1,9 +1,10 @@
-import { Modal, Form, Input } from "antd";
+import { Modal, Form, Input, Select } from "antd";
 
 import type {
     User,
     UserInput,
 } from "../types";
+import { useRoles } from "@/features/roles/hooks";
 
 
 interface Props {
@@ -29,6 +30,7 @@ export default function UserFormModal({
 }: Props) {
 
     const [form] = Form.useForm();
+    const { data: roles } = useRoles();
 
     return (
         <Modal
@@ -57,7 +59,7 @@ export default function UserFormModal({
 
                 <Form.Item
                     label="Họ tên"
-                    name="full_name"
+                    name="name"
 
                     rules={[
                         {
@@ -84,10 +86,31 @@ export default function UserFormModal({
                 </Form.Item>
 
                 <Form.Item
-                    label="Số điện thoại"
-                    name="phone"
+                    label="Vai trò"
+                    name="role_id"
+                    rules={[
+                        {
+                            required: true,
+                            message: "Chọn vai trò",
+                        },
+                    ]}
                 >
-                    <Input />
+                    <Select
+                        placeholder="Chọn vai trò"
+                        options={(roles || []).map((role) => ({
+                            value: role.id,
+                            label: role.name,
+                        }))}
+                    />
+                </Form.Item>
+
+                <Form.Item label="Trạng thái" name="status" initialValue="ACTIVE">
+                    <Select
+                        options={[
+                            { value: "ACTIVE", label: "Hoạt động" },
+                            { value: "INACTIVE", label: "Khóa" },
+                        ]}
+                    />
                 </Form.Item>
 
                 {!editing && (

@@ -110,9 +110,9 @@ export default function ExportPage() {
       };
 
       mutation.mutate(payload, {
-        onSuccess: () => {
+        onSuccess: (result) => {
           message.success(
-            "Xuất kho thành công"
+            `Xuất kho thành công. Hóa đơn ${result.invoice.invoice_number} đã được tạo tự động`
           );
 
           form.resetFields();

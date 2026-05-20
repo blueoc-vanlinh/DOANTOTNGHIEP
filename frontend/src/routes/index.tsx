@@ -8,12 +8,17 @@ import Inventory from "@/features/inventory/pages/InventoryPage";
 import ImportPage from "@/features/import/pages/ImportPage";
 import ExportPage from "@/features/export/pages/ExportPage";
 import ForecastPage from "@/features/forecast/pages/Forecastpage";
+import AiDataPage from "@/features/ai-data/pages/AiDataPage";
+import WarehouseAutomationPage from "@/features/warehouse-automation/pages/WarehouseAutomationPage";
+import InvoicePage from "@/features/invoices/pages/InvoicePage";
 import CategoryPage from "@/features/category/pages/CategoryPage";
 import SupplierPage from "@/features/supplier/pages/SupplierPage";
 import WarehousePage from "@/features/warehouse/pages/WarehousePage";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
+import RoleRoute from "./RoleRoute";
 import UsersPage from "@/features/users/pages/UserPage";
+import RolePage from "@/features/roles/pages/RolePage";
 import {
   homeUrl,
   error403Url,
@@ -25,10 +30,14 @@ import {
   importUrl,
   exportUrl,
   forecastUrl,
+  aiDataUrl,
+  warehouseAutomationUrl,
+  invoicesUrl,
   suppliersUrl,
   transactionsUrl,
   loginUrl,
   usersUrl,
+  rolesUrl,
 
 } from "./urls";
 import TransactionPage from "@/features/transaction/pages/TransactionPage";
@@ -55,7 +64,16 @@ export const router = createBrowserRouter([
           { path: importUrl, element: <ImportPage /> },
           { path: exportUrl, element: <ExportPage /> },
           { path: forecastUrl, element: <ForecastPage /> },
-          { path: usersUrl, element: <UsersPage /> },
+          { path: invoicesUrl, element: <InvoicePage /> },
+          {
+            element: <RoleRoute allowedRoles={["Admin"]} />,
+            children: [
+              { path: aiDataUrl, element: <AiDataPage /> },
+              { path: warehouseAutomationUrl, element: <WarehouseAutomationPage /> },
+              { path: usersUrl, element: <UsersPage /> },
+              { path: rolesUrl, element: <RolePage /> },
+            ],
+          },
         ],
       },
     ],

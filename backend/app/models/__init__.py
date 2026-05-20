@@ -11,3 +11,5 @@ from .notification import Notification as Notification
 from .auditlog import AuditLog as AuditLog
 from .warehouse import Warehouse as Warehouse
 from .supplier import Supplier as Supplier
+from .invoice import Invoice as Invoice, InvoiceItem as InvoiceItem
+from .external_factor import ExternalFactor as ExternalFactor

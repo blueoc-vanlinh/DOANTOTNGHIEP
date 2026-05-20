@@ -3,7 +3,6 @@ from app.api.v1.api import api_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
 app.include_router(api_router, prefix="/api/v1")
 app.add_middleware(
     CORSMiddleware,
@@ -17,3 +16,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/ai")
+async def ai_test():
+    from openai import OpenAI
+
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-5",
+        messages=[
+            {
+                "role": "user",
+                "content": "hello from FastAPI"
+            }
+        ]
+    )
+
+    return {
+        "response": response.choices[0].message.content
+    }

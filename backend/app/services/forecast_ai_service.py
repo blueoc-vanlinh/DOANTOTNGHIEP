@@ -6,6 +6,8 @@ from fastapi import HTTPException
 
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
+from collections import defaultdict
+from app.models.external_factor import ExternalFactor
 from app.models.product import Product
 from app.models.transaction import StockTransaction
 
@@ -55,6 +57,19 @@ def ai_forecast_product(
         .sum()
         .reset_index()
     )
+    df["ds"] = pd.to_datetime(df["ds"])
+    factor_map = _external_impact_by_date(session, product_id)
+    df["external_impact"] = df["ds"].dt.date.map(
+        lambda day: factor_map.get(day, 0.0)
+    )
+    history = [
+        {
+            "date": row["ds"].strftime("%Y-%m-%d"),
+            "actual": round(float(row["y"]), 2),
+            "external_impact": round(float(row["external_impact"]), 2),
+        }
+        for _, row in df.tail(60).iterrows()
+    ]
     if len(df) < 2:
         fake_result = []
 
@@ -104,15 +119,20 @@ def ai_forecast_product(
 
             "warning": "Not enough historical data for AI training",
 
+            "history": history,
+
             "data": fake_result,
         }
-    model = Prophet(
-        daily_seasonality=True,
-    )
+    model = Prophet(daily_seasonality=True)
+    if df["external_impact"].abs().sum() > 0:
+        model.add_regressor("external_impact")
 
     model.fit(df)
     future = model.make_future_dataframe(
         periods=30
+    )
+    future["external_impact"] = future["ds"].dt.date.map(
+        lambda day: factor_map.get(day, 0.0)
     )
 
     forecast = model.predict(future)
@@ -161,5 +181,32 @@ def ai_forecast_product(
 
         "recommended_import": recommended_import,
 
+        "model_used": "Prophet",
+
+        "external_factors_used": bool(
+            df["external_impact"].abs().sum() > 0
+        ),
+
+        "deep_learning_status": (
+            "Dataset prepared through /api/v1/ai-data/products/"
+            f"{product_id}/deep-learning-dataset. Train LSTM/Transformer "
+            "when at least 180 daily observations are available."
+        ),
+
+        "history": history,
+
         "data": result,
     }
+
+
+def _external_impact_by_date(session: Session, product_id: int):
+    factors = session.exec(
+        select(ExternalFactor).where(
+            (ExternalFactor.product_id == product_id) | (ExternalFactor.product_id.is_(None)),
+            ExternalFactor.is_deleted.is_(False),
+        )
+    ).all()
+    impact_by_date = defaultdict(float)
+    for factor in factors:
+        impact_by_date[factor.factor_date] += factor.impact_score
+    return impact_by_date

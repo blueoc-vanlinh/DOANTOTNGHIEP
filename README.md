@@ -67,3 +67,31 @@ $ docker exec -it dev_backend bash
 $ docker exec -it uat_backend bash
 
 docker exec -it inventory_db psql -U postgres
+
+## AI/data upgrades
+
+- Xem tổng số bản ghi dùng cho huấn luyện AI: `GET /api/v1/ai-data/overview`
+- Kiểm tra chất lượng dữ liệu theo sản phẩm: `GET /api/v1/ai-data/products/{product_id}/quality`
+- Xuất dataset dạng daily time series cho LSTM/Transformer: `GET /api/v1/ai-data/products/{product_id}/deep-learning-dataset`
+- Bổ sung yếu tố ngoại vi như giá, sự kiện, biến động thị trường: `POST /api/v1/ai-data/external-factors`
+
+Prophet hiện vẫn là baseline. Chỉ nên train LSTM/Transformer khi mỗi sản phẩm có ít nhất khoảng 180 ngày dữ liệu xuất kho thật.
+
+## Warehouse automation
+
+- Gợi ý tự động lập đơn mua hàng: `GET /api/v1/warehouse-automation/auto-po`
+- Gợi ý sắp xếp vị trí hàng theo tốc độ xuất kho: `GET /api/v1/warehouse-automation/slotting`
+- Tra cứu sản phẩm bằng barcode/QR payload: `GET /api/v1/warehouse-automation/barcode/{barcode}`
+
+## Invoices
+
+- Tạo hóa đơn thủ công: `POST /api/v1/invoices/`
+- Tạo hóa đơn từ phiếu nhập/xuất: `POST /api/v1/invoices/from-order/{IMPORT|EXPORT}/{order_id}`
+- Danh sách hóa đơn: `GET /api/v1/invoices/`
+
+## Load testing
+
+```bash
+pip install locust
+locust -f tests/load/locustfile.py --host http://127.0.0.1:8000
+```

@@ -1,7 +1,7 @@
 import apiClient from "@/lib/api";
-import type { ExportInput } from "./types";
+import type { ExportInput, ExportResponse } from "./types";
 
-export const createExport = async (data: ExportInput) => {
+export const createExport = async (data: ExportInput): Promise<ExportResponse> => {
     const res = await apiClient.post("/export/", data);
     return res.data;
 };

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { message } from "antd";
+import { Input, message } from "antd";
+import { useDebounce } from "use-debounce";
 
 import WarehouseTable from "../components/WarehouseTable";
 import WarehouseFormModal from "../components/WarehouseFormModal";
@@ -28,10 +29,13 @@ export default function WarehousePage() {
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+    const [debouncedSearch] = useDebounce(search, 500);
 
     const { data, isLoading } = useWarehouses({
         page,
         page_size: pageSize,
+        search: debouncedSearch,
     });
 
     const warehouses = data?.items || [];
@@ -110,6 +114,18 @@ export default function WarehousePage() {
                 <Button type="primary" onClick={handleCreate}>
                     + Thêm kho
                 </Button>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+                <Input.Search
+                    allowClear
+                    value={search}
+                    placeholder="Tìm theo tên kho hoặc địa chỉ"
+                    onChange={(event) => {
+                        setSearch(event.target.value);
+                        setPage(1);
+                    }}
+                />
             </div>
 
             {warehouses.length > 0 ? (

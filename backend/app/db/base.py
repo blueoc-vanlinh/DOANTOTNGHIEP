@@ -5,5 +5,8 @@ from app.models import (
     Inventory as Inventory, 
     StockTransaction as StockTransaction, 
     ForecastResult as ForecastResult, 
-    DailyInventoryStats as DailyInventoryStats
+    DailyInventoryStats as DailyInventoryStats,
+    Invoice as Invoice,
+    InvoiceItem as InvoiceItem,
+    ExternalFactor as ExternalFactor,
 )

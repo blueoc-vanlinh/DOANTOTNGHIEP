@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Select, Space } from "antd";
+import { Input, Select, Space } from "antd";
+import { useDebounce } from "use-debounce";
 
 import TransactionTable from "../components/TransactionTable";
 import LoadingPage from "@/components/common/LoadingPage";
@@ -14,10 +15,13 @@ export default function TransactionPage() {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [filter, setFilter] = useState<TransactionType | "ALL">("ALL");
+    const [search, setSearch] = useState("");
+    const [debouncedSearch] = useDebounce(search, 500);
 
     const { data, isLoading } = useTransactions({
         page,
         page_size: pageSize,
+        search: debouncedSearch,
         type: filter === "ALL" ? undefined : filter,
     });
     const transactions = data?.items || [];
@@ -64,6 +68,18 @@ export default function TransactionPage() {
                         ]}
                     />
                 </Space>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+                <Input.Search
+                    allowClear
+                    value={search}
+                    placeholder="Tìm theo tên sản phẩm trong giao dịch"
+                    onChange={(event) => {
+                        setSearch(event.target.value);
+                        setPage(1);
+                    }}
+                />
             </div>
 
             {transactions.length > 0 ? (

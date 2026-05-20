@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import import_api, export_api, product_api, inventory_api, transaction_api, category_api, supplier_api, warehouse_api, user_api, dashboard_api, auth_api, forecast_api
+from app.api.v1.endpoints import import_api, export_api, product_api, inventory_api, transaction_api, category_api, supplier_api, warehouse_api, user_api, dashboard_api, auth_api, forecast_api, invoice_api, ai_data_api, warehouse_automation_api, role_api
 
 api_router = APIRouter()
 api_router.include_router(dashboard_api.router, prefix="/dashboard", tags=["Dashboard"])
@@ -12,5 +12,9 @@ api_router.include_router(category_api.router, prefix="/categories", tags=["Cate
 api_router.include_router(supplier_api.router, prefix="/suppliers", tags=["Suppliers"])
 api_router.include_router(warehouse_api.router, prefix="/warehouses", tags=["Warehouses"])
 api_router.include_router(user_api.router, prefix="/users", tags=["Users"])
+api_router.include_router(role_api.router, prefix="/roles", tags=["Roles"])
 api_router.include_router(forecast_api.router, prefix="/forecast", tags=["Forecast"])
 api_router.include_router(auth_api.router, prefix="/auth", tags=["Auth"])
+api_router.include_router(invoice_api.router, prefix="/invoices", tags=["Invoices"])
+api_router.include_router(ai_data_api.router, prefix="/ai-data", tags=["AI Data"])
+api_router.include_router(warehouse_automation_api.router, prefix="/warehouse-automation", tags=["Warehouse Automation"])

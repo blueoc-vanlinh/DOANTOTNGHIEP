@@ -40,7 +40,10 @@ export default function ForecastPage() {
   });
 
   const products = productsRes?.items || [];
-  const chartData = data?.data || [];
+  const chartData = [
+    ...(data?.history || []),
+    ...(data?.data || []),
+  ];
 
   return (
     <div>
@@ -120,9 +123,22 @@ export default function ForecastPage() {
         />
       )}
 
+      {data?.deep_learning_status && (
+        <Alert
+          type={data.external_factors_used ? "success" : "info"}
+          showIcon
+          style={{ marginBottom: 24 }}
+          message={`Mô hình hiện tại: ${data.model_used || "Prophet"}`}
+          description={`${data.external_factors_used
+            ? "Dự báo đã sử dụng yếu tố ngoại vi."
+            : "Chưa có yếu tố ngoại vi phù hợp cho sản phẩm này."
+            } ${data.deep_learning_status}`}
+        />
+      )}
+
       {data && (
-        <Row gutter={16} style={{ marginBottom: 24 }}>
-          <Col span={8}>
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          <Col xs={24} md={8}>
             <Card>
               <Statistic
                 title="Sản phẩm"
@@ -131,7 +147,7 @@ export default function ForecastPage() {
             </Card>
           </Col>
 
-          <Col span={8}>
+          <Col xs={24} md={8}>
             <Card>
               <Statistic
                 title="Số ngày dự báo"
@@ -140,11 +156,29 @@ export default function ForecastPage() {
             </Card>
           </Col>
 
-          <Col span={8}>
+          <Col xs={24} md={8}>
             <Card>
               <Statistic
                 title="Đề xuất nhập hàng"
                 value={data.recommended_import}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Yếu tố ngoại vi"
+                value={data.external_factors_used ? "Có" : "Chưa có"}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Ngày dữ liệu thực tế"
+                value={data.history?.length || 0}
               />
             </Card>
           </Col>
@@ -180,6 +214,15 @@ export default function ForecastPage() {
               <Tooltip />
 
               <Legend />
+
+              <Line
+                type="monotone"
+                dataKey="actual"
+                stroke="#1677ff"
+                strokeWidth={3}
+                name="Thực tế"
+                connectNulls={false}
+              />
 
               <Line
                 type="monotone"

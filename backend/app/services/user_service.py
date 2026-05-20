@@ -4,6 +4,7 @@ from sqlalchemy import or_, func, desc
 from fastapi import HTTPException
 
 from app.models.user import User
+from app.models.auth import Role
 from app.core.security import hash_password
 
 def get_users(
@@ -21,16 +22,15 @@ def get_users(
     if search:
         query = query.where(
             or_(
-                User.full_name.ilike(f"%{search}%"),
+                User.name.ilike(f"%{search}%"),
                 User.email.ilike(f"%{search}%"),
-                User.phone.ilike(f"%{search}%"),
             )
         )
     if is_active is not None:
-        query = query.where(User.is_active == is_active)
+        query = query.where(User.status == ("ACTIVE" if is_active else "INACTIVE"))
     allowed_sort_fields = [
         "id",
-        "full_name",
+        "name",
         "email",
         "created_at",
     ]
@@ -50,14 +50,13 @@ def get_users(
     if search:
         count_query = count_query.where(
             or_(
-                User.full_name.ilike(f"%{search}%"),
+                User.name.ilike(f"%{search}%"),
                 User.email.ilike(f"%{search}%"),
-                User.phone.ilike(f"%{search}%"),
             )
         )
 
     if is_active is not None:
-        count_query = count_query.where(User.is_active == is_active)
+        count_query = count_query.where(User.status == ("ACTIVE" if is_active else "INACTIVE"))
 
     total = session.exec(count_query).one()
     offset = (page - 1) * page_size
@@ -65,9 +64,18 @@ def get_users(
     users = session.exec(
         query.offset(offset).limit(page_size)
     ).all()
+    role_ids = [user.role_id for user in users if user.role_id]
+    roles = session.exec(select(Role).where(Role.id.in_(role_ids))).all() if role_ids else []
+    role_map = {role.id: role.name for role in roles}
 
     return {
-        "items": users,
+        "items": [
+            {
+                **user.model_dump(),
+                "role_name": role_map.get(user.role_id),
+            }
+            for user in users
+        ],
         "meta": {
             "total": total,
             "page": page,
@@ -103,19 +111,6 @@ def create_user(
             status_code=400,
             detail="Email already exists",
         )
-    if data.get("phone"):
-        existing_phone = session.exec(
-            select(User).where(
-                User.phone == data["phone"],
-                ~User.is_deleted,
-            )
-        ).first()
-
-        if existing_phone:
-            raise HTTPException(
-                status_code=400,
-                detail="Phone already exists",
-            )
     data["password"] = hash_password(data["password"])
 
     user = User(**data)
@@ -150,20 +145,6 @@ def update_user(
             raise HTTPException(
                 status_code=400,
                 detail="Email already exists",
-            )
-    if data.get("phone"):
-        existing_phone = session.exec(
-            select(User).where(
-                User.phone == data["phone"],
-                User.id != user_id,
-                ~User.is_deleted,
-            )
-        ).first()
-
-        if existing_phone:
-            raise HTTPException(
-                status_code=400,
-                detail="Phone already exists",
             )
     if data.get("password"):
         data["password"] = hash_password(data["password"])

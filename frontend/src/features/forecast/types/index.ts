@@ -4,6 +4,8 @@ export interface ForecastPoint {
     trend: number;
     lower_bound: number;
     upper_bound: number;
+    actual?: number;
+    external_impact?: number;
 }
 
 export interface ForecastResponse {
@@ -15,6 +17,10 @@ export interface ForecastResponse {
     recommended_import: number;
 
     warning?: string;
+    model_used?: string;
+    external_factors_used?: boolean;
+    deep_learning_status?: string;
+    history?: ForecastPoint[];
 
     data: ForecastPoint[];
 }

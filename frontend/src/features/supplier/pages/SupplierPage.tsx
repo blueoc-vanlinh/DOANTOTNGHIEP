@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { message } from "antd";
+import { Input, message } from "antd";
+import { useDebounce } from "use-debounce";
 
 import SupplierTable from "../components/SupplierTable";
 import SupplierFormModal from "../components/SupplierFormModal";
@@ -31,10 +32,13 @@ export default function SupplierPage() {
     };
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+    const [debouncedSearch] = useDebounce(search, 500);
 
     const { data, isLoading } = useSuppliers({
         page,
         page_size: pageSize,
+        search: debouncedSearch,
     });
 
     const suppliers = data?.items || [];
@@ -106,6 +110,17 @@ export default function SupplierPage() {
                 <Button type="primary" onClick={handleCreate}>
                     + Thêm nhà cung cấp
                 </Button>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+                <Input.Search
+                    allowClear
+                    value={search}
+                    placeholder="Tìm theo tên, email hoặc số điện thoại"
+                    onChange={(event) => {
+                        setSearch(event.target.value);
+                        setPage(1);
+                    }}
+                />
             </div>
             {suppliers.length > 0 ? (
                 <>

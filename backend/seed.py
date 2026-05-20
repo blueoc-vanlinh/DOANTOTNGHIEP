@@ -1,16 +1,18 @@
 from datetime import date, datetime, timedelta
 
 from sqlalchemy import text
-from sqlmodel import Session, SQLModel
+from sqlmodel import Session, SQLModel, select
 
 from app.db.session import engine
 from app.models.auth import Permission, Role, RolePermission
 from app.models.auditlog import AuditLog
 from app.models.product import Category
 from app.models.exportorder import ExportOrder, ExportOrderItem
+from app.models.external_factor import ExternalFactor
 from app.models.forecast import ForecastResult
 from app.models.importorder import ImportOrder, ImportOrderItem
 from app.models.inventory import Inventory
+from app.models.invoice import Invoice, InvoiceItem
 from app.models.notification import Notification
 from app.models.product import Product
 from app.models.supplier import Supplier
@@ -57,9 +59,13 @@ def seed_roles_permissions(session: Session):
     session.commit()
 
     role_permissions = [
-        RolePermission(role_id=roles[i].id, permission_id=permissions[i].id)
-        for i in range(10)
+        RolePermission(role_id=roles[0].id, permission_id=permission.id)
+        for permission in permissions
     ]
+    role_permissions.extend(
+        RolePermission(role_id=roles[i].id, permission_id=permissions[i].id)
+        for i in range(1, 10)
+    )
 
     session.add_all(role_permissions)
     session.commit()
@@ -475,6 +481,93 @@ def seed_stock_transactions(session: Session, products: list[Product], warehouse
     return transactions
 
 
+def seed_ai_training_transactions(session: Session, products: list[Product], warehouses: list[Warehouse], users: list[User]):
+    today = datetime.utcnow()
+    transactions = []
+
+    for product_index, product in enumerate(products[:12]):
+        warehouse = warehouses[product_index % len(warehouses)]
+        balance = 400 + product_index * 30
+
+        for day in range(210, 0, -1):
+            created_at = today - timedelta(days=day)
+            weekday_factor = 1.25 if created_at.weekday() in (4, 5, 6) else 1.0
+            seasonal_factor = 1.4 if created_at.month in (11, 12, 1, 2) else 1.0
+            quantity = int((8 + product_index * 2 + (day % 9)) * weekday_factor * seasonal_factor)
+            balance = max(balance - quantity, 0)
+
+            transactions.append(
+                StockTransaction(
+                    product_id=product.id,
+                    warehouse_id=warehouse.id,
+                    type="EXPORT",
+                    quantity=quantity,
+                    balance_after=balance,
+                    reference_type="AI_TRAINING_EXPORT",
+                    reference_id=day,
+                    created_by=users[5].id,
+                    note="Dữ liệu xuất kho lịch sử phục vụ huấn luyện AI",
+                    created_at=created_at,
+                )
+            )
+
+            if day % 21 == 0:
+                import_quantity = 180 + product_index * 10
+                balance += import_quantity
+                transactions.append(
+                    StockTransaction(
+                        product_id=product.id,
+                        warehouse_id=warehouse.id,
+                        type="IMPORT",
+                        quantity=import_quantity,
+                        balance_after=balance,
+                        reference_type="AI_TRAINING_IMPORT",
+                        reference_id=day,
+                        created_by=users[4].id,
+                        note="Bổ sung tồn kho định kỳ cho dữ liệu AI",
+                        created_at=created_at + timedelta(hours=1),
+                    )
+                )
+
+    session.add_all(transactions)
+    session.commit()
+    return transactions
+
+
+def seed_external_factors(session: Session, products: list[Product], warehouses: list[Warehouse]):
+    today = date.today()
+    factors = []
+
+    for i in range(1, 181):
+        factor_date = today - timedelta(days=i)
+        product = products[i % 12]
+        warehouse = warehouses[i % len(warehouses)]
+
+        factors.append(
+            ExternalFactor(
+                factor_date=factor_date,
+                factor_type="EVENT" if i % 3 == 0 else "PRICE" if i % 3 == 1 else "MARKET",
+                name=(
+                    "Khuyến mãi cuối tuần"
+                    if i % 3 == 0
+                    else "Biến động giá nhập"
+                    if i % 3 == 1
+                    else "Nhu cầu thị trường tăng"
+                ),
+                value=round(1.0 + (i % 12) * 0.05, 2),
+                impact_score=round(((i % 9) - 4) * 1.25, 2),
+                product_id=product.id if i % 5 != 0 else None,
+                warehouse_id=warehouse.id if i % 4 == 0 else None,
+                source="seed.py",
+                note="Dữ liệu yếu tố ngoại vi phục vụ forecast",
+            )
+        )
+
+    session.add_all(factors)
+    session.commit()
+    return factors
+
+
 def seed_forecast_results(session: Session, products: list[Product], warehouses: list[Warehouse]):
     today = date.today()
     forecasts = [
@@ -514,6 +607,84 @@ def seed_daily_inventory_stats(session: Session, products: list[Product], wareho
     session.add_all(stats)
     session.commit()
     return stats
+
+
+def seed_invoices(
+    session: Session,
+    import_orders: list[ImportOrder],
+    export_orders: list[ExportOrder],
+    users: list[User],
+):
+    invoices = []
+    invoice_items = []
+    issued_at = datetime(2026, 5, 20, 12, 30)
+
+    import_items = session.exec(select(ImportOrderItem)).all()
+    export_items = session.exec(select(ExportOrderItem)).all()
+
+    import_items_by_order: dict[int, list[ImportOrderItem]] = {}
+    for item in import_items:
+        import_items_by_order.setdefault(item.import_order_id, []).append(item)
+
+    export_items_by_order: dict[int, list[ExportOrderItem]] = {}
+    for item in export_items:
+        export_items_by_order.setdefault(item.export_order_id, []).append(item)
+
+    selected_orders = [
+        ("IMPORT", order, import_items_by_order.get(order.id, []))
+        for order in import_orders[:20]
+    ] + [
+        ("EXPORT", order, export_items_by_order.get(order.id, []))
+        for order in export_orders[:30]
+    ]
+
+    for index, (invoice_type, order, items) in enumerate(selected_orders):
+        invoice_time = issued_at + timedelta(minutes=index)
+        invoice = Invoice(
+            invoice_number=invoice_time.strftime("%H%M%d%m%Y"),
+            invoice_type=invoice_type,
+            order_id=order.id,
+            partner_name=(
+                f"Nhà cung cấp #{order.supplier_id}"
+                if invoice_type == "IMPORT"
+                else order.customer_name
+            ),
+            total_amount=0,
+            tax_amount=0,
+            discount_amount=0,
+            grand_total=0,
+            status="ISSUED",
+            issued_at=invoice_time,
+            created_by=users[9].id,
+        )
+        session.add(invoice)
+        session.flush()
+
+        total = 0
+        for item in items:
+            unit_price = item.unit_cost if invoice_type == "IMPORT" else item.price
+            line_total = item.quantity * unit_price
+            total += line_total
+            invoice_items.append(
+                InvoiceItem(
+                    invoice_id=invoice.id,
+                    product_id=item.product_id,
+                    description=f"Sản phẩm #{item.product_id}",
+                    quantity=item.quantity,
+                    unit_price=unit_price,
+                    line_total=line_total,
+                )
+            )
+
+        invoice.total_amount = total
+        invoice.tax_amount = round(total * 0.08, 2)
+        invoice.discount_amount = round(total * 0.02, 2) if index % 4 == 0 else 0
+        invoice.grand_total = invoice.total_amount + invoice.tax_amount - invoice.discount_amount
+        invoices.append(invoice)
+
+    session.add_all(invoice_items)
+    session.commit()
+    return invoices, invoice_items
 
 
 def seed_notifications(session: Session, users: list[User]):
@@ -592,10 +763,13 @@ def main():
         users = seed_users(session, roles)
         products = seed_products(session, categories)
         seed_inventory(session, products, warehouses)
-        seed_import_export_orders(session, suppliers, users, products)
+        import_orders, export_orders, _, _ = seed_import_export_orders(session, suppliers, users, products)
         seed_stock_transactions(session, products, warehouses, users)
+        seed_ai_training_transactions(session, products, warehouses, users)
+        seed_external_factors(session, products, warehouses)
         seed_forecast_results(session, products, warehouses)
         seed_daily_inventory_stats(session, products, warehouses)
+        seed_invoices(session, import_orders, export_orders, users)
         seed_notifications(session, users)
         seed_audit_logs(session, users)
 
@@ -609,8 +783,11 @@ def main():
     print("  - 50 Đơn nhập hàng + 150 Chi tiết đơn nhập")
     print("  - 50 Đơn xuất hàng + 150 Chi tiết đơn xuất")
     print("  - 2.400 Giao dịch hàng tồn kho")
+    print("  - 2.640 Giao dịch lịch sử AI theo ngày")
+    print("  - 180 Yếu tố ngoại vi cho mô hình dự báo")
     print("  - 200 Kết quả dự báo")
     print("  - 200 Thống kê hàng tồn kho hàng ngày")
+    print("  - 50 Hóa đơn nhập/xuất mẫu")
     print("  - 100 Thông báo")
     print("  - 100 Nhật ký kiểm toán")
 

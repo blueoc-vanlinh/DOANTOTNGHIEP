@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { message } from "antd";
+import { Input, message } from "antd";
+import { useDebounce } from "use-debounce";
 
 import CategoryTable from "../components/CategoryTable";
 import CategoryFormModal from "../components/CategoryFormModal";
@@ -28,11 +29,14 @@ export default function CategoryPage() {
   // ✅ pagination state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
 
   // ✅ gọi API có params
   const { data, isLoading } = useCategories({
     page,
     page_size: pageSize,
+    search: debouncedSearch,
   });
 
   // ✅ fix data
@@ -113,6 +117,18 @@ export default function CategoryPage() {
         <Button type="primary" onClick={handleCreate}>
           + Thêm danh mục
         </Button>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          allowClear
+          value={search}
+          placeholder="Tìm theo tên hoặc mô tả danh mục"
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setPage(1);
+          }}
+        />
       </div>
 
       {categories.length > 0 ? (

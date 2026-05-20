@@ -3,9 +3,9 @@ export interface User {
 
     name: string;
     email: string;
-    phone?: string;
-
-    is_active: boolean;
+    role_id?: number | null;
+    role_name?: string | null;
+    status: "ACTIVE" | "INACTIVE";
 
     created_at?: string;
     updated_at?: string;
@@ -21,8 +21,9 @@ export interface UsersResponse {
 }
 
 export interface UserInput {
-    full_name: string;
+    name: string;
     email: string;
-    phone?: string;
+    role_id?: number | null;
+    status?: "ACTIVE" | "INACTIVE";
     password?: string;
 }
