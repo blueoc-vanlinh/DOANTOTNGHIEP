@@ -16,5 +16,6 @@ export const invoicesUrl = '/invoices';
 export const loginUrl = '/login';
 export const usersUrl = '/users';
 export const rolesUrl = '/roles';
+export const auditLogsUrl = '/audit-logs';
 export const error403Url = '/403';
 export const error404Url = '/404';

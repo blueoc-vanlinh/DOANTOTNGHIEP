@@ -24,6 +24,6 @@ export const updateInventory = async ({
     id: number;
     data: Partial<InventoryInput>;
 }): Promise<Inventory> => {
-    const res = await apiClient.put<Inventory>(`/inventory/${id}/`, data);
+    const res = await apiClient.put<Inventory>(`/inventory/${id}`, data);
     return res.data;
 };

@@ -11,6 +11,7 @@ from app.services.inventory_service import (
     increase_stock,
     decrease_stock,
     adjust_stock,
+    update_inventory_by_id,
 )
 from app.models.inventory import Inventory   
 
@@ -48,6 +49,22 @@ def get_inventory_detail(
     if not result:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return result
+
+
+@router.put("/{inventory_id}")
+def update_inventory(
+    inventory_id: int,
+    data: dict,
+    session: Session = Depends(get_session),
+):
+    try:
+        inventory = update_inventory_by_id(session, inventory_id, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory not found")
+    return inventory
 
 
 @router.post("/increase")

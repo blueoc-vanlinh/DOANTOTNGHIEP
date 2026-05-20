@@ -6,6 +6,10 @@ import {
   Avatar,
   Badge,
   Dropdown,
+  Empty,
+  List,
+  Popover,
+  Spin,
 } from "antd";
 import type { MenuProps } from "antd";
 import {
@@ -19,6 +23,10 @@ import {
 import type { FC } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { useNavigate } from "react-router-dom";
+import {
+  useMarkNotificationAsRead,
+  useNotifications,
+} from "@/features/notifications/hooks";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -30,7 +38,11 @@ interface HeaderProps {
 
 const HeaderComponent: FC<HeaderProps> = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
+  const { data: notifications, isFetching } = useNotifications(isAuthenticated);
+  const markAsRead = useMarkNotificationAsRead();
+  const notificationItems = notifications?.items ?? [];
+  const unreadCount = notifications?.unread_count ?? 0;
   const userMenu: MenuProps["items"] = [
     {
       key: "profile",
@@ -64,6 +76,68 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, setCollapsed }) => {
     }
   };
 
+  const notificationContent = (
+    <div style={{ width: 360, maxWidth: "calc(100vw - 32px)" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+        }}
+      >
+        <Text strong>Thông báo</Text>
+        {isFetching && <Spin size="small" />}
+      </div>
+      {notificationItems.length === 0 ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Chưa có thông báo"
+          style={{ margin: "20px 0" }}
+        />
+      ) : (
+        <List
+          dataSource={notificationItems}
+          style={{ maxHeight: 420, overflow: "auto" }}
+          renderItem={(item) => (
+            <List.Item
+              key={item.id}
+              onClick={() => {
+                if (!item.is_read) {
+                  markAsRead.mutate(item.id);
+                }
+              }}
+              style={{
+                cursor: item.is_read ? "default" : "pointer",
+                padding: "12px 8px",
+                background: item.is_read ? "#ffffff" : "#f0f7ff",
+                borderRadius: 8,
+                marginBottom: 6,
+              }}
+            >
+              <List.Item.Meta
+                title={
+                  <Space size={8}>
+                    {!item.is_read && <Badge status="processing" />}
+                    <Text strong={!item.is_read}>{item.title}</Text>
+                  </Space>
+                }
+                description={
+                  <Space direction="vertical" size={2}>
+                    <Text type="secondary">{item.message}</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {new Date(item.created_at).toLocaleString("vi-VN")}
+                    </Text>
+                  </Space>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
+
   return (
     <Header
       style={{
@@ -91,13 +165,19 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, setCollapsed }) => {
         }}
       />
       <Space size={24}>
-        <Badge count={5} offset={[4, 0]} size="small">
-          <Button
-            type="text"
-            icon={<BellOutlined style={{ fontSize: "20px" }} />}
-            style={{ width: 48, height: 48, borderRadius: "8px" }}
-          />
-        </Badge>
+        <Popover
+          content={notificationContent}
+          trigger="click"
+          placement="bottomRight"
+        >
+          <Badge count={unreadCount} offset={[4, 0]} size="small">
+            <Button
+              type="text"
+              icon={<BellOutlined style={{ fontSize: "20px" }} />}
+              style={{ width: 48, height: 48, borderRadius: "8px" }}
+            />
+          </Badge>
+        </Popover>
         <Dropdown
           menu={{ items: userMenu, onClick: handleMenuClick }}
           trigger={["click"]}

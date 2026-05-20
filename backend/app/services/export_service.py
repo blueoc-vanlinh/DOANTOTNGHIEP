@@ -5,6 +5,7 @@ from app.models.transaction import StockTransaction
 from app.services.code_service import generate_export_order_code
 from app.services.inventory_service import get_inventory
 from app.services.invoice_service import create_invoice_from_order
+from app.services.notification_service import create_notification
 
 
 def create_export_order(session: Session, data: dict, user_id: int):
@@ -79,6 +80,15 @@ def create_export_order(session: Session, data: dict, user_id: int):
             invoice_type="EXPORT",
             order_id=order.id,
             user_id=user_id,
+        )
+        create_notification(
+            session=session,
+            user_id=user_id,
+            title="Xuất kho thành công",
+            message=(
+                f"Phiếu xuất {order.order_code} đã tạo hóa đơn "
+                f"{invoice['invoice_number']} cho {order.customer_name}."
+            ),
         )
 
         return {

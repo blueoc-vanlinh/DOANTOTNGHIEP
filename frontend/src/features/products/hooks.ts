@@ -66,7 +66,7 @@ export const useUpdateProduct = () => {
     const qc = useQueryClient();
     const { data: categoryRes } = useCategories({
         page: 1,
-        page_size: 1000,
+        page_size: 200,
     });
 
     const categories = categoryRes?.items || [];

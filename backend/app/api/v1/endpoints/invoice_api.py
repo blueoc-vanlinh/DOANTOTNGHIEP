@@ -3,6 +3,7 @@ from sqlmodel import Session
 
 from app.db.session import get_session
 from app.api.deps import require_permissions
+from app.models.user import User
 from app.schemas.invoice_schema import InvoiceCreate, InvoiceRead
 from app.services.invoice_service import (
     create_invoice,
@@ -42,17 +43,22 @@ def create_invoice_momo_payment(invoice_id: int, _: object = invoice_access, ses
 @router.post("/", response_model=InvoiceRead)
 def create_invoice_endpoint(
     data: InvoiceCreate,
-    _: object = invoice_access,
+    current_user: User = invoice_access,
     session: Session = Depends(get_session),
 ):
-    return create_invoice(session, data.model_dump(), user_id=1)
+    return create_invoice(session, data.model_dump(), user_id=current_user.id)
 
 
 @router.post("/from-order/{invoice_type}/{order_id}", response_model=InvoiceRead)
 def create_invoice_from_order_endpoint(
     invoice_type: str,
     order_id: str,
-    _: object = invoice_access,
+    current_user: User = invoice_access,
     session: Session = Depends(get_session),
 ):
-    return create_invoice_from_order(session, invoice_type.upper(), order_id, user_id=1)
+    return create_invoice_from_order(
+        session,
+        invoice_type.upper(),
+        order_id,
+        user_id=current_user.id,
+    )

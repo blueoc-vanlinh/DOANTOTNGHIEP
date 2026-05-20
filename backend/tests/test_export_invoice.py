@@ -1,8 +1,10 @@
 from app.models.inventory import Inventory
+from app.models.notification import Notification
 from app.models.product import Category, Product
 from app.models.user import User
 from app.models.warehouse import Warehouse
 from app.services.export_service import create_export_order
+from sqlmodel import select
 
 
 def test_export_creates_order_code_invoice_and_uses_product_price(session):
@@ -51,3 +53,10 @@ def test_export_creates_order_code_invoice_and_uses_product_price(session):
     assert result["order"]["tax_amount"] == 40000
     assert result["invoice"]["invoice_number"]
     assert result["invoice"]["grand_total"] == 540000
+
+    notification = session.exec(
+        select(Notification).where(Notification.user_id == user.id)
+    ).one()
+    assert result["order"]["order_code"] in notification.message
+    assert result["invoice"]["invoice_number"] in notification.message
+    assert notification.is_read is False

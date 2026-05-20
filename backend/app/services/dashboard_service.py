@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import func
 from sqlmodel import Session, select
@@ -13,12 +13,19 @@ from app.models.warehouse import Warehouse
 
 def get_dashboard_summary(
     session: Session,
+    period: str = "day",
+    target_date: date | None = None,
+    target_month: str | None = None,
+    target_year: int | None = None,
 ):
     now = datetime.utcnow()
-
-    seven_days_ago = now - timedelta(days=7)
-
-    thirty_days_ago = now - timedelta(days=30)
+    period_start, period_end, chart_points, chart_label = _period_config(
+        now,
+        period,
+        target_date=target_date,
+        target_month=target_month,
+        target_year=target_year,
+    )
 
     total_products = session.exec(
         select(func.count(Product.id))
@@ -44,17 +51,17 @@ def get_dashboard_summary(
         select(func.count(ExportOrder.id))
     ).one()
 
-    import_today = session.exec(
+    import_in_period = session.exec(
         select(func.count(ImportOrder.id)).where(
-            ImportOrder.created_at >=
-            datetime.utcnow().date()
+            ImportOrder.created_at >= period_start,
+            ImportOrder.created_at < period_end,
         )
     ).one()
 
-    export_today = session.exec(
+    export_in_period = session.exec(
         select(func.count(ExportOrder.id)).where(
-            ExportOrder.created_at >=
-            datetime.utcnow().date()
+            ExportOrder.created_at >= period_start,
+            ExportOrder.created_at < period_end,
         )
     ).one()
 
@@ -211,8 +218,9 @@ def get_dashboard_summary(
             ),
         )
         .where(
-            StockTransaction.type
-            == "EXPORT"
+            StockTransaction.type == "EXPORT",
+            StockTransaction.created_at >= period_start,
+            StockTransaction.created_at < period_end,
         )
         .group_by(
             StockTransaction.product_id
@@ -258,8 +266,9 @@ def get_dashboard_summary(
             ),
         )
         .where(
-            StockTransaction.type
-            == "IMPORT"
+            StockTransaction.type == "IMPORT",
+            StockTransaction.created_at >= period_start,
+            StockTransaction.created_at < period_end,
         )
         .group_by(
             StockTransaction.product_id
@@ -297,12 +306,7 @@ def get_dashboard_summary(
 
     chart_data = []
 
-    for i in range(7):
-
-        day = (
-            seven_days_ago +
-            timedelta(days=i)
-        ).date()
+    for point_start, point_end, label in chart_points:
 
         import_count = session.exec(
             select(
@@ -312,11 +316,8 @@ def get_dashboard_summary(
             ).where(
                 StockTransaction.type
                 == "IMPORT",
-
-                func.date(
-                    StockTransaction.created_at
-                )
-                == day,
+                StockTransaction.created_at >= point_start,
+                StockTransaction.created_at < point_end,
             )
         ).one()
 
@@ -328,54 +329,65 @@ def get_dashboard_summary(
             ).where(
                 StockTransaction.type
                 == "EXPORT",
-
-                func.date(
-                    StockTransaction.created_at
-                )
-                == day,
+                StockTransaction.created_at >= point_start,
+                StockTransaction.created_at < point_end,
             )
         ).one()
 
+        import_value = session.exec(
+            select(func.sum(ImportOrder.total_amount)).where(
+                ImportOrder.created_at >= point_start,
+                ImportOrder.created_at < point_end,
+            )
+        ).one() or 0
+
+        export_value = session.exec(
+            select(func.sum(ExportOrder.total_amount)).where(
+                ExportOrder.created_at >= point_start,
+                ExportOrder.created_at < point_end,
+            )
+        ).one() or 0
+
         chart_data.append({
-            "date":
-                str(day),
-
-            "import":
-                import_count,
-
-            "export":
-                export_count,
+            "date": label,
+            "import": import_count,
+            "export": export_count,
+            "import_value": float(import_value),
+            "export_value": float(export_value),
         })
 
-    monthly_import_value = session.exec(
+    period_import_value = session.exec(
         select(
             func.sum(
                 ImportOrder.total_amount
             )
         ).where(
             ImportOrder.created_at
-            >= thirty_days_ago
+            >= period_start,
+            ImportOrder.created_at < period_end,
         )
     ).one()
 
-    monthly_export_value = session.exec(
+    period_export_value = session.exec(
         select(
             func.sum(
                 ExportOrder.total_amount
             )
         ).where(
             ExportOrder.created_at
-            >= thirty_days_ago
+            >= period_start,
+            ExportOrder.created_at < period_end,
         )
     ).one()
 
-    monthly_import_value = (
-        monthly_import_value or 0
-    )
+    period_import_value = period_import_value or 0
+    period_export_value = period_export_value or 0
+    period_profit = period_export_value - period_import_value
 
-    monthly_export_value = (
-        monthly_export_value or 0
-    )
+    inventory_value = session.exec(
+        select(func.sum(Inventory.quantity * Product.price))
+        .join(Product, Product.id == Inventory.product_id)
+    ).one() or 0
 
     return {
         "summary": {
@@ -395,10 +407,10 @@ def get_dashboard_summary(
                 total_export_orders,
 
             "import_today":
-                import_today,
+                import_in_period,
 
             "export_today":
-                export_today,
+                export_in_period,
 
             "total_import_value":
                 total_import_value,
@@ -407,10 +419,22 @@ def get_dashboard_summary(
                 total_export_value,
 
             "monthly_import_value":
-                monthly_import_value,
+                period_import_value,
 
             "monthly_export_value":
-                monthly_export_value,
+                period_export_value,
+
+            "period_import_orders": import_in_period,
+
+            "period_export_orders": export_in_period,
+
+            "period_import_value": period_import_value,
+
+            "period_export_value": period_export_value,
+
+            "period_profit": period_profit,
+
+            "inventory_value": inventory_value,
 
             "low_stock_count":
                 len(
@@ -435,4 +459,55 @@ def get_dashboard_summary(
 
         "transaction_chart":
             chart_data,
+
+        "period": {
+            "type": period,
+            "start": period_start,
+            "end": period_end,
+            "chart_label": chart_label,
+        },
     }
+
+
+def _period_config(
+    now: datetime,
+    period: str,
+    target_date: date | None = None,
+    target_month: str | None = None,
+    target_year: int | None = None,
+):
+    if period == "year":
+        year = target_year or now.year
+        start = datetime(year, 1, 1)
+        end = datetime(year + 1, 1, 1)
+        points = []
+        for month in range(1, 13):
+            point_start = datetime(year, month, 1)
+            point_end = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
+            points.append((point_start, point_end, f"Tháng {month}"))
+        return start, end, points, f"Theo tháng trong năm {year}"
+
+    if period == "month":
+        if target_month:
+            year, month = [int(part) for part in target_month.split("-", 1)]
+        else:
+            year, month = now.year, now.month
+        start = datetime(year, month, 1)
+        end = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
+        points = []
+        cursor = start
+        while cursor < end:
+            next_cursor = cursor + timedelta(days=1)
+            points.append((cursor, next_cursor, cursor.strftime("%d/%m")))
+            cursor = next_cursor
+        return start, end, points, f"Theo ngày trong tháng {month:02d}/{year}"
+
+    selected = target_date or now.date()
+    start = datetime(selected.year, selected.month, selected.day)
+    end = start + timedelta(days=1)
+    points = []
+    for hour in range(24):
+        point_start = start + timedelta(hours=hour)
+        point_end = point_start + timedelta(hours=1)
+        points.append((point_start, point_end, f"{hour:02d}:00"))
+    return start, end, points, f"Theo giờ ngày {selected.strftime('%d/%m/%Y')}"

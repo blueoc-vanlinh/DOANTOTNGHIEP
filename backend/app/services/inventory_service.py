@@ -227,6 +227,33 @@ def adjust_stock(
     session.refresh(inventory)
     return inventory
 
+
+def update_inventory_by_id(
+    session: Session,
+    inventory_id: int,
+    data: dict,
+) -> Optional[Inventory]:
+    inventory = session.get(Inventory, inventory_id)
+    if not inventory or inventory.is_deleted:
+        return None
+
+    allowed_fields = {
+        "quantity",
+        "reserved_quantity",
+        "oncoming_quantity",
+        "min_threshold",
+    }
+    for key, value in data.items():
+        if key in allowed_fields and value is not None:
+            if int(value) < 0:
+                raise ValueError(f"{key} cannot be negative")
+            setattr(inventory, key, int(value))
+
+    session.commit()
+    session.refresh(inventory)
+    return inventory
+
+
 def get_inventory(session: Session, product_id: int, warehouse_id: int) -> Optional[Inventory]:
     """Lấy inventory cơ bản (không join tên)"""
     return session.exec(

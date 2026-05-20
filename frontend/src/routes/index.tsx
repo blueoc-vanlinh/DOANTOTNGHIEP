@@ -19,6 +19,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 import UsersPage from "@/features/users/pages/UserPage";
 import RolePage from "@/features/roles/pages/RolePage";
+import AuditLogPage from "@/features/audit-logs/pages/AuditLogPage";
 import {
   homeUrl,
   error403Url,
@@ -38,6 +39,7 @@ import {
   loginUrl,
   usersUrl,
   rolesUrl,
+  auditLogsUrl,
 
 } from "./urls";
 import TransactionPage from "@/features/transaction/pages/TransactionPage";
@@ -72,6 +74,7 @@ export const router = createBrowserRouter([
               { path: warehouseAutomationUrl, element: <WarehouseAutomationPage /> },
               { path: usersUrl, element: <UsersPage /> },
               { path: rolesUrl, element: <RolePage /> },
+              { path: auditLogsUrl, element: <AuditLogPage /> },
             ],
           },
         ],

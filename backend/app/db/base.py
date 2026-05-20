@@ -9,4 +9,6 @@ from app.models import (
     Invoice as Invoice,
     InvoiceItem as InvoiceItem,
     ExternalFactor as ExternalFactor,
+    Notification as Notification,
+    AuditLog as AuditLog,
 )

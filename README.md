@@ -90,6 +90,8 @@ Tai khoan Admin duoc gan day du quyen, cac role thap hon chi thay cac trang phu 
 - Warehouse automation: `GET /api/v1/warehouse-automation/auto-po`, `GET /api/v1/warehouse-automation/slotting`, `GET /api/v1/warehouse-automation/barcode/{barcode}`
 - Invoices: `GET /api/v1/invoices`, `POST /api/v1/invoices/from-order/{IMPORT|EXPORT}/{order_id_or_code}`, `POST /api/v1/invoices/{invoice_id}/momo-payment`
 - MoMo IPN: `POST /api/v1/momo/ipn`
+- Notifications: `GET /api/v1/notifications`, `PATCH /api/v1/notifications/{id}/read`
+- Audit logs: `GET /api/v1/audit-logs`
 
 ## Bao Mat
 
@@ -97,6 +99,8 @@ Tai khoan Admin duoc gan day du quyen, cac role thap hon chi thay cac trang phu 
 - Backend tra access token va refresh token, dong thoi set vao httpOnly cookie `access_token` va `refresh_token` cho frontend.
 - Frontend khong luu access/refresh token trong `localStorage`; `localStorage` chi giu thong tin user de hien thi UI.
 - Backend van chap nhan Bearer token de dung Swagger/Postman khi can test thu cong.
+- Audit log duoc ghi tu dong cho tat ca API trong `/api/v1`, gom user, method, path, trang thai, IP va mo ta hanh dong.
+- Notification duoc tao tu dong cho thao tac thay doi du lieu thanh cong cua user dang dang nhap.
 
 ## Luong Xuat Kho - Hoa Don - MoMo
 

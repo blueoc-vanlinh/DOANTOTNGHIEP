@@ -118,6 +118,16 @@ def create_invoice_from_order(
     else:
         raise HTTPException(status_code=400, detail="invoice_type must be IMPORT or EXPORT")
 
+    existing = session.exec(
+        select(Invoice).where(
+            Invoice.invoice_type == invoice_type,
+            Invoice.order_id == order.id,
+            Invoice.is_deleted.is_(False),
+        )
+    ).first()
+    if existing:
+        return get_invoice(session, existing.id)
+
     return create_invoice(
         session,
         {
