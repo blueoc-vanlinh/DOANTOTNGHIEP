@@ -9,7 +9,6 @@ def get_suppliers(
     page: int = 1,
     page_size: int = 10,
     search: str | None = None,
-    is_active: bool | None = None,
     sort_by: str = "created_at",
     sort_order: str = "desc",
 ):
@@ -24,15 +23,19 @@ def get_suppliers(
             )
         )
 
-    if is_active is not None:
-        query = query.where(Supplier.is_active == is_active)
-
     column = getattr(Supplier, sort_by, Supplier.created_at)
     query = query.order_by(column.desc() if sort_order == "desc" else column.asc())
 
-    total = session.exec(
-        select(func.count()).select_from(Supplier).where(~Supplier.is_deleted)
-    ).one()
+    count_query = select(func.count()).select_from(Supplier).where(~Supplier.is_deleted)
+    if search:
+        count_query = count_query.where(
+            or_(
+                Supplier.name.ilike(f"%{search}%"),
+                Supplier.email.ilike(f"%{search}%"),
+                Supplier.phone.ilike(f"%{search}%"),
+            )
+        )
+    total = session.exec(count_query).one()
 
     offset = (page - 1) * page_size
     data = session.exec(query.offset(offset).limit(page_size)).all()
@@ -47,7 +50,15 @@ def get_suppliers(
     }
 
 
+def get_supplier(session: Session, supplier_id: int):
+    obj = session.get(Supplier, supplier_id)
+    if not obj or obj.is_deleted:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return obj
+
+
 def create_supplier(session: Session, data: dict):
+    data.pop("is_active", None)
     if data.get("email"):
         existing = session.exec(
             select(Supplier).where(
@@ -67,6 +78,7 @@ def create_supplier(session: Session, data: dict):
 
 
 def update_supplier(session: Session, supplier_id: int, data: dict):
+    data.pop("is_active", None)
     obj = session.get(Supplier, supplier_id)
 
     if not obj or obj.is_deleted:

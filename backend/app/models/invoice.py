@@ -18,6 +18,8 @@ class Invoice(BaseModel, table=True):
     discount_amount: float = 0
     grand_total: float = 0
     status: str = "ISSUED"
+    payment_status: str = "UNPAID"
+    momo_trans_id: str | None = None
     issued_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     created_by: int | None = Field(default=None, foreign_key="users.id")
     is_deleted: bool = Field(

@@ -5,6 +5,7 @@ from typing import Optional
 from app.db.session import get_session
 from app.services.supplier_service import (
     get_suppliers,
+    get_supplier,
     create_supplier,
     update_supplier,
     delete_supplier,
@@ -18,7 +19,6 @@ def list_suppliers(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, le=100),
     search: Optional[str] = None,
-    is_active: Optional[bool] = None,
     sort_by: str = "created_at",
     sort_order: str = "desc",
 ):
@@ -27,7 +27,6 @@ def list_suppliers(
         page=page,
         page_size=page_size,
         search=search,
-        is_active=is_active,
         sort_by=sort_by,
         sort_order=sort_order,
     )
@@ -38,7 +37,7 @@ def get_one_supplier(
     supplier_id: int,
     session: Session = Depends(get_session),
 ):
-    return get_suppliers(session, supplier_id)
+    return get_supplier(session, supplier_id)
 
 
 @router.post("/")

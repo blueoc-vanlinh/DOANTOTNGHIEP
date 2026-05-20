@@ -10,8 +10,6 @@ class SupplierBase(BaseSchema):
     email: Optional[EmailStr] = None
     address: Optional[str] = None
 
-    is_active: bool = True
-
 
 class SupplierCreate(SupplierBase):
     pass
@@ -22,7 +20,6 @@ class SupplierUpdate(BaseSchema):
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     address: Optional[str] = None
-    is_active: Optional[bool] = None
 
 
 class SupplierResponse(SupplierBase):

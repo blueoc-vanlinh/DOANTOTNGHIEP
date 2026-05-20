@@ -72,7 +72,7 @@ def ai_forecast_product(
         for _, row in df.tail(60).iterrows()
     ]
     if len(df) < 2:
-        fake_result = []
+        baseline_result = []
 
         last_quantity = float(
                 df["y"].iloc[-1]
@@ -80,7 +80,7 @@ def ai_forecast_product(
 
         for i in range(1, 15):
 
-            fake_result.append({
+            baseline_result.append({
                 "date": (
                     datetime.now() + timedelta(days=i)
                 ).strftime("%Y-%m-%d"),
@@ -122,7 +122,14 @@ def ai_forecast_product(
 
             "history": history,
 
-            "data": fake_result,
+            "model_used": "Baseline",
+
+            "deep_learning_status": (
+                "Chưa đủ dữ liệu để huấn luyện mô hình AI. "
+                "Hệ thống dùng baseline từ điểm dữ liệu gần nhất."
+            ),
+
+            "data": baseline_result,
         }
     if len(df) >= 180:
         result = _neural_time_series_forecast(df, factor_map, periods=30)

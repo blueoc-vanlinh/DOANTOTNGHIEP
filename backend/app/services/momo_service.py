@@ -8,6 +8,9 @@ from urllib.error import HTTPError, URLError
 
 from fastapi import HTTPException
 from dotenv import load_dotenv
+from sqlmodel import Session, select
+
+from app.models.invoice import Invoice
 
 load_dotenv()
 
@@ -112,6 +115,38 @@ def create_momo_payment(invoice):
         "result_code": data.get("resultCode"),
         "message": data.get("message"),
         "raw": data,
+    }
+
+
+def handle_momo_ipn(session: Session, payload: dict):
+    order_id = payload.get("orderId")
+    if not order_id:
+        raise HTTPException(status_code=400, detail="Missing MoMo orderId")
+
+    invoice = session.exec(
+        select(Invoice).where(
+            Invoice.invoice_number == str(order_id),
+            Invoice.is_deleted.is_(False),
+        )
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    result_code = payload.get("resultCode")
+    invoice.momo_trans_id = str(payload.get("transId")) if payload.get("transId") else None
+    invoice.payment_status = "PAID" if result_code == 0 else "FAILED"
+    if result_code == 0:
+        invoice.status = "PAID"
+
+    session.add(invoice)
+    session.commit()
+    session.refresh(invoice)
+
+    return {
+        "message": "MoMo IPN processed",
+        "invoice_id": invoice.id,
+        "invoice_number": invoice.invoice_number,
+        "payment_status": invoice.payment_status,
     }
 
 

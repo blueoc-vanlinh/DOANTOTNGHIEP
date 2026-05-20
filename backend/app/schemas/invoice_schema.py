@@ -45,6 +45,8 @@ class InvoiceRead(BaseModel):
     discount_amount: float
     grand_total: float
     status: str
+    payment_status: str = "UNPAID"
+    momo_trans_id: str | None = None
     issued_at: datetime
     created_by: int | None = None
     items: list[InvoiceItemRead] = []
