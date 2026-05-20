@@ -4,8 +4,11 @@ from app.db.base_model import BaseModel
 class ExportOrder(BaseModel, table=True):
     __tablename__ = "export_orders"
 
+    order_code: str | None = Field(default=None, unique=True, index=True)
     customer_name: str
     total_amount: float
+    tax_amount: float = 0
+    grand_total: float = 0
     status: str
     created_by: int | None = Field(default=None, foreign_key="users.id")
     is_deleted: bool = Field(

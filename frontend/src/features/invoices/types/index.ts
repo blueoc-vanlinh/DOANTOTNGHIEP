@@ -34,9 +34,22 @@ export interface InvoiceItemInput {
 
 export interface InvoiceInput {
   invoice_type: InvoiceType;
-  order_id: number;
+  order_id: number | string;
   partner_name: string;
   tax_amount?: number;
   discount_amount?: number;
   items: InvoiceItemInput[];
+}
+
+export interface MomoPayment {
+  invoice_id: number;
+  invoice_number: string;
+  amount: number;
+  request_id: string;
+  order_id: string;
+  pay_url?: string | null;
+  deeplink?: string | null;
+  qr_code_url?: string | null;
+  result_code?: number | null;
+  message?: string | null;
 }

@@ -19,6 +19,7 @@ import { useWarehouses } from "@/features/warehouse/hooks";
 
 interface FormValues {
   customer_name: string;
+  vat_rate: number;
 }
 
 export default function ExportPage() {
@@ -100,6 +101,7 @@ export default function ExportPage() {
       const payload: ExportInput = {
         customer_name:
           values.customer_name,
+        vat_rate: values.vat_rate,
 
         items: items.filter(
           (i) =>
@@ -112,7 +114,7 @@ export default function ExportPage() {
       mutation.mutate(payload, {
         onSuccess: (result) => {
           message.success(
-            `Xuất kho thành công. Hóa đơn ${result.invoice.invoice_number} đã được tạo tự động`
+            `Xuất kho thành công. Phiếu ${result.order.order_code || result.order.id}, hóa đơn ${result.invoice.invoice_number} đã được tạo tự động`
           );
 
           form.resetFields();
@@ -171,6 +173,7 @@ export default function ExportPage() {
         <Form
           form={form}
           layout="vertical"
+          initialValues={{ vat_rate: 0.08 }}
         >
           <Form.Item
             name="customer_name"
@@ -184,6 +187,25 @@ export default function ExportPage() {
             ]}
           >
             <Input placeholder="Nhập tên khách hàng" />
+          </Form.Item>
+
+          <Form.Item
+            name="vat_rate"
+            label="VAT"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập VAT",
+              },
+            ]}
+          >
+            <InputNumber
+              min={0}
+              max={1}
+              step={0.01}
+              addonAfter="%"
+              style={{ width: "100%" }}
+            />
           </Form.Item>
         </Form>
       </Card>

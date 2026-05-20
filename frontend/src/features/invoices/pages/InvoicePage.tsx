@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Card,
   Col,
@@ -8,6 +8,7 @@ import {
   InputNumber,
   message,
   Modal,
+  QRCode,
   Row,
   Select,
   Space,
@@ -24,6 +25,7 @@ import { useProducts } from "@/features/products/hooks";
 import {
   useCreateInvoice,
   useCreateInvoiceFromOrder,
+  useCreateMomoPayment,
   useInvoice,
   useInvoices,
 } from "../hooks";
@@ -38,7 +40,7 @@ const { Title, Text } = Typography;
 
 interface FromOrderValues {
   invoiceType: InvoiceType;
-  orderId: number;
+  orderId: string;
 }
 
 export default function InvoicePage() {
@@ -52,10 +54,15 @@ export default function InvoicePage() {
   const [debouncedInvoiceSearch] = useDebounce(invoiceSearch, 300);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | undefined>();
 
-  const invoices = useInvoices();
+  const invoices = useInvoices({
+    search: debouncedInvoiceSearch,
+    page: 1,
+    page_size: 200,
+  });
   const invoiceDetail = useInvoice(selectedInvoiceId);
   const createInvoice = useCreateInvoice();
   const createFromOrder = useCreateInvoiceFromOrder();
+  const createMomoPayment = useCreateMomoPayment();
   const { data: productRes } = useProducts({
     page: 1,
     pageSize: 50,
@@ -63,24 +70,7 @@ export default function InvoicePage() {
   });
 
   const products = productRes?.items || [];
-  const invoiceList = useMemo(() => invoices.data || [], [invoices.data]);
-  const filteredInvoices = useMemo(() => {
-    const keyword = debouncedInvoiceSearch.trim().toLowerCase();
-    if (!keyword) return invoiceList;
-
-    return invoiceList.filter((invoice) =>
-      [
-        invoice.invoice_number,
-        invoice.invoice_type,
-        invoice.order_id.toString(),
-        invoice.partner_name,
-        invoice.status,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(keyword)
-    );
-  }, [debouncedInvoiceSearch, invoiceList]);
+  const filteredInvoices = useMemo(() => invoices.data || [], [invoices.data]);
   const totalValue = useMemo(
     () => filteredInvoices.reduce((sum, invoice) => sum + invoice.grand_total, 0),
     [filteredInvoices]
@@ -141,6 +131,27 @@ export default function InvoicePage() {
     );
   };
 
+  const selectedInvoice = invoiceDetail.data;
+  const momoQrValue = createMomoPayment.data?.qr_code_url || createMomoPayment.data?.pay_url || "";
+
+  const handlePrintInvoice = () => {
+    window.print();
+  };
+
+  const handleCreateMomoQr = () => {
+    if (!selectedInvoice) return;
+    createMomoPayment.mutate(selectedInvoice.id, {
+      onError: (error) => {
+        const err = error as { message?: string };
+        message.error(err.message || "Không tạo được QR MoMo sandbox");
+      },
+    });
+  };
+
+  useEffect(() => {
+    createMomoPayment.reset();
+  }, [createMomoPayment, selectedInvoiceId]);
+
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
@@ -197,7 +208,7 @@ export default function InvoicePage() {
                 label="Mã phiếu"
                 rules={[{ required: true, message: "Nhập mã phiếu" }]}
               >
-                <InputNumber min={1} style={{ width: "100%" }} />
+                <Input placeholder="Nhập mã phiếu hoặc ID phiếu" />
               </Form.Item>
               <Button
                 type="primary"
@@ -374,26 +385,191 @@ export default function InvoicePage() {
 
       <Modal
         open={!!selectedInvoiceId}
-        title={invoiceDetail.data?.invoice_number}
-        footer={null}
+        title={selectedInvoice?.invoice_number}
+        footer={[
+          <Button key="close" onClick={() => setSelectedInvoiceId(undefined)}>
+            Đóng
+          </Button>,
+          <Button
+            key="momo"
+            disabled={!selectedInvoice}
+            loading={createMomoPayment.isPending}
+            onClick={handleCreateMomoQr}
+          >
+            Tạo QR MoMo
+          </Button>,
+          <Button
+            key="print"
+            type="primary"
+            disabled={!selectedInvoice || !momoQrValue}
+            onClick={handlePrintInvoice}
+          >
+            In hóa đơn
+          </Button>,
+        ]}
         onCancel={() => setSelectedInvoiceId(undefined)}
         width={820}
       >
-        {invoiceDetail.data && (
-          <Table
-            rowKey="id"
-            pagination={false}
-            loading={invoiceDetail.isLoading}
-            dataSource={invoiceDetail.data.items || []}
-            columns={[
-              { title: "Sản phẩm", dataIndex: "description" },
-              { title: "SL", dataIndex: "quantity" },
-              { title: "Đơn giá", dataIndex: "unit_price" },
-              { title: "Thành tiền", dataIndex: "line_total" },
-            ]}
-          />
+        {selectedInvoice && (
+          <div className="invoice-print-area">
+            <style>
+              {`
+                @media print {
+                  body * {
+                    visibility: hidden;
+                  }
+                  .invoice-print-area,
+                  .invoice-print-area * {
+                    visibility: visible;
+                  }
+                  .invoice-print-area {
+                    position: absolute;
+                    inset: 0 auto auto 0;
+                    width: 100%;
+                    padding: 24px;
+                    background: #fff;
+                  }
+                  .ant-modal-footer,
+                  .ant-modal-close {
+                    display: none !important;
+                  }
+                }
+              `}
+            </style>
+
+            <div style={{ marginBottom: 20, textAlign: "center" }}>
+              <Title level={3} style={{ marginBottom: 4 }}>
+                HÓA ĐƠN THANH TOÁN
+              </Title>
+              <Text>Mã hóa đơn: {selectedInvoice.invoice_number}</Text>
+            </div>
+
+            <Row gutter={[16, 8]} style={{ marginBottom: 16 }}>
+              <Col span={12}>
+                <Text strong>Loại hóa đơn: </Text>
+                <Tag color={selectedInvoice.invoice_type === "IMPORT" ? "green" : "blue"}>
+                  {selectedInvoice.invoice_type}
+                </Tag>
+              </Col>
+              <Col span={12}>
+                <Text strong>Mã phiếu: </Text>
+                <Text>{selectedInvoice.order_id}</Text>
+              </Col>
+              <Col span={12}>
+                <Text strong>Đối tác: </Text>
+                <Text>{selectedInvoice.partner_name}</Text>
+              </Col>
+              <Col span={12}>
+                <Text strong>Ngày phát hành: </Text>
+                <Text>{new Date(selectedInvoice.issued_at).toLocaleString("vi-VN")}</Text>
+              </Col>
+            </Row>
+
+            <Table
+              rowKey="id"
+              pagination={false}
+              loading={invoiceDetail.isLoading}
+              dataSource={selectedInvoice.items || []}
+              columns={[
+                { title: "Sản phẩm", dataIndex: "description" },
+                { title: "SL", dataIndex: "quantity", width: 80 },
+                {
+                  title: "Đơn giá",
+                  dataIndex: "unit_price",
+                  render: (value: number) => formatMoney(value),
+                },
+                {
+                  title: "Thành tiền",
+                  dataIndex: "line_total",
+                  render: (value: number) => formatMoney(value),
+                },
+              ]}
+              summary={() => (
+                <Table.Summary>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={3}>
+                      <Text strong>Tạm tính</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      {formatMoney(selectedInvoice.total_amount)}
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={3}>
+                      <Text strong>VAT/Thuế</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      {formatMoney(selectedInvoice.tax_amount)}
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={3}>
+                      <Text strong>Giảm giá</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      {formatMoney(selectedInvoice.discount_amount)}
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={3}>
+                      <Title level={4} style={{ margin: 0 }}>
+                        Tổng tiền
+                      </Title>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <Title level={4} style={{ margin: 0 }}>
+                        {formatMoney(selectedInvoice.grand_total)}
+                      </Title>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )}
+            />
+
+            <div
+              style={{
+                marginTop: 24,
+                display: "flex",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              <Space direction="vertical" align="center">
+                {momoQrValue ? (
+                  <QRCode value={momoQrValue} size={164} />
+                ) : (
+                  <div
+                    style={{
+                      width: 164,
+                      height: 164,
+                      border: "1px dashed #d9d9d9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 12,
+                    }}
+                  >
+                    <Text type="secondary">Bấm Tạo QR MoMo</Text>
+                  </div>
+                )}
+                <Text strong>Quét QR MoMo sandbox để thanh toán</Text>
+                <Text type="secondary">Số tiền: {formatMoney(selectedInvoice.grand_total)}</Text>
+                {createMomoPayment.data?.message && (
+                  <Text type="secondary">{createMomoPayment.data.message}</Text>
+                )}
+              </Space>
+            </div>
+          </div>
         )}
       </Modal>
     </div>
   );
+}
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
 }

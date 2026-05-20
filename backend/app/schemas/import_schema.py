@@ -13,5 +13,6 @@ class ImportItem(BaseModel):
 
 class ImportCreate(BaseModel):
     supplier_id: int
+    vat_rate: float = 0.08
 
     items: list[ImportItem]

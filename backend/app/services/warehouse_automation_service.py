@@ -100,12 +100,12 @@ def get_slotting_suggestions(session: Session, days: int = 30):
 def lookup_barcode(session: Session, barcode: str):
     product = session.exec(
         select(Product).where(
-            Product.barcode == barcode,
+            (Product.barcode == barcode) | (Product.sku == barcode),
             Product.is_deleted.is_(False),
         )
     ).first()
     if not product:
-        raise HTTPException(status_code=404, detail="Barcode not found")
+        raise HTTPException(status_code=404, detail="Barcode or SKU not found")
 
     inventories = session.exec(
         select(Inventory, Warehouse)

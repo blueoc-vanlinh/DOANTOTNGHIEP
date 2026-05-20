@@ -1,8 +1,12 @@
 import apiClient from "@/lib/api";
-import type { Invoice, InvoiceInput, InvoiceType } from "./types";
+import type { Invoice, InvoiceInput, InvoiceType, MomoPayment } from "./types";
 
-export const getInvoices = async (): Promise<Invoice[]> => {
-  const res = await apiClient.get("/invoices/");
+export const getInvoices = async (params?: {
+  search?: string;
+  page?: number;
+  page_size?: number;
+}): Promise<Invoice[]> => {
+  const res = await apiClient.get("/invoices/", { params });
   return res.data;
 };
 
@@ -21,10 +25,17 @@ export const createInvoiceFromOrder = async ({
   orderId,
 }: {
   invoiceType: InvoiceType;
-  orderId: number;
+  orderId: number | string;
 }): Promise<Invoice> => {
   const res = await apiClient.post(
     `/invoices/from-order/${invoiceType}/${orderId}`
   );
+  return res.data;
+};
+
+export const createMomoPayment = async (
+  invoiceId: number
+): Promise<MomoPayment> => {
+  const res = await apiClient.post(`/invoices/${invoiceId}/momo-payment`);
   return res.data;
 };

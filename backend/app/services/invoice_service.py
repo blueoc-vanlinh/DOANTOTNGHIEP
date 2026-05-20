@@ -8,27 +8,11 @@ from app.models.importorder import ImportOrder, ImportOrderItem
 from app.models.invoice import Invoice, InvoiceItem
 from app.models.product import Product
 from app.models.supplier import Supplier
+from app.services.code_service import generate_invoice_number
 
 
 def _invoice_number(session: Session, issued_at: datetime | None = None) -> str:
-    issued_at = issued_at or datetime.now()
-    base_number = issued_at.strftime("%H%M%d%m%Y")
-
-    existing = session.exec(
-        select(Invoice).where(Invoice.invoice_number == base_number)
-    ).first()
-    if not existing:
-        return base_number
-
-    suffix = 2
-    while True:
-        candidate = f"{base_number}-{suffix:02d}"
-        existing = session.exec(
-            select(Invoice).where(Invoice.invoice_number == candidate)
-        ).first()
-        if not existing:
-            return candidate
-        suffix += 1
+    return generate_invoice_number(session, issued_at)
 
 
 def create_invoice(session: Session, data: dict, user_id: int | None = None):
@@ -36,7 +20,7 @@ def create_invoice(session: Session, data: dict, user_id: int | None = None):
         raise HTTPException(status_code=400, detail="Invoice items are required")
 
     invoice_type = data["invoice_type"]
-    order_id = data["order_id"]
+    order_id = int(data["order_id"])
     existing = session.exec(
         select(Invoice).where(
             Invoice.invoice_type == invoice_type,
@@ -93,16 +77,16 @@ def create_invoice(session: Session, data: dict, user_id: int | None = None):
 def create_invoice_from_order(
     session: Session,
     invoice_type: str,
-    order_id: int,
+    order_id: int | str,
     user_id: int | None = None,
 ):
     if invoice_type == "IMPORT":
-        order = session.get(ImportOrder, order_id)
+        order = _find_import_order(session, order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Import order not found")
         supplier = session.get(Supplier, order.supplier_id)
         items = session.exec(
-            select(ImportOrderItem).where(ImportOrderItem.import_order_id == order_id)
+            select(ImportOrderItem).where(ImportOrderItem.import_order_id == order.id)
         ).all()
         payload_items = [
             {
@@ -115,11 +99,11 @@ def create_invoice_from_order(
         ]
         partner_name = supplier.name if supplier else f"Supplier #{order.supplier_id}"
     elif invoice_type == "EXPORT":
-        order = session.get(ExportOrder, order_id)
+        order = _find_export_order(session, order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Export order not found")
         items = session.exec(
-            select(ExportOrderItem).where(ExportOrderItem.export_order_id == order_id)
+            select(ExportOrderItem).where(ExportOrderItem.export_order_id == order.id)
         ).all()
         payload_items = [
             {
@@ -138,9 +122,10 @@ def create_invoice_from_order(
         session,
         {
             "invoice_type": invoice_type,
-            "order_id": order_id,
+            "order_id": order.id,
             "partner_name": partner_name,
             "items": payload_items,
+            "tax_amount": getattr(order, "tax_amount", 0),
         },
         user_id=user_id,
     )
@@ -162,13 +147,23 @@ def get_invoice(session: Session, invoice_id: int):
     return result
 
 
-def list_invoices(session: Session, skip: int = 0, limit: int = 50):
+def list_invoices(session: Session, skip: int = 0, limit: int = 50, search: str | None = None):
+    query = select(Invoice).where(Invoice.is_deleted.is_(False))
+
+    if search:
+        keyword = f"%{search}%"
+        search_filter = (
+            (Invoice.invoice_number.ilike(keyword))
+            | (Invoice.invoice_type.ilike(keyword))
+            | (Invoice.partner_name.ilike(keyword))
+            | (Invoice.status.ilike(keyword))
+        )
+        if search.isdigit() and int(search) <= 2147483647:
+            search_filter = search_filter | (Invoice.order_id == int(search))
+        query = query.where(search_filter)
+
     invoices = session.exec(
-        select(Invoice)
-        .where(Invoice.is_deleted.is_(False))
-        .order_by(Invoice.issued_at.desc())
-        .offset(skip)
-        .limit(limit)
+        query.order_by(Invoice.issued_at.desc()).offset(skip).limit(limit)
     ).all()
     return invoices
 
@@ -176,3 +171,29 @@ def list_invoices(session: Session, skip: int = 0, limit: int = 50):
 def _product_name(session: Session, product_id: int) -> str:
     product = session.get(Product, product_id)
     return product.name if product else f"Product #{product_id}"
+
+
+def _find_export_order(session: Session, order_id_or_code: int | str):
+    order = session.exec(
+        select(ExportOrder).where(ExportOrder.order_code == str(order_id_or_code))
+    ).first()
+    if order:
+        return order
+    if str(order_id_or_code).isdigit():
+        numeric_id = int(order_id_or_code)
+        if numeric_id <= 2147483647:
+            return session.get(ExportOrder, numeric_id)
+    return None
+
+
+def _find_import_order(session: Session, order_id_or_code: int | str):
+    order = session.exec(
+        select(ImportOrder).where(ImportOrder.order_code == str(order_id_or_code))
+    ).first()
+    if order:
+        return order
+    if str(order_id_or_code).isdigit():
+        numeric_id = int(order_id_or_code)
+        if numeric_id <= 2147483647:
+            return session.get(ImportOrder, numeric_id)
+    return None

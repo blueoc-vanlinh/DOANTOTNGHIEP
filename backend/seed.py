@@ -386,8 +386,11 @@ def seed_inventory(session: Session, products: list[Product], warehouses: list[W
 def seed_import_export_orders(session: Session, suppliers: list[Supplier], users: list[User], products: list[Product]):
     import_orders = [
         ImportOrder(
+            order_code=(datetime(2026, 5, 20, 8, 0) + timedelta(minutes=i)).strftime("0%H%M%d%m%Y"),
             supplier_id=suppliers[i % len(suppliers)].id,
             total_amount=round(20000000 + i * 2000000, 2),
+            tax_amount=round((20000000 + i * 2000000) * 0.08, 2),
+            grand_total=round((20000000 + i * 2000000) * 1.08, 2),
             status="COMPLETED" if i % 2 == 0 else "PENDING",
             created_by=users[4].id,
         )
@@ -396,8 +399,11 @@ def seed_import_export_orders(session: Session, suppliers: list[Supplier], users
 
     export_orders = [
         ExportOrder(
+            order_code=(datetime(2026, 5, 20, 9, 0) + timedelta(minutes=i)).strftime("0%H%M%d%m%Y"),
             customer_name=f"Khách hàng {i}",
             total_amount=round(15000000 + i * 1500000, 2),
+            tax_amount=round((15000000 + i * 1500000) * 0.08, 2),
+            grand_total=round((15000000 + i * 1500000) * 1.08, 2),
             status="COMPLETED" if i % 2 == 0 else "PENDING",
             created_by=users[5].id,
         )

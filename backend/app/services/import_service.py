@@ -1,5 +1,6 @@
 from sqlmodel import Session
 from app.models.importorder import ImportOrder, ImportOrderItem
+from app.services.code_service import generate_import_order_code
 from app.services.inventory_service import increase_stock
 from app.services.transaction_service import create_transaction
 
@@ -10,9 +11,13 @@ def create_import_order(session: Session, data: dict, user_id: int):
         raise Exception("items is required")
 
     try:
+        vat_rate = float(data.get("vat_rate", 0.08))
         order = ImportOrder(
+            order_code=generate_import_order_code(session),
             supplier_id=data["supplier_id"],
             total_amount=0,
+            tax_amount=0,
+            grand_total=0,
             status="COMPLETED",
             created_by=user_id
         )
@@ -62,6 +67,8 @@ def create_import_order(session: Session, data: dict, user_id: int):
             total_amount += item["quantity"] * item["unit_cost"]
 
         order.total_amount = total_amount
+        order.tax_amount = round(total_amount * vat_rate, 2)
+        order.grand_total = round(total_amount + order.tax_amount, 2)
 
         session.commit()
         session.refresh(order)

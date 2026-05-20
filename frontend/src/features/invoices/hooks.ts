@@ -3,14 +3,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createInvoice,
   createInvoiceFromOrder,
+  createMomoPayment,
   getInvoice,
   getInvoices,
 } from "./api";
 
-export const useInvoices = () => {
+export const useInvoices = (params?: {
+  search?: string;
+  page?: number;
+  page_size?: number;
+}) => {
   return useQuery({
-    queryKey: ["invoices"],
-    queryFn: getInvoices,
+    queryKey: ["invoices", params],
+    queryFn: () => getInvoices(params),
     initialData: [],
   });
 };
@@ -42,5 +47,11 @@ export const useCreateInvoiceFromOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
     },
+  });
+};
+
+export const useCreateMomoPayment = () => {
+  return useMutation({
+    mutationFn: createMomoPayment,
   });
 };

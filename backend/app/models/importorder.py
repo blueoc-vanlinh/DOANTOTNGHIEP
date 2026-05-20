@@ -5,8 +5,11 @@ from app.db.base_model import BaseModel
 class ImportOrder(BaseModel, table=True):
     __tablename__ = "import_orders"
 
+    order_code: str | None = Field(default=None, unique=True, index=True)
     supplier_id: int = Field(foreign_key="suppliers.id")
     total_amount: float
+    tax_amount: float = 0
+    grand_total: float = 0
     status: str  # PENDING, COMPLETED, CANCELLED
 
     created_by: int | None = Field(default=None, foreign_key="users.id")

@@ -9,6 +9,7 @@ from app.services.invoice_service import (
     get_invoice,
     list_invoices,
 )
+from app.services.momo_service import create_momo_payment
 
 router = APIRouter(tags=["Invoices"])
 
@@ -18,14 +19,21 @@ def get_invoices(
     session: Session = Depends(get_session),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
+    search: str | None = Query(None),
 ):
     skip = (page - 1) * page_size
-    return list_invoices(session, skip=skip, limit=page_size)
+    return list_invoices(session, skip=skip, limit=page_size, search=search)
 
 
 @router.get("/{invoice_id}")
 def get_invoice_detail(invoice_id: int, session: Session = Depends(get_session)):
     return get_invoice(session, invoice_id)
+
+
+@router.post("/{invoice_id}/momo-payment")
+def create_invoice_momo_payment(invoice_id: int, session: Session = Depends(get_session)):
+    invoice = get_invoice(session, invoice_id)
+    return create_momo_payment(invoice)
 
 
 @router.post("/", response_model=InvoiceRead)
@@ -39,7 +47,7 @@ def create_invoice_endpoint(
 @router.post("/from-order/{invoice_type}/{order_id}", response_model=InvoiceRead)
 def create_invoice_from_order_endpoint(
     invoice_type: str,
-    order_id: int,
+    order_id: str,
     session: Session = Depends(get_session),
 ):
     return create_invoice_from_order(session, invoice_type.upper(), order_id, user_id=1)
