@@ -34,3 +34,5 @@ uvicorn==0.42.0
 virtualenv==21.2.0
 gunicorn
 locust
+pytest
+httpx

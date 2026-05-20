@@ -12,21 +12,6 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    if (config.url?.includes('/auth/login')) {
-      return config;
-    }
-
-    try {
-      const storage = localStorage.getItem('auth-storage');
-      const token = JSON.parse(storage || '{}')?.state?.accessToken;
-
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (e) {
-      console.error('Token parse error:', e);
-    }
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -35,8 +20,36 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
 
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
+    const originalRequest = error.config;
+    if (
+      status === 401 &&
+      !originalRequest?._retry &&
+      !originalRequest?.url?.includes('/auth/refresh')
+    ) {
+      originalRequest._retry = true;
+      try {
+        const refreshResponse = await apiClient.post('/auth/refresh');
+        const storage = localStorage.getItem('auth-storage');
+        const state = JSON.parse(storage || '{}')?.state || {};
+        localStorage.setItem(
+          'auth-storage',
+          JSON.stringify({
+            state: {
+              ...state,
+              user: refreshResponse.data.user,
+              isAuthenticated: true,
+            },
+            version: 0,
+          })
+        );
+        return apiClient(originalRequest);
+      } catch {
+        localStorage.removeItem('auth-storage');
+      }
+    }
+
     if (status === 401) {
       localStorage.removeItem('auth-storage');
 

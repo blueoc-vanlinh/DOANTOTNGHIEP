@@ -149,7 +149,8 @@ def seed_categories_warehouses_suppliers(session: Session):
 
 
 def seed_users(session: Session, roles: list[Role]):
-    default_password = "$2b$12$feXi/X65jKEnHOB0vX2U8.ZgN2r1Zlj2mWUTwLqYE3kI6O9vbbZTW"
+    # Plain demo password for all seeded users: Admin@123
+    default_password = "$2b$12$ST9PxQDmRPCgMwLbZhTa0ekhs0LvoJVLzko9Ym0eTuPemHgpdWHY."
     
     users = [
         User(

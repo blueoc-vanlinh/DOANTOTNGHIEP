@@ -82,7 +82,14 @@ const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
           transition: "all 0.3s ease",
         }}
       >
-        {collapsed ? "📦" : "📦 INVENTORY"}
+        {collapsed ? (
+          <img src="/2825346-200.png" alt="Logo" style={{ width: "40px", height: "40px" }} />
+        ) : (
+          <>
+            <img src="/2825346-200.png" alt="Logo" style={{ width: "40px", height: "40px", marginRight: "10px" }} />
+            INVENTORY
+          </>
+        )}
       </div>
       <Menu
         theme="dark"

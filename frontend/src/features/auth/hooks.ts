@@ -9,7 +9,7 @@ export const useLogin = () => {
         mutationFn: loginApi,
 
         onSuccess: (data) => {
-            loginStore(data.accessToken, data.user);
+            loginStore(data.user);
         },
     });
 };

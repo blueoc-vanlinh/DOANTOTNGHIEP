@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
 
-from prophet import Prophet
+try:
+    from prophet import Prophet
+except ImportError:
+    Prophet = None
 
 from fastapi import HTTPException
 
@@ -11,6 +14,7 @@ from collections import defaultdict
 from app.models.external_factor import ExternalFactor
 from app.models.product import Product
 from app.models.transaction import StockTransaction
+from app.services.lstm_forecast_service import forecast_with_lstm_if_available
 
 
 def ai_forecast_product(
@@ -132,11 +136,16 @@ def ai_forecast_product(
             "data": baseline_result,
         }
     if len(df) >= 180:
-        result = _neural_time_series_forecast(df, factor_map, periods=30)
-        model_used = "Neural Time Series"
+        lstm_predictions = forecast_with_lstm_if_available(df["y"].astype(float).to_numpy(), periods=30)
+        if lstm_predictions:
+            result = _format_lstm_result(df, lstm_predictions)
+            model_used = "LSTM"
+        else:
+            result = _neural_time_series_forecast(df, factor_map, periods=30)
+            model_used = "Neural Time Series"
     else:
         result = _prophet_forecast(df, factor_map, periods=30)
-        model_used = "Prophet"
+        model_used = "Prophet" if Prophet is not None else "Moving Average Fallback"
 
     total_forecast = sum(
         r["predicted"]
@@ -175,6 +184,9 @@ def ai_forecast_product(
 
 
 def _prophet_forecast(df: pd.DataFrame, factor_map: dict, periods: int = 30):
+    if Prophet is None:
+        return _moving_average_forecast(df, factor_map, periods)
+
     model = Prophet(daily_seasonality=True)
     if df["external_impact"].abs().sum() > 0:
         model.add_regressor("external_impact")
@@ -214,6 +226,43 @@ def _prophet_forecast(df: pd.DataFrame, factor_map: dict, periods: int = 30):
                 max(row["yhat_upper"], 0),
                 2,
             ),
+        })
+    return result
+
+
+def _moving_average_forecast(df: pd.DataFrame, factor_map: dict, periods: int = 30):
+    values = df["y"].astype(float)
+    rolling_window = min(len(values), 7)
+    base_prediction = float(values.tail(rolling_window).mean())
+    residual_std = float(values.std() or max(base_prediction * 0.15, 1.0))
+    last_date = pd.Timestamp(df["ds"].iloc[-1])
+    result = []
+
+    for step in range(1, periods + 1):
+        next_date = last_date + timedelta(days=step)
+        impact = factor_map.get(next_date.date(), 0.0)
+        prediction = max(base_prediction * (1 + impact / 100), 0)
+        result.append({
+            "date": next_date.strftime("%Y-%m-%d"),
+            "predicted": round(prediction, 2),
+            "trend": round(base_prediction, 2),
+            "lower_bound": round(max(prediction - residual_std * 1.64, 0), 2),
+            "upper_bound": round(prediction + residual_std * 1.64, 2),
+        })
+    return result
+
+
+def _format_lstm_result(df: pd.DataFrame, predictions: list[float]):
+    last_date = pd.Timestamp(df["ds"].iloc[-1])
+    residual_std = float(df["y"].astype(float).std() or 1.0)
+    result = []
+    for index, prediction in enumerate(predictions, start=1):
+        result.append({
+            "date": (last_date + timedelta(days=index)).strftime("%Y-%m-%d"),
+            "predicted": round(float(prediction), 2),
+            "trend": round(float(np.mean(predictions[max(index - 7, 0):index])), 2),
+            "lower_bound": round(max(float(prediction) - residual_std * 1.64, 0), 2),
+            "upper_bound": round(float(prediction) + residual_std * 1.64, 2),
         })
     return result
 

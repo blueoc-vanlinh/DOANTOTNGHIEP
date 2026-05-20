@@ -8,7 +8,7 @@ on:
 
 jobs:
     backend-ci:
-        name: Backend - Lint & Dependencies
+        name: Backend - Lint & Test
         runs-on: ubuntu-latest
 
         steps:
@@ -29,7 +29,11 @@ jobs:
               working-directory: ./backend
               run: |
                   pip install flake8
-                  flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+                  flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+            - name: Run backend tests
+              working-directory: ./backend
+              run: pytest
 
     frontend-ci:
         name: Frontend - Build
@@ -48,6 +52,12 @@ jobs:
             - name: Install dependencies
               working-directory: ./frontend
               run: npm ci
+
+            - name: Lint and type check
+              working-directory: ./frontend
+              run: |
+                  npm run lint
+                  npm run type-check
 
             - name: Build frontend
               working-directory: ./frontend

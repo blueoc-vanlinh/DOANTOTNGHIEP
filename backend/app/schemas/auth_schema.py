@@ -8,4 +8,9 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     accessToken: str
+    refreshToken: str
     user: dict
+
+
+class RefreshRequest(BaseModel):
+    refreshToken: str

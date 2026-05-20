@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.db.session import get_session
+from app.api.deps import require_roles
 
 from app.schemas.user_schema import (
     UserCreate,
@@ -20,9 +21,11 @@ from app.services.user_service import (
 )
 
 router = APIRouter( tags=["Users"])
+admin_required = Depends(require_roles("Admin"))
 
 @router.get("/")
 def list_users(
+    _: object = admin_required,
     session: Session = Depends(get_session),
 
     page: int = Query(1, ge=1),
@@ -52,6 +55,7 @@ def list_users(
 @router.get("/{user_id}")
 def get_one_user(
     user_id: int,
+    _: object = admin_required,
     session: Session = Depends(get_session),
 ):
     return get_user(
@@ -62,6 +66,7 @@ def get_one_user(
 @router.post("/")
 def create_new_user(
     data: UserCreate,
+    _: object = admin_required,
     session: Session = Depends(get_session),
 ):
     return create_user(
@@ -73,6 +78,7 @@ def create_new_user(
 def update_one_user(
     user_id: int,
     data: UserUpdate,
+    _: object = admin_required,
     session: Session = Depends(get_session),
 ):
     return update_user(
@@ -84,6 +90,7 @@ def update_one_user(
 @router.patch("/{user_id}/toggle-status")
 def toggle_status(
     user_id: int,
+    _: object = admin_required,
     session: Session = Depends(get_session),
 ):
     return toggle_user_status(
@@ -94,6 +101,7 @@ def toggle_status(
 @router.delete("/{user_id}")
 def delete_one_user(
     user_id: int,
+    _: object = admin_required,
     session: Session = Depends(get_session),
 ):
     return delete_user(
