@@ -4,6 +4,7 @@ from sqlmodel import Session
 from typing import Optional
 
 from app.db.session import get_session
+from app.api.deps import require_permissions
 from app.services.inventory_service import (
     check_product_stock,
     get_inventories,
@@ -51,10 +52,12 @@ def get_inventory_detail(
     return result
 
 
-@router.put("/{inventory_id}")
+@router.api_route("/{inventory_id}/", methods=["PUT", "PATCH"], include_in_schema=False)
+@router.api_route("/{inventory_id}", methods=["PUT", "PATCH"])
 def update_inventory(
     inventory_id: int,
     data: dict,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session),
 ):
     try:
@@ -72,6 +75,7 @@ def increase_inventory(
     product_id: int,
     warehouse_id: int,
     quantity: int,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session)
 ):
     """Tăng tồn kho"""
@@ -90,6 +94,7 @@ def decrease_inventory(
     product_id: int,
     warehouse_id: int,
     quantity: int,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session)
 ):
     """Giảm tồn kho"""
@@ -108,6 +113,7 @@ def adjust_inventory(
     product_id: int,
     warehouse_id: int,
     quantity: int,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session)
 ):
     """Điều chỉnh tồn kho"""
@@ -122,7 +128,11 @@ def adjust_inventory(
 
 
 @router.delete("/{inventory_id}")
-def soft_delete_inventory(inventory_id: int, session: Session = Depends(get_session)):
+def soft_delete_inventory(
+    inventory_id: int,
+    _: object = Depends(require_permissions("manage_inventory")),
+    session: Session = Depends(get_session),
+):
     """Xóa mềm tồn kho"""
     inventory = session.get(Inventory, inventory_id)
     if not inventory:

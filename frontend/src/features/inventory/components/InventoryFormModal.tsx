@@ -7,6 +7,9 @@ import type { Inventory } from "../types";
 
 interface InventoryUpdateInput {
     quantity: number;
+    reserved_quantity?: number;
+    oncoming_quantity?: number;
+    min_threshold?: number;
 }
 
 interface InventoryFormModalProps extends Omit<ModalProps, "onOk"> {
@@ -36,6 +39,21 @@ const InventoryFormModal: FC<InventoryFormModalProps> = ({
         }
     };
 
+    const handleAfterOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            form.resetFields();
+            return;
+        }
+        if (editing) {
+            form.setFieldsValue({
+                quantity: editing.quantity,
+                reserved_quantity: editing.reserved_quantity,
+                oncoming_quantity: editing.oncoming_quantity,
+                min_threshold: editing.min_threshold,
+            });
+        }
+    };
+
     return (
         <Modal
             title="Cập nhật tồn kho"
@@ -45,6 +63,7 @@ const InventoryFormModal: FC<InventoryFormModalProps> = ({
             confirmLoading={loading}
             width={500}
             destroyOnClose
+            afterOpenChange={handleAfterOpenChange}
             okText="Cập nhật"
             cancelText="Hủy"
             {...modalProps}
@@ -66,6 +85,51 @@ const InventoryFormModal: FC<InventoryFormModalProps> = ({
                         style={{ width: "100%" }}
                         min={0}
                         placeholder="Nhập số lượng"
+                        size="large"
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="reserved_quantity"
+                    label="So luong da giu"
+                    rules={[
+                        { type: "number", min: 0, message: "So luong khong duoc am" }
+                    ]}
+                >
+                    <InputNumber
+                        style={{ width: "100%" }}
+                        min={0}
+                        placeholder="Nhap so luong da giu"
+                        size="large"
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="oncoming_quantity"
+                    label="So luong sap ve"
+                    rules={[
+                        { type: "number", min: 0, message: "So luong khong duoc am" }
+                    ]}
+                >
+                    <InputNumber
+                        style={{ width: "100%" }}
+                        min={0}
+                        placeholder="Nhap so luong sap ve"
+                        size="large"
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="min_threshold"
+                    label="Nguong ton toi thieu"
+                    rules={[
+                        { type: "number", min: 0, message: "Nguong khong duoc am" }
+                    ]}
+                >
+                    <InputNumber
+                        style={{ width: "100%" }}
+                        min={0}
+                        placeholder="Nhap nguong toi thieu"
                         size="large"
                     />
                 </Form.Item>

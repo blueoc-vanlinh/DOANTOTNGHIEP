@@ -3,6 +3,7 @@ from sqlmodel import Session
 from typing import Optional
 
 from app.db.session import get_session
+from app.api.deps import require_permissions
 from app.services.category_service import (
     get_categories,
     get_category,
@@ -43,6 +44,7 @@ def get_one_category(
 @router.post("/")
 def create_new_category(
     data: dict,
+    _: object = Depends(require_permissions("manage_products")),
     session: Session = Depends(get_session),
 ):
     return create_category(session, data)
@@ -52,6 +54,7 @@ def create_new_category(
 def update_one_category(
     category_id: int,
     data: dict,
+    _: object = Depends(require_permissions("manage_products")),
     session: Session = Depends(get_session),
 ):
     return update_category(session, category_id, data)
@@ -60,6 +63,7 @@ def update_one_category(
 @router.delete("/{category_id}")
 def delete_one_category(
     category_id: int,
+    _: object = Depends(require_permissions("manage_products")),
     session: Session = Depends(get_session),
 ):
     return delete_category(session, category_id)

@@ -12,6 +12,7 @@ export const exportUrl = '/export';
 export const forecastUrl = '/forecast';
 export const aiDataUrl = '/ai-data';
 export const warehouseAutomationUrl = '/warehouse-automation';
+export const warehouseOperationsUrl = '/warehouse-operations';
 export const invoicesUrl = '/invoices';
 export const loginUrl = '/login';
 export const usersUrl = '/users';

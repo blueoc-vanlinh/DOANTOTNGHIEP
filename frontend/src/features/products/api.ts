@@ -1,6 +1,6 @@
 import apiClient from "@/lib/api";
 import type { Product } from "./types";
-import type { GetProductsParams, ProductInput, ProductsResponse } from "./types";
+import type { GetProductsParams, ProductImportResponse, ProductInput, ProductsResponse } from "./types";
 
 export const getProducts = async (
     params?: GetProductsParams
@@ -35,5 +35,24 @@ export const updateProduct = async ({
 
 export const deleteProduct = async (id: number): Promise<Product> => {
     const res = await apiClient.delete<Product>(`/products/${id}/`);
+    return res.data;
+};
+
+export const importProducts = async (file: File): Promise<ProductImportResponse> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await apiClient.post<ProductImportResponse>("/products/import-file", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+    return res.data;
+};
+
+export const downloadProductImportTemplate = async (): Promise<Blob> => {
+    const res = await apiClient.get("/products/import-template", {
+        responseType: "blob",
+    });
     return res.data;
 };

@@ -15,9 +15,10 @@ import {
   HomeOutlined,
   SwapOutlined,
   HistoryOutlined,
+  ToolOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { aiDataUrl, auditLogsUrl, categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, invoicesUrl, productsUrl, rolesUrl, suppliersUrl, transactionsUrl, usersUrl, warehouseAutomationUrl, warehouseUrl } from "@/routes/urls";
+import { aiDataUrl, auditLogsUrl, categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, invoicesUrl, productsUrl, rolesUrl, suppliersUrl, transactionsUrl, usersUrl, warehouseAutomationUrl, warehouseOperationsUrl, warehouseUrl } from "@/routes/urls";
 import type { FC } from "react";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -47,6 +48,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
     { key: forecastUrl, icon: <LineChartOutlined />, label: "Dự báo AI" },
     { key: aiDataUrl, icon: <RobotOutlined />, label: "Dữ liệu AI", adminOnly: true },
     { key: warehouseAutomationUrl, icon: <BarcodeOutlined />, label: "Tự động kho", adminOnly: true },
+    { key: warehouseOperationsUrl, icon: <ToolOutlined />, label: "Nghiệp vụ kho", adminOnly: true },
     { key: usersUrl, icon: <UserSwitchOutlined />, label: "Nhân viên", adminOnly: true },
     { key: rolesUrl, icon: <SafetyCertificateOutlined />, label: "Vai trò", adminOnly: true },
     { key: auditLogsUrl, icon: <HistoryOutlined />, label: "Nhật ký", adminOnly: true },

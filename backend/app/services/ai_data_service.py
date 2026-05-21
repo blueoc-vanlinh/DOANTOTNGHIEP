@@ -18,6 +18,9 @@ def get_ai_data_overview(session: Session):
     counts = {
         "products": _count(session, Product),
         "inventory_records": _count(session, Inventory),
+        "current_stock_quantity": session.exec(
+            select(func.sum(Inventory.quantity)).where(Inventory.is_deleted.is_(False))
+        ).one() or 0,
         "stock_transactions": _count(session, StockTransaction),
         "export_transactions": _count(
             session,
@@ -80,6 +83,12 @@ def get_product_training_quality(session: Session, product_id: int):
             ExternalFactor.is_deleted.is_(False),
         )
     ).one()
+    current_stock_quantity = session.exec(
+        select(func.sum(Inventory.quantity)).where(
+            Inventory.product_id == product_id,
+            Inventory.is_deleted.is_(False),
+        )
+    ).one() or 0
 
     if unique_days >= MIN_DEEP_LEARNING_DAYS:
         model_ready = "LSTM_TRANSFORMER_READY"
@@ -87,6 +96,11 @@ def get_product_training_quality(session: Session, product_id: int):
         model_ready = "PROPHET_READY"
     else:
         model_ready = "INSUFFICIENT_DATA"
+    minimum_accuracy = _estimate_minimum_accuracy(
+        unique_days=unique_days,
+        transaction_records=len(rows),
+        external_factor_records=has_external_factors,
+    )
 
     return {
         "product_id": product.id,
@@ -94,6 +108,8 @@ def get_product_training_quality(session: Session, product_id: int):
         "transaction_records": len(rows),
         "unique_training_days": unique_days,
         "total_export_quantity": total_quantity,
+        "current_stock_quantity": current_stock_quantity,
+        "minimum_accuracy": minimum_accuracy,
         "external_factor_records": has_external_factors,
         "model_ready": model_ready,
         "missing_for_deep_learning_days": max(MIN_DEEP_LEARNING_DAYS - unique_days, 0),
@@ -176,3 +192,15 @@ def _build_recommendation(counts: dict, product_quality: list[dict]):
     if counts["export_transactions"] == 0:
         return "No export history is available. Seed or collect real sales/export data before AI training."
     return "Keep Prophet as baseline and collect more daily export history plus external factors before LSTM/Transformer."
+
+
+def _estimate_minimum_accuracy(
+    unique_days: int,
+    transaction_records: int,
+    external_factor_records: int,
+) -> float:
+    day_score = min(unique_days / MIN_DEEP_LEARNING_DAYS, 1) * 45
+    record_score = min(transaction_records / 500, 1) * 20
+    factor_score = min(external_factor_records / 30, 1) * 10
+    conservative_accuracy = 35 + day_score + record_score + factor_score
+    return round(min(conservative_accuracy, 92), 2)

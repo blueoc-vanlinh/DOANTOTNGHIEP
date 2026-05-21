@@ -96,7 +96,12 @@ export default function AiDataPage() {
         </Col>
         <Col xs={24} sm={12} lg={4}>
           <Card>
-            <Statistic title="Tồn kho" value={counts?.inventory_records || 0} />
+            <Statistic title="Dòng tồn kho" value={counts?.inventory_records || 0} />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={4}>
+          <Card>
+            <Statistic title="SL thực tế trong kho" value={counts?.current_stock_quantity || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
@@ -140,7 +145,13 @@ export default function AiDataPage() {
           columns={[
             { title: "Sản phẩm", dataIndex: "product_name" },
             { title: "Bản ghi xuất", dataIndex: "transaction_records" },
-            { title: "Ngày huấn luyện", dataIndex: "unique_training_days" },
+            { title: "Ngày dữ liệu thực tế", dataIndex: "unique_training_days" },
+            { title: "SL còn lại toàn hệ thống", dataIndex: "current_stock_quantity" },
+            {
+              title: "Accuracy thấp nhất",
+              dataIndex: "minimum_accuracy",
+              render: (value: number) => `${value}%`,
+            },
             { title: "Tổng SL xuất", dataIndex: "total_export_quantity" },
             { title: "Yếu tố ngoại vi", dataIndex: "external_factor_records" },
             {

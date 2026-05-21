@@ -1,7 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from io import BytesIO
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 from app.db.session import get_session
+from app.api.deps import require_permissions
 from app.services.product_service import get_products, get_product, create_product, update_product, delete_product
+from app.services.product_import_service import build_product_import_template, import_products_from_file
 from app.schemas.product_schema import ProductCreate
 
 router = APIRouter()
@@ -25,6 +30,34 @@ def get_all(
     )
 
 
+@router.get("/import-template")
+def download_import_template(
+    _: object = Depends(require_permissions("manage_products")),
+):
+    content = build_product_import_template()
+    return StreamingResponse(
+        BytesIO(content),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": 'attachment; filename="product-import-template.xlsx"'
+        },
+    )
+
+
+@router.post("/import-file")
+async def import_file(
+    file: UploadFile = File(...),
+    _: object = Depends(require_permissions("manage_products")),
+    session: Session = Depends(get_session),
+):
+    file_bytes = await file.read()
+    return import_products_from_file(
+        session,
+        file_bytes=file_bytes,
+        filename=file.filename or "products.xlsx",
+    )
+
+
 @router.get("/{product_id}")
 def get_one(product_id: int, session: Session = Depends(get_session)):
     product = get_product(session, product_id)
@@ -34,12 +67,21 @@ def get_one(product_id: int, session: Session = Depends(get_session)):
 
 
 @router.post("/")
-def create(data: ProductCreate, session: Session = Depends(get_session)):
+def create(
+    data: ProductCreate,
+    _: object = Depends(require_permissions("manage_products")),
+    session: Session = Depends(get_session),
+):
     return create_product(session, data.model_dump())
 
 
 @router.put("/{product_id}")
-def update(product_id: int, data: ProductCreate, session: Session = Depends(get_session)):
+def update(
+    product_id: int,
+    data: ProductCreate,
+    _: object = Depends(require_permissions("manage_products")),
+    session: Session = Depends(get_session),
+):
     product = update_product(session, product_id, data)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -47,7 +89,11 @@ def update(product_id: int, data: ProductCreate, session: Session = Depends(get_
 
 
 @router.delete("/{product_id}")
-def delete(product_id: int, session: Session = Depends(get_session)):
+def delete(
+    product_id: int,
+    _: object = Depends(require_permissions("manage_products")),
+    session: Session = Depends(get_session),
+):
     success = delete_product(session, product_id)
     if not success:
         raise HTTPException(status_code=404, detail="Product not found")

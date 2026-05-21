@@ -1,6 +1,7 @@
 export interface AiDataCounts {
   products: number;
   inventory_records: number;
+  current_stock_quantity: number;
   stock_transactions: number;
   export_transactions: number;
   forecast_results: number;
@@ -13,6 +14,8 @@ export interface ProductTrainingQuality {
   transaction_records: number;
   unique_training_days: number;
   total_export_quantity: number;
+  current_stock_quantity: number;
+  minimum_accuracy: number;
   external_factor_records: number;
   model_ready: "INSUFFICIENT_DATA" | "PROPHET_READY" | "LSTM_TRANSFORMER_READY";
   missing_for_deep_learning_days: number;

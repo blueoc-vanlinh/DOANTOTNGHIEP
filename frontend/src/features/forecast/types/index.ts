@@ -11,6 +11,11 @@ export interface ForecastPoint {
 export interface ForecastResponse {
     product_id: number;
     product_name: string;
+    current_inventory: number;
+    reserved_quantity: number;
+    oncoming_quantity: number;
+    available_quantity: number;
+    min_threshold: number;
 
     forecast_days: number;
 

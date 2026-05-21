@@ -41,6 +41,7 @@ def create_import_order(session: Session, data: dict, user_id: int):
             order_item = ImportOrderItem(
                 import_order_id=order.id,
                 product_id=item["product_id"],
+                warehouse_id=item["warehouse_id"],
                 quantity=item["quantity"],
                 unit_cost=item["unit_cost"]
             )

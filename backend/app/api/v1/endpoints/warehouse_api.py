@@ -3,6 +3,7 @@ from sqlmodel import Session
 from typing import Optional
 
 from app.db.session import get_session
+from app.api.deps import require_permissions
 from app.services.warehouse_service import (
     get_warehouses,
     get_warehouse,
@@ -44,6 +45,7 @@ def get_one_warehouse(
 @router.post("/")
 def create_new_warehouse(
     data: dict,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session),
 ):
     return create_warehouse(session, data)
@@ -53,6 +55,7 @@ def create_new_warehouse(
 def update_one_warehouse(
     warehouse_id: int,
     data: dict,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session),
 ):
     return update_warehouse(session, warehouse_id, data)
@@ -61,6 +64,7 @@ def update_one_warehouse(
 @router.delete("/{warehouse_id}")
 def delete_one_warehouse(
     warehouse_id: int,
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session),
 ):
     return delete_warehouse(session, warehouse_id)

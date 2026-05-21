@@ -68,6 +68,20 @@ export default function DashboardPage() {
   const [targetDate, setTargetDate] = useState<string | undefined>();
   const [targetMonth, setTargetMonth] = useState<string | undefined>();
   const [targetYear, setTargetYear] = useState<number | undefined>();
+
+  const handlePeriodChange = (value: DashboardPeriod) => {
+    setPeriod(value);
+    if (value !== "day") {
+      setTargetDate(undefined);
+    }
+    if (value !== "month") {
+      setTargetMonth(undefined);
+    }
+    if (value !== "year") {
+      setTargetYear(undefined);
+    }
+  };
+
   const { data, isLoading } = useDashboardData({
     period,
     target_date: period === "day" ? targetDate : undefined,
@@ -129,7 +143,7 @@ export default function DashboardPage() {
 
         <Segmented
           value={period}
-          onChange={(value) => setPeriod(value as DashboardPeriod)}
+          onChange={(value) => handlePeriodChange(value as DashboardPeriod)}
           options={[
             { label: "Ngày", value: "day" },
             { label: "Tháng", value: "month" },

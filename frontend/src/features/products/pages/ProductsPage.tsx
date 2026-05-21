@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { Input } from "antd";
+import { Input, Modal, Space, Upload, message } from "antd";
+import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
 
 import { useDebounce } from "use-debounce";
 
@@ -20,10 +21,13 @@ import {
     useCreateProduct,
     useUpdateProduct,
     useDeleteProduct,
+    useDownloadProductImportTemplate,
+    useImportProducts,
 } from "../hooks";
 
 import type {
     Product,
+    ProductImportResponse,
     ProductInput,
 } from "../types";
 
@@ -86,6 +90,13 @@ export default function ProductsPage() {
 
     const deleteMutation =
         useDeleteProduct();
+
+    const importMutation =
+        useImportProducts();
+
+    const downloadTemplateMutation =
+        useDownloadProductImportTemplate();
+
     const handleCreate = () => {
         setEditingProduct(null);
 
@@ -159,6 +170,90 @@ export default function ProductsPage() {
         }
     };
 
+    const showImportResult = (
+        result: ProductImportResponse
+    ) => {
+        const lines = result.errors
+            .slice(0, 8)
+            .map((item) => `Dong ${item.row}: ${item.message}`);
+
+        Modal.info({
+            title: "Ket qua nhap file san pham",
+            width: 720,
+            content: (
+                <div style={{ marginTop: 12 }}>
+                    <p>Tong dong: {result.total_rows}</p>
+                    <p>Tao moi: {result.created_count}</p>
+                    <p>Cap nhat: {result.updated_count}</p>
+                    <p>Loi: {result.error_count}</p>
+                    {lines.length > 0 && (
+                        <div>
+                            <p style={{ marginBottom: 8 }}>Chi tiet loi:</p>
+                            <pre
+                                style={{
+                                    whiteSpace: "pre-wrap",
+                                    background: "#fafafa",
+                                    padding: 12,
+                                    borderRadius: 8,
+                                }}
+                            >
+                                {lines.join("\n")}
+                            </pre>
+                        </div>
+                    )}
+                </div>
+            ),
+        });
+    };
+
+    const downloadErrorReport = (result: ProductImportResponse) => {
+        if (!result.error_report_content_base64) {
+            return;
+        }
+
+        const binary = window.atob(result.error_report_content_base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let index = 0; index < binary.length; index += 1) {
+            bytes[index] = binary.charCodeAt(index);
+        }
+
+        const blob = new Blob(
+            [bytes],
+            {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            }
+        );
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = result.error_report_file_name || "product-import-errors.xlsx";
+        link.click();
+        window.URL.revokeObjectURL(url);
+    };
+
+    const handleImportFile = (file: File) => {
+        importMutation.mutate(file, {
+            onSuccess: (result) => {
+                if (result.created_count > 0 || result.updated_count > 0) {
+                    message.success(
+                        `Da nhap ${result.created_count} dong moi va cap nhat ${result.updated_count} dong`
+                    );
+                }
+                if (result.error_count > 0) {
+                    message.warning(
+                        `${result.error_count} dong loi da duoc tach ra file Excel de ban sua`
+                    );
+                    downloadErrorReport(result);
+                }
+                if (result.created_count === 0 && result.updated_count === 0 && result.error_count === 0) {
+                    message.info("Khong co du lieu nao duoc xu ly");
+                }
+                showImportResult(result);
+            },
+        });
+        return false;
+    };
+
     if (isLoading)
         return <LoadingPage />;
 
@@ -191,14 +286,40 @@ export default function ProductsPage() {
                     Quản lý Sản phẩm
                 </h2>
 
-                <Button
-                    type="primary"
-                    onClick={
-                        handleCreate
-                    }
-                >
-                    + Thêm sản phẩm
-                </Button>
+                <Space wrap>
+                    <Button
+                        onClick={() =>
+                            downloadTemplateMutation.mutate()
+                        }
+                        loading={downloadTemplateMutation.isPending}
+                        icon={<DownloadOutlined />}
+                    >
+                        Tải file mẫu Excel
+                    </Button>
+
+                    <Upload
+                        accept=".xlsx,.csv"
+                        showUploadList={false}
+                        beforeUpload={handleImportFile}
+                        disabled={importMutation.isPending}
+                    >
+                        <Button
+                            icon={<UploadOutlined />}
+                            loading={importMutation.isPending}
+                        >
+                            Nhập sản phẩm từ Excel
+                        </Button>
+                    </Upload>
+
+                    <Button
+                        type="primary"
+                        onClick={
+                            handleCreate
+                        }
+                    >
+                        + Thêm sản phẩm
+                    </Button>
+                </Space>
             </div>
 
             <div

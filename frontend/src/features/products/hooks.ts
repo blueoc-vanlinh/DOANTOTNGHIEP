@@ -4,6 +4,8 @@ import {
     createProduct,
     updateProduct,
     deleteProduct,
+    importProducts,
+    downloadProductImportTemplate,
 } from "./api";
 import type { Product } from "./types";
 import { useCategories } from "@/features/category/hooks";
@@ -136,6 +138,31 @@ export const useDeleteProduct = () => {
 
         onSettled: () => {
             qc.invalidateQueries({ queryKey: ["products"] });
+        },
+    });
+};
+
+export const useImportProducts = () => {
+    const qc = useQueryClient();
+
+    return useMutation({
+        mutationFn: importProducts,
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["products"] });
+        },
+    });
+};
+
+export const useDownloadProductImportTemplate = () => {
+    return useMutation({
+        mutationFn: downloadProductImportTemplate,
+        onSuccess: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "product-import-template.xlsx";
+            link.click();
+            window.URL.revokeObjectURL(url);
         },
     });
 };

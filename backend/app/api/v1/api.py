@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import import_api, export_api, product_api, inventory_api, transaction_api, category_api, supplier_api, warehouse_api, user_api, dashboard_api, auth_api, forecast_api, invoice_api, ai_data_api, warehouse_automation_api, role_api, momo_api, notification_api, auditlog_api
+from app.api.v1.endpoints import import_api, export_api, product_api, inventory_api, transaction_api, category_api, supplier_api, warehouse_api, user_api, dashboard_api, auth_api, forecast_api, invoice_api, ai_data_api, warehouse_automation_api, role_api, momo_api, notification_api, auditlog_api, warehouse_operations_api, report_api
 
 api_router = APIRouter()
 api_router.include_router(dashboard_api.router, prefix="/dashboard", tags=["Dashboard"])
@@ -21,3 +21,5 @@ api_router.include_router(warehouse_automation_api.router, prefix="/warehouse-au
 api_router.include_router(momo_api.router, prefix="/momo", tags=["MoMo"])
 api_router.include_router(notification_api.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(auditlog_api.router, prefix="/audit-logs", tags=["Audit Logs"])
+api_router.include_router(warehouse_operations_api.router, prefix="/warehouse-operations", tags=["Warehouse Operations"])
+api_router.include_router(report_api.router, prefix="/reports", tags=["Reports"])

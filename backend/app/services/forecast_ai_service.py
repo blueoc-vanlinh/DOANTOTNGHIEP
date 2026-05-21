@@ -12,6 +12,7 @@ from sqlmodel import Session, select
 from datetime import datetime, timedelta
 from collections import defaultdict
 from app.models.external_factor import ExternalFactor
+from app.models.inventory import Inventory
 from app.models.product import Product
 from app.models.transaction import StockTransaction
 from app.services.lstm_forecast_service import forecast_with_lstm_if_available
@@ -31,6 +32,19 @@ def ai_forecast_product(
             status_code=404,
             detail="Product not found",
         )
+
+    inventory_rows = session.exec(
+        select(Inventory).where(
+            Inventory.product_id == product_id,
+            Inventory.is_deleted.is_(False),
+        )
+    ).all()
+    current_inventory = sum(item.quantity for item in inventory_rows)
+    reserved_quantity = sum(item.reserved_quantity for item in inventory_rows)
+    oncoming_quantity = sum(item.oncoming_quantity for item in inventory_rows)
+    min_threshold = sum(item.min_threshold for item in inventory_rows)
+    available_quantity = current_inventory - reserved_quantity + oncoming_quantity
+
     transactions = session.exec(
         select(StockTransaction)
         .where(
@@ -45,6 +59,11 @@ def ai_forecast_product(
         return {
             "product_id": product.id,
             "product_name": product.name,
+            "current_inventory": current_inventory,
+            "reserved_quantity": reserved_quantity,
+            "oncoming_quantity": oncoming_quantity,
+            "available_quantity": available_quantity,
+            "min_threshold": min_threshold,
             "data": [],
         }
     rows = []
@@ -115,6 +134,16 @@ def ai_forecast_product(
 
             "product_name": product.name,
 
+            "current_inventory": current_inventory,
+
+            "reserved_quantity": reserved_quantity,
+
+            "oncoming_quantity": oncoming_quantity,
+
+            "available_quantity": available_quantity,
+
+            "min_threshold": min_threshold,
+
             "forecast_days": 14,
 
             "recommended_import": round(
@@ -160,6 +189,16 @@ def ai_forecast_product(
         "product_id": product.id,
 
         "product_name": product.name,
+
+        "current_inventory": current_inventory,
+
+        "reserved_quantity": reserved_quantity,
+
+        "oncoming_quantity": oncoming_quantity,
+
+        "available_quantity": available_quantity,
+
+        "min_threshold": min_threshold,
 
         "forecast_days": 30,
 

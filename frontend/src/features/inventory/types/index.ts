@@ -27,7 +27,8 @@ export interface InventoryResponse {
     warehouse_id?: number;
 }
 export interface InventoryInput {
-    product_id: number;
-    warehouse_id: number;
     quantity: number;
+    reserved_quantity?: number;
+    oncoming_quantity?: number;
+    min_threshold?: number;
 }

@@ -29,6 +29,7 @@ class ImportOrderItem(BaseModel, table=True):
     product_id: int = Field(
         foreign_key="products.id"
     )
+    warehouse_id: int | None = Field(default=None, foreign_key="warehouses.id")
 
     quantity: int
     unit_cost: float

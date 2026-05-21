@@ -182,6 +182,51 @@ export default function ForecastPage() {
               />
             </Card>
           </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Tồn kho thực tế"
+                value={data.current_inventory}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Tồn khả dụng"
+                value={data.available_quantity}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Hàng chờ nhập"
+                value={data.oncoming_quantity}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Đã giữ chỗ"
+                value={data.reserved_quantity}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Ngưỡng tối thiểu"
+                value={data.min_threshold}
+              />
+            </Card>
+          </Col>
         </Row>
       )}
 

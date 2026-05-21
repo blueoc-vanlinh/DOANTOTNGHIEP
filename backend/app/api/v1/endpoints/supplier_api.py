@@ -3,6 +3,7 @@ from sqlmodel import Session
 from typing import Optional
 
 from app.db.session import get_session
+from app.api.deps import require_permissions
 from app.services.supplier_service import (
     get_suppliers,
     get_supplier,
@@ -43,6 +44,7 @@ def get_one_supplier(
 @router.post("/")
 def create_new_supplier(
     data: dict,
+    _: object = Depends(require_permissions("manage_suppliers")),
     session: Session = Depends(get_session),
 ):
     return create_supplier(session, data)
@@ -51,6 +53,7 @@ def create_new_supplier(
 def update_one_supplier(
     supplier_id: int,
     data: dict,
+    _: object = Depends(require_permissions("manage_suppliers")),
     session: Session = Depends(get_session),
 ):
     return update_supplier(session, supplier_id, data)
@@ -59,6 +62,7 @@ def update_one_supplier(
 @router.delete("/{supplier_id}")
 def delete_one_supplier(
     supplier_id: int,
+    _: object = Depends(require_permissions("manage_suppliers")),
     session: Session = Depends(get_session),
 ):
     return delete_supplier(session, supplier_id)

@@ -38,6 +38,22 @@ export interface ProductsResponse {
     search?: string;
 }
 
+export interface ProductImportError {
+    row: number;
+    message: string;
+}
+
+export interface ProductImportResponse {
+    file_name: string;
+    total_rows: number;
+    created_count: number;
+    updated_count: number;
+    error_count: number;
+    errors: ProductImportError[];
+    error_report_file_name?: string | null;
+    error_report_content_base64?: string | null;
+}
+
 export type ProductInput = {
     name: string;
     sku: string;

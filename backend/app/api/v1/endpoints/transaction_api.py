@@ -4,6 +4,7 @@ from sqlalchemy import desc, func
 from typing import Optional
 
 from app.db.session import get_session
+from app.api.deps import require_permissions
 from app.models.transaction import StockTransaction
 from app.models.product import Product
 from app.models.warehouse import Warehouse
@@ -12,6 +13,7 @@ router = APIRouter(tags=["Stock Transactions"])
 
 @router.get("/")
 def list_transactions(
+    _: object = Depends(require_permissions("manage_inventory")),
     session: Session = Depends(get_session),
     product_id: Optional[int] = None,
     warehouse_id: Optional[int] = None,

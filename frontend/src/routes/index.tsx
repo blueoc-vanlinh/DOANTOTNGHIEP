@@ -10,6 +10,7 @@ import ExportPage from "@/features/export/pages/ExportPage";
 import ForecastPage from "@/features/forecast/pages/Forecastpage";
 import AiDataPage from "@/features/ai-data/pages/AiDataPage";
 import WarehouseAutomationPage from "@/features/warehouse-automation/pages/WarehouseAutomationPage";
+import WarehouseOperationsPage from "@/features/warehouse-operations/pages/WarehouseOperationsPage";
 import InvoicePage from "@/features/invoices/pages/InvoicePage";
 import CategoryPage from "@/features/category/pages/CategoryPage";
 import SupplierPage from "@/features/supplier/pages/SupplierPage";
@@ -33,6 +34,7 @@ import {
   forecastUrl,
   aiDataUrl,
   warehouseAutomationUrl,
+  warehouseOperationsUrl,
   invoicesUrl,
   suppliersUrl,
   transactionsUrl,
@@ -72,6 +74,7 @@ export const router = createBrowserRouter([
             children: [
               { path: aiDataUrl, element: <AiDataPage /> },
               { path: warehouseAutomationUrl, element: <WarehouseAutomationPage /> },
+              { path: warehouseOperationsUrl, element: <WarehouseOperationsPage /> },
               { path: usersUrl, element: <UsersPage /> },
               { path: rolesUrl, element: <RolePage /> },
               { path: auditLogsUrl, element: <AuditLogPage /> },

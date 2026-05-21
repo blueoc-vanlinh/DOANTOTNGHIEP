@@ -11,4 +11,12 @@ from app.models import (
     ExternalFactor as ExternalFactor,
     Notification as Notification,
     AuditLog as AuditLog,
+    StorageBin as StorageBin,
+    InventoryBatch as InventoryBatch,
+    ReturnOrder as ReturnOrder,
+    ReturnOrderItem as ReturnOrderItem,
+    Stocktake as Stocktake,
+    StocktakeItem as StocktakeItem,
+    PurchaseOrder as PurchaseOrder,
+    PurchaseOrderItem as PurchaseOrderItem,
 )

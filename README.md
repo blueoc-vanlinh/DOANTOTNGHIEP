@@ -56,7 +56,7 @@ Mac dinh frontend chay tai `http://127.0.0.1:5173`.
 
 ## Tai Khoan Seed
 
-Seed tao du lieu mau cho san pham, kho, giao dich AI, yeu to ngoai vi, hoa don va role/quyen. Tat ca tai khoan mau co mat khau `Admin@123`.
+Seed tao du lieu mau cho san pham, kho, giao dich AI, yeu to ngoai vi, hoa don va role/quyen. Tat ca tai khoan mau co mat khau `000000`.
 
 | Role | Email |
 | --- | --- |
