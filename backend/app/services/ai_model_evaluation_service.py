@@ -48,7 +48,7 @@ def get_best_model_summary() -> dict:
     ]
     if not rows:
         return {
-            "model": "AI Forecast",
+            "model": None,
             "accuracy": None,
             "dataset": None,
             "train_points": 0,
