@@ -188,10 +188,19 @@ def _build_recommendation(counts: dict, product_quality: list[dict]):
         item for item in product_quality if item["model_ready"] == "LSTM_TRANSFORMER_READY"
     ]
     if ready_for_deep_learning:
-        return "Dataset is large enough for deep learning experiments on selected products."
+        return (
+            "Hybrid dataset đang đủ tốt để chạy deep learning cho một số sản phẩm: "
+            "public dataset + external factors + synthetic warehouse data + real operational logs."
+        )
     if counts["export_transactions"] == 0:
-        return "No export history is available. Seed or collect real sales/export data before AI training."
-    return "Keep Prophet as baseline and collect more daily export history plus external factors before LSTM/Transformer."
+        return (
+            "Chưa có lịch sử xuất kho. Hãy seed hoặc nạp dữ liệu bán hàng/xuất kho thật "
+            "trước khi train AI."
+        )
+    return (
+        "Giữ Prophet làm baseline và tiếp tục mở rộng hybrid data architecture: "
+        "daily export history + weather/CPI/fuel/holiday/ecommerce trend + internal warehouse logs."
+    )
 
 
 def _estimate_minimum_accuracy(

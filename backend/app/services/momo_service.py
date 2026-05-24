@@ -46,11 +46,12 @@ def create_momo_payment(invoice):
     if amount > 50000000:
         raise HTTPException(status_code=400, detail="MoMo amount exceeds sandbox limit")
 
-    request_id = f"{invoice_number}-{int(time.time())}"
-    order_id = invoice_number
+    payment_token = int(time.time() * 1000)
+    request_id = f"{invoice_number}-{payment_token}"
+    order_id = request_id
     order_info = f"Thanh toan hoa don {invoice_number}"
-    request_type = "captureWallet"
-    extra_data = ""
+    request_type = "payWithMethod"
+    extra_data = str(invoice_id)
 
     raw_signature = (
         f"accessKey={MOMO_ACCESS_KEY}"
@@ -103,6 +104,11 @@ def create_momo_payment(invoice):
     except URLError as exc:
         raise HTTPException(status_code=502, detail=f"Cannot connect to MoMo: {exc.reason}") from exc
 
+    result_code = data.get("resultCode")
+    if result_code not in (None, 0):
+        message = data.get("message") or "MoMo rejected request"
+        raise HTTPException(status_code=502, detail=message)
+
     return {
         "invoice_id": invoice_id,
         "invoice_number": invoice_number,
@@ -112,7 +118,7 @@ def create_momo_payment(invoice):
         "pay_url": data.get("payUrl"),
         "deeplink": data.get("deeplink"),
         "qr_code_url": data.get("qrCodeUrl") or data.get("payUrl"),
-        "result_code": data.get("resultCode"),
+        "result_code": result_code,
         "message": data.get("message"),
         "raw": data,
     }
@@ -123,12 +129,23 @@ def handle_momo_ipn(session: Session, payload: dict):
     if not order_id:
         raise HTTPException(status_code=400, detail="Missing MoMo orderId")
 
-    invoice = session.exec(
-        select(Invoice).where(
-            Invoice.invoice_number == str(order_id),
-            Invoice.is_deleted.is_(False),
-        )
-    ).first()
+    invoice_id = payload.get("extraData")
+    invoice = None
+    if invoice_id:
+        try:
+            invoice = session.get(Invoice, int(invoice_id))
+        except (TypeError, ValueError):
+            invoice = None
+
+    invoice_number = str(order_id).rsplit("-", 1)[0]
+    if not invoice:
+        invoice = session.exec(
+            select(Invoice).where(
+                Invoice.invoice_number == invoice_number,
+                Invoice.is_deleted.is_(False),
+            )
+        ).first()
+
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
 

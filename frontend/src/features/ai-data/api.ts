@@ -1,6 +1,7 @@
 import apiClient from "@/lib/api";
 import type {
   AiDataOverview,
+  AiModelBenchmarks,
   DeepLearningDataset,
   ExternalFactor,
   ExternalFactorInput,
@@ -9,6 +10,16 @@ import type {
 
 export const getAiDataOverview = async (): Promise<AiDataOverview> => {
   const res = await apiClient.get("/ai-data/overview");
+  return res.data;
+};
+
+export const getAiModelBenchmarks = async (): Promise<AiModelBenchmarks> => {
+  const res = await apiClient.get("/ai-data/model-benchmarks");
+  return res.data;
+};
+
+export const trainAiForecast = async () => {
+  const res = await apiClient.post("/forecast/train");
   return res.data;
 };
 

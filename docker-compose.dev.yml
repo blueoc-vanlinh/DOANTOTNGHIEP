@@ -26,6 +26,10 @@ services:
     container_name: inventory_backend
     restart: always
     env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:Seta2022!@db:5432/inventory_db
+      MOMO_REDIRECT_URL: http://localhost:5173/invoices
+      MOMO_IPN_URL: http://localhost:8000/api/v1/momo/ipn
     ports:
       - "8000:8000"
     volumes:

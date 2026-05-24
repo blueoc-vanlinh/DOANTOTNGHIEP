@@ -128,11 +128,8 @@ export default function ForecastPage() {
           type={data.external_factors_used ? "success" : "info"}
           showIcon
           style={{ marginBottom: 24 }}
-          message={`Mô hình hiện tại: ${data.model_used || "Prophet"}`}
-          description={`${data.external_factors_used
-            ? "Dự báo đã sử dụng yếu tố ngoại vi."
-            : "Chưa có yếu tố ngoại vi phù hợp cho sản phẩm này."
-            } ${data.deep_learning_status}`}
+          message={`Độ chính xác AI: ${data.model_accuracy ? `${data.model_accuracy}%` : "Đang cập nhật"}`}
+          description={`${data.ai_explanation || "AI đang phân tích nhu cầu nhập hàng."} Model: ${data.model_used || "Prophet"} · Nguồn: ${data.model_source === "forecast_results" ? "Đã train" : "Dự báo trực tiếp"} · Dataset: ${data.dataset_used || "N/A"} · Train/Test: ${data.train_points || 0}/${data.test_points || 0}`}
         />
       )}
 
@@ -224,6 +221,24 @@ export default function ForecastPage() {
               <Statistic
                 title="Ngưỡng tối thiểu"
                 value={data.min_threshold}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Nguồn mô hình"
+                value={data.model_source === "forecast_results" ? "Đã train" : "On-demand"}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card>
+              <Statistic
+                title="Dòng forecast đã lưu"
+                value={data.trained_forecast_rows || 0}
               />
             </Card>
           </Col>

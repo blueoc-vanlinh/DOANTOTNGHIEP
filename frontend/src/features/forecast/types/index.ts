@@ -6,6 +6,8 @@ export interface ForecastPoint {
     upper_bound: number;
     actual?: number;
     external_impact?: number;
+    predicted_stock?: number;
+    days_to_out_of_stock?: number | null;
 }
 
 export interface ForecastResponse {
@@ -23,6 +25,14 @@ export interface ForecastResponse {
 
     warning?: string;
     model_used?: string;
+    model_source?: string;
+    model_accuracy?: number | null;
+    accuracy_basis?: string | null;
+    dataset_used?: string | null;
+    train_points?: number;
+    test_points?: number;
+    ai_explanation?: string;
+    trained_forecast_rows?: number;
     external_factors_used?: boolean;
     deep_learning_status?: string;
     history?: ForecastPoint[];

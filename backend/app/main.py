@@ -10,6 +10,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", 
                    "http://127.0.0.1:5173",
+                   "http://localhost:5174",
+                   "http://127.0.0.1:5174",
+                   "http://localhost:5175",
+                   "http://127.0.0.1:5175",
                    "http://192.168.1.50:5173",
                    "http://192.168.1.50:5174",
                    "http://100.81.28.32:5173",
@@ -18,21 +22,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.get("/ai")
-async def ai_test():
-    from openai import OpenAI
-
-    client = OpenAI()
-    response = client.chat.completions.create(
-        model="gpt-5",
-        messages=[
-            {
-                "role": "user",
-                "content": "hello from FastAPI"
-            }
-        ]
-    )
-
-    return {
-        "response": response.choices[0].message.content
-    }

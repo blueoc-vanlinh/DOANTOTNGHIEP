@@ -68,3 +68,14 @@ coverage.xml
 *.h5
 *.joblib
 models_checkpoint/
+
+# dataset
+dataset/
+*.csv
+
+# model
+*.pkl
+
+# logs
+logs/
+*.log

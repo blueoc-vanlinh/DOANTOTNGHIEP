@@ -21,9 +21,11 @@ import SearchCombobox from "@/components/common/SearchCombobox";
 import { useProducts } from "@/features/products/hooks";
 import {
   useAiDataOverview,
+  useAiModelBenchmarks,
   useCreateExternalFactor,
   useDeepLearningDataset,
   useExternalFactors,
+  useTrainAiForecast,
 } from "../hooks";
 import type {
   ExternalFactor,
@@ -45,13 +47,40 @@ const readinessLabel: Record<ProductTrainingQuality["model_ready"], string> = {
   LSTM_TRANSFORMER_READY: "Sẵn sàng LSTM/Transformer",
 };
 
+const factorTypeOptions = [
+  { value: "WEATHER", label: "Weather / mùa vụ" },
+  { value: "CPI", label: "CPI / lạm phát" },
+  { value: "FUEL_PRICE", label: "Giá xăng dầu / logistics" },
+  { value: "HOLIDAY_VN", label: "Ngày lễ / sự kiện VN" },
+  { value: "ECOMMERCE_TREND", label: "Traffic / ecommerce trend" },
+  { value: "PROMO", label: "Khuyến mãi" },
+  { value: "SCHOOL_HOLIDAY", label: "School holiday" },
+  { value: "MARKET", label: "Thị trường" },
+  { value: "PRICE", label: "Biến động giá" },
+  { value: "SUPPLY", label: "Chuỗi cung ứng" },
+  { value: "EVENT", label: "Sự kiện khác" },
+];
+
+const factorSourceOptions = [
+  { value: "GSO_VN", label: "Tổng cục Thống kê VN (CPI)" },
+  { value: "PETROLIMEX", label: "Petrolimex (xăng dầu)" },
+  { value: "VN_CALENDAR", label: "Calendar VN nội bộ" },
+  { value: "M5_PUBLIC", label: "M5 public dataset" },
+  { value: "WALMART_PUBLIC", label: "Walmart public dataset" },
+  { value: "ROSSMANN_PUBLIC", label: "Rossmann public dataset" },
+  { value: "INTERNAL_LOGS", label: "Real operational logs" },
+  { value: "SYNTHETIC_HYBRID", label: "Synthetic hybrid dataset" },
+];
+
 export default function AiDataPage() {
   const [form] = Form.useForm<ExternalFactorInput>();
   const [productId, setProductId] = useState<number | undefined>();
   const [productSearch, setProductSearch] = useState("");
   const overview = useAiDataOverview();
+  const benchmarks = useAiModelBenchmarks();
   const externalFactors = useExternalFactors();
   const createFactor = useCreateExternalFactor();
+  const trainAi = useTrainAiForecast();
   const dataset = useDeepLearningDataset(productId);
   const { data: productRes } = useProducts({
     page: 1,
@@ -64,6 +93,20 @@ export default function AiDataPage() {
   const latestRows = useMemo(
     () => (dataset.data?.rows || []).slice(-12),
     [dataset.data?.rows]
+  );
+  const bestBenchmark = useMemo(
+    () =>
+      (benchmarks.data?.datasets || [])
+        .flatMap((dataset) =>
+          dataset.models.map((model) => ({
+            dataset: dataset.dataset,
+            train_points: dataset.train_points,
+            test_points: dataset.test_points,
+            ...model,
+          }))
+        )
+        .sort((a, b) => b.accuracy - a.accuracy)[0],
+    [benchmarks.data?.datasets]
   );
 
   const handleCreateFactor = async () => {
@@ -136,6 +179,94 @@ export default function AiDataPage() {
         />
       )}
 
+      <Alert
+        type="success"
+        showIcon
+        style={{ marginBottom: 24 }}
+        message="Hybrid Data Architecture cho AI"
+        description="Public dataset + synthetic warehouse data + external factors + real operational logs. Đây là hướng mình đang đẩy vào seed/training pipeline để AI forecast hoạt động thật trên project."
+      />
+
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} md={8}>
+          <Card>
+            <Statistic title="Model tốt nhất" value={bestBenchmark?.model || "Đang cập nhật"} />
+            <Text type="secondary">{bestBenchmark?.dataset || "Chưa có dataset"}</Text>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card>
+            <Statistic title="Độ chính xác tốt nhất" value={bestBenchmark?.accuracy || 0} suffix="%" />
+            <Text type="secondary">Train/Test: {bestBenchmark?.train_points || 0}/{bestBenchmark?.test_points || 0}</Text>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card>
+            <Button
+              type="primary"
+              loading={trainAi.isPending}
+              onClick={() =>
+                trainAi.mutate(undefined, {
+                  onSuccess: () => message.success("Đã train lại AI Forecast"),
+                  onError: (error) => {
+                    const err = error as { message?: string };
+                    message.error(err.message || "Không train lại được AI");
+                  },
+                })
+              }
+            >
+              Train AI Forecast
+            </Button>
+            <div style={{ marginTop: 8 }}>
+              <Text type="secondary">Dùng sau khi import/export nhiều dữ liệu mới.</Text>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Card title="Độ chính xác model AI theo dataset" style={{ marginBottom: 24 }}>
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={`Accuracy tốt nhất: ${benchmarks.data?.best_accuracy || 0}%`}
+          description={benchmarks.data?.metric_note || "Đang đọc train/test split từ dataset/splits"}
+        />
+        <Table
+          rowKey={(record) => `${record.dataset}-${record.model}`}
+          loading={benchmarks.isLoading}
+          dataSource={(benchmarks.data?.datasets || []).flatMap((dataset) =>
+            dataset.models.map((model) => ({
+              dataset: dataset.dataset,
+              source: dataset.source,
+              target: dataset.target,
+              train_points: dataset.train_points,
+              test_points: dataset.test_points,
+              evaluated_points: dataset.evaluated_points,
+              ...model,
+            }))
+          )}
+          pagination={false}
+          columns={[
+            { title: "Dataset", dataIndex: "dataset" },
+            { title: "Model", dataIndex: "model" },
+            {
+              title: "Accuracy",
+              dataIndex: "accuracy",
+              render: (value: number) => <Tag color={value >= 80 ? "green" : value >= 60 ? "blue" : "orange"}>{value}%</Tag>,
+              sorter: (a, b) => a.accuracy - b.accuracy,
+            },
+            { title: "MAPE", dataIndex: "mape", render: (value: number) => `${value}%` },
+            { title: "WMAPE", dataIndex: "wmape", render: (value: number) => `${value}%` },
+            { title: "MAE", dataIndex: "mae" },
+            { title: "RMSE", dataIndex: "rmse" },
+            { title: "Train points", dataIndex: "train_points" },
+            { title: "Test points", dataIndex: "test_points" },
+            { title: "Target", dataIndex: "target" },
+          ]}
+        />
+      </Card>
+
       <Card title="Chất lượng dữ liệu theo sản phẩm" style={{ marginBottom: 24 }}>
         <Table<ProductTrainingQuality>
           rowKey="product_id"
@@ -186,12 +317,7 @@ export default function AiDataPage() {
                 rules={[{ required: true, message: "Chọn loại yếu tố" }]}
               >
                 <Select
-                  options={[
-                    { value: "PRICE", label: "Giá cả" },
-                    { value: "MARKET", label: "Thị trường" },
-                    { value: "EVENT", label: "Sự kiện" },
-                    { value: "SUPPLY", label: "Chuỗi cung ứng" },
-                  ]}
+                  options={factorTypeOptions}
                 />
               </Form.Item>
               <Form.Item
@@ -226,7 +352,12 @@ export default function AiDataPage() {
                 </Form.Item>
               </Space>
               <Form.Item name="source" label="Nguồn">
-                <Input placeholder="Nội bộ, thị trường, nhà cung cấp..." />
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder="Chọn nguồn hoặc để trống"
+                  options={factorSourceOptions}
+                />
               </Form.Item>
               <Form.Item name="note" label="Ghi chú">
                 <Input.TextArea rows={3} />

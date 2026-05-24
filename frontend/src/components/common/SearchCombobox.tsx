@@ -3,7 +3,7 @@ import type {
   SelectProps,
   DefaultOptionType,
 } from "antd/es/select";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 
 interface SearchComboboxProps
   extends Omit<
@@ -34,12 +34,16 @@ const SearchCombobox: FC<
           input: string,
           option?: DefaultOptionType
         ) => {
-          const searchText =
-            (
-              option as DefaultOptionType & {
-                searchText?: string;
-              }
-            )?.searchText || "";
+          const typedOption = option as DefaultOptionType & {
+            searchText?: string;
+          };
+          const searchText = [
+            typedOption?.searchText,
+            nodeToSearchText(typedOption?.label),
+            typedOption?.value,
+          ]
+            .filter(Boolean)
+            .join(" ");
 
           return searchText
             .toLowerCase()
@@ -66,3 +70,19 @@ const SearchCombobox: FC<
   };
 
 export default SearchCombobox;
+
+function nodeToSearchText(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(nodeToSearchText).join(" ");
+  }
+
+  if (node && typeof node === "object" && "props" in node) {
+    return nodeToSearchText((node as { props?: { children?: ReactNode } }).props?.children);
+  }
+
+  return "";
+}

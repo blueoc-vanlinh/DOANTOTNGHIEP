@@ -115,4 +115,17 @@ export interface DashboardResponse {
         end: string;
         chart_label: string;
     };
+
+    ai_status?: {
+        best_model?: string | null;
+        accuracy?: number | null;
+        dataset_used?: string | null;
+        train_points?: number;
+        test_points?: number;
+        last_train_at?: string | null;
+        forecast_rows: number;
+        forecast_product_count: number;
+        recommended_import_count: number;
+        risk_product_count: number;
+    };
 }

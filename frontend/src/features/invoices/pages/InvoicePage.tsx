@@ -13,6 +13,7 @@ import {
   Tag,
   Typography,
 } from "antd";
+import { CopyOutlined, LinkOutlined } from "@ant-design/icons";
 import { useDebounce } from "use-debounce";
 
 import Button from "@/components/common/button";
@@ -54,6 +55,9 @@ export default function InvoicePage() {
   const handleCreateMomoQr = () => {
     if (!selectedInvoice) return;
     createMomoPayment.mutate(selectedInvoice.id, {
+      onSuccess: () => {
+        message.success("Đã tạo mã thanh toán MoMo");
+      },
       onError: (error) => {
         const err = error as { message?: string };
         message.error(err.message || "Không tạo được QR MoMo sandbox");
@@ -63,7 +67,13 @@ export default function InvoicePage() {
 
   useEffect(() => {
     createMomoPayment.reset();
-  }, [createMomoPayment, selectedInvoiceId]);
+  }, [selectedInvoiceId]);
+
+  const handleCopyMomoCode = async (value?: string | null) => {
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
+    message.success("Đã copy mã MoMo");
+  };
 
   return (
     <div>
@@ -314,6 +324,34 @@ export default function InvoicePage() {
                 <Text type="secondary">Số tiền: {formatMoney(selectedInvoice.grand_total)}</Text>
                 {createMomoPayment.data?.message && (
                   <Text type="secondary">{createMomoPayment.data.message}</Text>
+                )}
+                {createMomoPayment.data && (
+                  <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+                    <Text copyable={{ text: createMomoPayment.data.order_id }}>
+                      Mã đơn MoMo: {createMomoPayment.data.order_id}
+                    </Text>
+                    <Text copyable={{ text: createMomoPayment.data.request_id }}>
+                      Mã request: {createMomoPayment.data.request_id}
+                    </Text>
+                    <Space wrap>
+                      {createMomoPayment.data.pay_url && (
+                        <Button
+                          icon={<LinkOutlined />}
+                          onClick={() => window.open(createMomoPayment.data?.pay_url || "", "_blank")}
+                        >
+                          Mở link MoMo
+                        </Button>
+                      )}
+                      {createMomoPayment.data.deeplink && (
+                        <Button
+                          icon={<CopyOutlined />}
+                          onClick={() => handleCopyMomoCode(createMomoPayment.data?.deeplink)}
+                        >
+                          Copy deeplink
+                        </Button>
+                      )}
+                    </Space>
+                  </Space>
                 )}
               </Space>
             </div>

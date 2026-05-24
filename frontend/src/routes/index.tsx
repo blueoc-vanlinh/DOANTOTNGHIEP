@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import Home from "@/components/Home";
 import MainLayout from "@/components/layout/MainLayout";
 import Error403 from "@/components/error/error403";
 import Error404 from "@/components/error/error404";
@@ -48,6 +49,7 @@ import TransactionPage from "@/features/transaction/pages/TransactionPage";
 
 
 export const router = createBrowserRouter([
+  { path: homeUrl, element: <Home /> },
   { path: loginUrl, element: <LoginPage /> },
   {
     path: homeUrl,
@@ -57,7 +59,6 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          { index: true, element: <Dashboard /> },
           { path: dashboardUrl, element: <Dashboard /> },
           { path: productsUrl, element: <Products /> },
           { path: inventoryUrl, element: <Inventory /> },

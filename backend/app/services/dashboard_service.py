@@ -9,6 +9,8 @@ from app.models.transaction import StockTransaction
 from app.models.importorder import ImportOrder
 from app.models.exportorder import ExportOrder
 from app.models.warehouse import Warehouse
+from app.models.forecast import ForecastResult
+from app.services.ai_model_evaluation_service import get_best_model_summary
 
 
 def get_dashboard_summary(
@@ -388,6 +390,7 @@ def get_dashboard_summary(
         select(func.sum(Inventory.quantity * Product.price))
         .join(Product, Product.id == Inventory.product_id)
     ).one() or 0
+    ai_status = _build_ai_status(session)
 
     return {
         "summary": {
@@ -466,6 +469,45 @@ def get_dashboard_summary(
             "end": period_end,
             "chart_label": chart_label,
         },
+        "ai_status": ai_status,
+    }
+
+
+def _build_ai_status(session: Session):
+    best_model = get_best_model_summary()
+    last_train_at = session.exec(
+        select(func.max(ForecastResult.updated_at)).where(ForecastResult.is_deleted.is_(False))
+    ).one()
+    forecast_rows = session.exec(
+        select(func.count()).select_from(ForecastResult).where(ForecastResult.is_deleted.is_(False))
+    ).one() or 0
+    forecast_product_count = session.exec(
+        select(func.count(func.distinct(ForecastResult.product_id))).where(ForecastResult.is_deleted.is_(False))
+    ).one() or 0
+    recommended_import_count = session.exec(
+        select(func.count(func.distinct(ForecastResult.product_id))).where(
+            ForecastResult.is_deleted.is_(False),
+            ForecastResult.predicted_stock <= 0,
+        )
+    ).one() or 0
+    risk_product_count = session.exec(
+        select(func.count(func.distinct(Inventory.product_id))).where(
+            Inventory.is_deleted.is_(False),
+            Inventory.quantity <= Inventory.min_threshold,
+        )
+    ).one() or 0
+
+    return {
+        "best_model": best_model.get("model"),
+        "accuracy": best_model.get("accuracy"),
+        "dataset_used": best_model.get("dataset"),
+        "train_points": best_model.get("train_points"),
+        "test_points": best_model.get("test_points"),
+        "last_train_at": last_train_at,
+        "forecast_rows": forecast_rows,
+        "forecast_product_count": forecast_product_count,
+        "recommended_import_count": recommended_import_count,
+        "risk_product_count": risk_product_count,
     }
 
 

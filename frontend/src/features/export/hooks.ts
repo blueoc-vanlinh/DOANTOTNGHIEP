@@ -10,6 +10,9 @@ export const useExport = () => {
             queryClient.invalidateQueries({ queryKey: ["invoices"] });
             queryClient.invalidateQueries({ queryKey: ["inventory"] });
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["ai-data"] });
+            queryClient.invalidateQueries({ queryKey: ["forecast"] });
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
         },
     });
 };

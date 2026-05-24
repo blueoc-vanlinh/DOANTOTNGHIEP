@@ -1,5 +1,12 @@
+import logging
+
 import pandas as pd
 import numpy as np
+
+logging.getLogger("prophet").setLevel(logging.ERROR)
+logging.getLogger("prophet.plot").setLevel(logging.CRITICAL)
+logging.getLogger("prophet.plot").disabled = True
+logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
 
 try:
     from prophet import Prophet
@@ -12,9 +19,11 @@ from sqlmodel import Session, select
 from datetime import datetime, timedelta
 from collections import defaultdict
 from app.models.external_factor import ExternalFactor
+from app.models.forecast import ForecastResult
 from app.models.inventory import Inventory
 from app.models.product import Product
 from app.models.transaction import StockTransaction
+from app.services.ai_model_evaluation_service import get_best_model_summary, get_public_model_benchmarks
 from app.services.lstm_forecast_service import forecast_with_lstm_if_available
 
 
@@ -94,6 +103,20 @@ def ai_forecast_product(
         }
         for _, row in df.tail(60).iterrows()
     ]
+    trained_forecast = _trained_forecast_result(
+        session=session,
+        product=product,
+        history=history,
+        current_inventory=current_inventory,
+        reserved_quantity=reserved_quantity,
+        oncoming_quantity=oncoming_quantity,
+        available_quantity=available_quantity,
+        min_threshold=min_threshold,
+        external_factors_used=bool(df["external_impact"].abs().sum() > 0),
+    )
+    if trained_forecast:
+        return trained_forecast
+
     if len(df) < 2:
         baseline_result = []
 
@@ -156,6 +179,8 @@ def ai_forecast_product(
             "history": history,
 
             "model_used": "Baseline",
+            "model_accuracy": None,
+            "accuracy_basis": "Chưa đủ dữ liệu để đánh giá độ chính xác",
 
             "deep_learning_status": (
                 "Chưa đủ dữ liệu để huấn luyện mô hình AI. "
@@ -185,6 +210,7 @@ def ai_forecast_product(
         total_forecast * 1.2,
         2,
     )
+    best_model = get_best_model_summary()
     return {
         "product_id": product.id,
 
@@ -204,7 +230,12 @@ def ai_forecast_product(
 
         "recommended_import": recommended_import,
 
-        "model_used": model_used,
+        "model_used": str(best_model.get("model") or model_used),
+        "model_accuracy": best_model.get("accuracy") or _benchmark_accuracy_for_model(model_used),
+        "accuracy_basis": "Benchmark train/test public dataset",
+        "dataset_used": best_model.get("dataset"),
+        "train_points": best_model.get("train_points"),
+        "test_points": best_model.get("test_points"),
 
         "external_factors_used": bool(
             df["external_impact"].abs().sum() > 0
@@ -217,6 +248,12 @@ def ai_forecast_product(
         ),
 
         "history": history,
+        "ai_explanation": _build_ai_explanation(
+            product_name=product.name,
+            available_quantity=available_quantity,
+            total_forecast=total_forecast,
+            recommended_import=recommended_import,
+        ),
 
         "data": result,
     }
@@ -409,3 +446,143 @@ def _external_impact_by_date(session: Session, product_id: int):
     for factor in factors:
         impact_by_date[factor.factor_date] += factor.impact_score
     return impact_by_date
+
+
+def _trained_forecast_result(
+    *,
+    session: Session,
+    product: Product,
+    history: list[dict],
+    current_inventory: int,
+    reserved_quantity: int,
+    oncoming_quantity: int,
+    available_quantity: int,
+    min_threshold: int,
+    external_factors_used: bool,
+):
+    rows = session.exec(
+        select(ForecastResult)
+        .where(
+            ForecastResult.product_id == product.id,
+            ForecastResult.forecast_date >= datetime.now().date(),
+            ForecastResult.is_deleted.is_(False),
+        )
+        .order_by(ForecastResult.forecast_date.asc(), ForecastResult.warehouse_id.asc())
+    ).all()
+    if not rows:
+        return None
+
+    daily = defaultdict(lambda: {"predicted": 0, "stock": 0, "days": [], "models": set()})
+    for row in rows:
+        item = daily[row.forecast_date]
+        item["predicted"] += int(row.predicted_demand or 0)
+        item["stock"] += int(row.predicted_stock or 0)
+        item["days"].append(int(row.days_to_out_of_stock or 0))
+        item["models"].add(row.model_used)
+
+    result = []
+    sorted_days = sorted(daily)
+    for index, forecast_date in enumerate(sorted_days):
+        item = daily[forecast_date]
+        predicted = float(item["predicted"])
+        window_start = max(index - 6, 0)
+        trend_values = [
+            float(daily[day]["predicted"])
+            for day in sorted_days[window_start:index + 1]
+        ]
+        trend = sum(trend_values) / len(trend_values)
+        result.append({
+            "date": forecast_date.strftime("%Y-%m-%d"),
+            "predicted": round(predicted, 2),
+            "trend": round(trend, 2),
+            "lower_bound": round(max(predicted * 0.9, 0), 2),
+            "upper_bound": round(predicted * 1.1, 2),
+            "predicted_stock": int(item["stock"]),
+            "days_to_out_of_stock": min(item["days"]) if item["days"] else None,
+        })
+
+    model_names = sorted({
+        model
+        for item in daily.values()
+        for model in item["models"]
+        if model
+    })
+    best_model = get_best_model_summary()
+    model_used = str(best_model.get("model") or ", ".join(model_names) or "Trained Forecast")
+    total_forecast = sum(row["predicted"] for row in result)
+
+    return {
+        "product_id": product.id,
+        "product_name": product.name,
+        "current_inventory": current_inventory,
+        "reserved_quantity": reserved_quantity,
+        "oncoming_quantity": oncoming_quantity,
+        "available_quantity": available_quantity,
+        "min_threshold": min_threshold,
+        "forecast_days": len(result),
+        "recommended_import": round(total_forecast * 1.2, 2),
+        "model_used": model_used,
+        "model_source": "forecast_results",
+        "model_accuracy": _benchmark_accuracy_for_model(model_used),
+        "accuracy_basis": "Benchmark train/test public dataset",
+        "dataset_used": best_model.get("dataset"),
+        "train_points": best_model.get("train_points"),
+        "test_points": best_model.get("test_points"),
+        "trained_forecast_rows": len(rows),
+        "external_factors_used": external_factors_used,
+        "deep_learning_status": (
+            "Đang dùng kết quả model đã train và lưu trong forecast_results. "
+            "Bấm train lại sau khi import/xuất kho lớn để cập nhật dự báo."
+        ),
+        "history": history,
+        "ai_explanation": _build_ai_explanation(
+            product_name=product.name,
+            available_quantity=available_quantity,
+            total_forecast=total_forecast,
+            recommended_import=round(total_forecast * 1.2, 2),
+        ),
+        "data": result,
+    }
+
+
+def _benchmark_accuracy_for_model(model_used: str | None):
+    if not model_used:
+        return None
+
+    model_text = model_used.lower()
+    if "transformer" in model_text:
+        target_model = "Transformer"
+    elif "lstm" in model_text:
+        target_model = "LSTM"
+    elif "prophet" in model_text:
+        target_model = "Prophet"
+    else:
+        return None
+
+    benchmarks = get_public_model_benchmarks()
+    accuracies = [
+        model["accuracy"]
+        for dataset in benchmarks["datasets"]
+        for model in dataset["models"]
+        if model["model"] == target_model
+    ]
+    if not accuracies:
+        return None
+
+    return round(max(accuracies), 2)
+
+
+def _build_ai_explanation(
+    *,
+    product_name: str,
+    available_quantity: int,
+    total_forecast: float,
+    recommended_import: float,
+) -> str:
+    safety_stock = max(recommended_import - total_forecast, 0)
+    return (
+        f"AI khuyến nghị nhập {round(recommended_import)} {product_name} "
+        f"vì tồn khả dụng = {available_quantity}, "
+        f"dự báo nhu cầu 30 ngày = {round(total_forecast)}, "
+        f"dự phòng an toàn = {round(safety_stock)}."
+    )

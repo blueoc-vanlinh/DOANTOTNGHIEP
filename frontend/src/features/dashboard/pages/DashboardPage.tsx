@@ -19,6 +19,7 @@ import {
   InboxOutlined,
   RiseOutlined,
   ShoppingOutlined,
+  ThunderboltOutlined,
   UploadOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
@@ -119,6 +120,7 @@ export default function DashboardPage() {
   const recentTransactions: RecentTransaction[] = data?.recent_transactions || [];
   const topExportProducts = data?.top_export_products || [];
   const topImportProducts = data?.top_import_products || [];
+  const aiStatus = data?.ai_status;
 
   return (
     <div>
@@ -192,6 +194,18 @@ export default function DashboardPage() {
         <StatCard title="Hết hàng" value={summary.out_of_stock_count} icon={<AlertOutlined />} color="#cf1322" />
         <StatCard title="Tổng đơn xuất" value={summary.total_export_orders} icon={<DownloadOutlined />} color="#722ed1" />
       </Row>
+
+      <Card style={{ marginTop: 24 }} title="Trạng thái AI Forecast">
+        <Row gutter={[16, 16]}>
+          <StatCard title="Model tốt nhất" value={aiStatus?.best_model || "Đang cập nhật"} icon={<ThunderboltOutlined />} color="#0b6bcb" />
+          <StatCard title="Độ chính xác AI" value={aiStatus?.accuracy || 0} icon={<RiseOutlined />} color="#237804" suffix="%" />
+          <StatCard title="Sản phẩm cần nhập" value={aiStatus?.recommended_import_count || 0} icon={<UploadOutlined />} color="#d48806" />
+          <StatCard title="Sản phẩm rủi ro hết hàng" value={aiStatus?.risk_product_count || 0} icon={<WarningOutlined />} color="#cf1322" />
+        </Row>
+        <Text type="secondary">
+          Lần train gần nhất: {aiStatus?.last_train_at ? new Date(aiStatus.last_train_at).toLocaleString("vi-VN") : "Chưa có"} · Dataset: {aiStatus?.dataset_used || "N/A"} · Train/Test: {aiStatus?.train_points || 0}/{aiStatus?.test_points || 0} · Forecast rows: {aiStatus?.forecast_rows || 0}
+        </Text>
+      </Card>
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} xl={14}>
@@ -319,19 +333,22 @@ function StatCard({
   icon,
   color,
   money = false,
+  suffix,
 }: {
   title: string;
-  value: number;
+  value: number | string;
   icon: React.ReactNode;
   color: string;
   money?: boolean;
+  suffix?: string;
 }) {
   return (
     <Col xs={24} sm={12} lg={6} xl={4}>
       <Card>
         <Statistic
           title={title}
-          value={money ? currencyFormatter.format(value) : value}
+          value={money ? currencyFormatter.format(Number(value)) : value}
+          suffix={suffix}
           prefix={<Space style={{ color }}>{icon}</Space>}
           valueStyle={{ color, fontWeight: 600, fontSize: money ? 20 : 24 }}
         />

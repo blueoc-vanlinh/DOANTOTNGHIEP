@@ -32,6 +32,32 @@ export interface AiDataOverview {
   recommendation: string;
 }
 
+export interface AiModelBenchmarkModel {
+  model: "Prophet" | "LSTM" | "Transformer" | string;
+  accuracy: number;
+  mape: number;
+  wmape: number;
+  mae: number;
+  rmse: number;
+}
+
+export interface AiModelBenchmarkDataset {
+  dataset: "M5" | "Walmart" | "Rossmann" | string;
+  source?: string | null;
+  target?: string | null;
+  status: "ready" | "missing";
+  train_points: number;
+  test_points: number;
+  evaluated_points: number;
+  models: AiModelBenchmarkModel[];
+}
+
+export interface AiModelBenchmarks {
+  metric_note: string;
+  best_accuracy: number;
+  datasets: AiModelBenchmarkDataset[];
+}
+
 export interface ExternalFactor {
   id: number;
   factor_date: string;

@@ -20,6 +20,12 @@ from app.models.transaction import StockTransaction
 from app.models.user import User
 from app.models.warehouse import Warehouse
 from app.models.analytic import DailyInventoryStats
+from app.services.public_dataset_service import (
+    build_public_dataset_external_factors,
+    build_public_dataset_transactions,
+    dataset_bundle_available,
+)
+from app.services.forecast_training_service import train_all_product_forecasts
 
 
 def seed_roles_permissions(session: Session):
@@ -489,6 +495,17 @@ def seed_stock_transactions(session: Session, products: list[Product], warehouse
 
 
 def seed_ai_training_transactions(session: Session, products: list[Product], warehouses: list[Warehouse], users: list[User]):
+    if dataset_bundle_available():
+        transactions = build_public_dataset_transactions(
+            products=products,
+            warehouses=warehouses,
+            users=users,
+        )
+        if transactions:
+            session.add_all(transactions)
+            session.commit()
+            return transactions
+
     today = datetime.utcnow()
     transactions = []
 
@@ -542,6 +559,16 @@ def seed_ai_training_transactions(session: Session, products: list[Product], war
 
 
 def seed_external_factors(session: Session, products: list[Product], warehouses: list[Warehouse]):
+    if dataset_bundle_available():
+        factors = build_public_dataset_external_factors(
+            products=products,
+            warehouses=warehouses,
+        )
+        if factors:
+            session.add_all(factors)
+            session.commit()
+            return factors
+
     today = date.today()
     factors = []
 
@@ -576,23 +603,8 @@ def seed_external_factors(session: Session, products: list[Product], warehouses:
 
 
 def seed_forecast_results(session: Session, products: list[Product], warehouses: list[Warehouse]):
-    today = date.today()
-    forecasts = [
-        ForecastResult(
-            product_id=products[i % len(products)].id,
-            warehouse_id=warehouses[i % len(warehouses)].id,
-            forecast_date=today + timedelta(days=20 + i),
-            predicted_demand=10 + i * 2,
-            predicted_stock=100 - i,
-            days_to_out_of_stock=50 + i,
-            model_used="ARIMA" if i % 2 == 0 else "LSTM",
-        )
-        for i in range(1, 201)
-    ]
-
-    session.add_all(forecasts)
-    session.commit()
-    return forecasts
+    training_summary = train_all_product_forecasts(session, horizon_days=30)
+    return training_summary
 
 
 def seed_daily_inventory_stats(session: Session, products: list[Product], warehouses: list[Warehouse]):

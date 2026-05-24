@@ -11,6 +11,7 @@ from app.services.ai_data_service import (
     get_product_training_quality,
     list_external_factors,
 )
+from app.services.ai_model_evaluation_service import get_public_model_benchmarks
 
 router = APIRouter(tags=["AI Data"])
 admin_required = Depends(require_roles("Admin"))
@@ -19,6 +20,16 @@ admin_required = Depends(require_roles("Admin"))
 @router.get("/overview")
 def ai_data_overview(_: object = admin_required, session: Session = Depends(get_session)):
     return get_ai_data_overview(session)
+
+
+@router.get("/model-benchmarks")
+def ai_model_benchmarks(_: object = admin_required):
+    return get_public_model_benchmarks()
+
+
+@router.get("/public/model-benchmarks")
+def public_ai_model_benchmarks():
+    return get_public_model_benchmarks()
 
 
 @router.get("/products/{product_id}/quality")
