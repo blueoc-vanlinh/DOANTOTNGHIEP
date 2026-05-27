@@ -14,6 +14,7 @@ import {
 
 import Button from "@/components/common/button";
 import EmptyState from "@/components/common/EmptyState";
+import PageHero from "@/components/common/PageHero";
 import {
   useAutoPoRecommendations,
   useBarcodeLookup,
@@ -42,14 +43,11 @@ export default function WarehouseAutomationPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Tự động hóa kho
-        </Title>
-        <Text type="secondary">
-          Auto-PO, gợi ý vị trí kệ và tra cứu QR/Barcode
-        </Text>
-      </div>
+      <PageHero
+        eyebrow="Warehouse optimization"
+        title="Tự động hóa kho"
+        description="Gợi ý đơn mua hàng, vị trí lưu trữ, barcode và các quyết định vận hành dựa trên dữ liệu tồn kho."
+      />
 
       <Card
         title="Tự động gợi ý lập đơn mua hàng"

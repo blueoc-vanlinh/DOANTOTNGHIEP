@@ -9,6 +9,7 @@ import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import ModalConfirm from "@/components/common/ModalConfirm";
 import PaginationBar from "@/components/common/PaginationBar";
+import PageHero from "@/components/common/PageHero";
 
 import {
     useWarehouses,
@@ -99,24 +100,16 @@ export default function WarehousePage() {
 
     return (
         <div>
-            <div
-                style={{
-                    marginBottom: 24,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                }}
-            >
-                <h2 style={{ fontSize: 24, fontWeight: 600 }}>
-                    Quản lý Kho hàng ({total})
-                </h2>
-
-                <Button type="primary" onClick={handleCreate}>
+            <PageHero
+                eyebrow="Warehouse network"
+                title={`Kho hàng (${total})`}
+                description="Quản lý địa điểm lưu trữ để theo dõi tồn, nhập xuất và giao dịch theo từng kho."
+                actions={<Button type="primary" onClick={handleCreate}>
                     + Thêm kho
-                </Button>
-            </div>
+                </Button>}
+            />
 
-            <div style={{ marginBottom: 16 }}>
+            <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
                 <Input.Search
                     allowClear
                     value={search}

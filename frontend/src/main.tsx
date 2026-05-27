@@ -9,14 +9,18 @@ import { queryClient } from "@/lib/react-query";
 
 import { ConfigProvider } from "antd";
 import { appTheme } from "@/theme";
+import ErrorBoundary from "@/components/common/errorboudary";
 
 import "antd/dist/reset.css";
+import "@/styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ConfigProvider theme={appTheme}>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <ErrorBoundary>
+          <RouterProvider router={router} />
+        </ErrorBoundary>
       </QueryClientProvider>
     </ConfigProvider>
   </React.StrictMode>

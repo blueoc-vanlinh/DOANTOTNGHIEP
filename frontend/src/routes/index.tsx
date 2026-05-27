@@ -1,27 +1,12 @@
+import { lazy, Suspense } from "react";
+import type { ComponentType } from "react";
 import { createBrowserRouter } from "react-router-dom";
-import Home from "@/components/Home";
-import MainLayout from "@/components/layout/MainLayout";
 import Error403 from "@/components/error/error403";
 import Error404 from "@/components/error/error404";
-import Dashboard from "@/features/dashboard/pages/DashboardPage";
-import Products from "@/features/products/pages/ProductsPage";
-import Inventory from "@/features/inventory/pages/InventoryPage";
-import ImportPage from "@/features/import/pages/ImportPage";
-import ExportPage from "@/features/export/pages/ExportPage";
-import ForecastPage from "@/features/forecast/pages/Forecastpage";
-import AiDataPage from "@/features/ai-data/pages/AiDataPage";
-import WarehouseAutomationPage from "@/features/warehouse-automation/pages/WarehouseAutomationPage";
-import WarehouseOperationsPage from "@/features/warehouse-operations/pages/WarehouseOperationsPage";
-import InvoicePage from "@/features/invoices/pages/InvoicePage";
-import CategoryPage from "@/features/category/pages/CategoryPage";
-import SupplierPage from "@/features/supplier/pages/SupplierPage";
-import WarehousePage from "@/features/warehouse/pages/WarehousePage";
-import LoginPage from "@/features/auth/pages/LoginPage";
+import Error500 from "@/components/error/error500";
+import LoadingPage from "@/components/common/LoadingPage";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
-import UsersPage from "@/features/users/pages/UserPage";
-import RolePage from "@/features/roles/pages/RolePage";
-import AuditLogPage from "@/features/audit-logs/pages/AuditLogPage";
 import {
   homeUrl,
   error403Url,
@@ -45,40 +30,66 @@ import {
   auditLogsUrl,
 
 } from "./urls";
-import TransactionPage from "@/features/transaction/pages/TransactionPage";
 
+const Home = lazy(() => import("@/components/Home"));
+const MainLayout = lazy(() => import("@/components/layout/MainLayout"));
+const Dashboard = lazy(() => import("@/features/dashboard/pages/DashboardPage"));
+const Products = lazy(() => import("@/features/products/pages/ProductsPage"));
+const Inventory = lazy(() => import("@/features/inventory/pages/InventoryPage"));
+const ImportPage = lazy(() => import("@/features/import/pages/ImportPage"));
+const ExportPage = lazy(() => import("@/features/export/pages/ExportPage"));
+const ForecastPage = lazy(() => import("@/features/forecast/pages/Forecastpage"));
+const AiDataPage = lazy(() => import("@/features/ai-data/pages/AiDataPage"));
+const WarehouseAutomationPage = lazy(() => import("@/features/warehouse-automation/pages/WarehouseAutomationPage"));
+const WarehouseOperationsPage = lazy(() => import("@/features/warehouse-operations/pages/WarehouseOperationsPage"));
+const InvoicePage = lazy(() => import("@/features/invoices/pages/InvoicePage"));
+const CategoryPage = lazy(() => import("@/features/category/pages/CategoryPage"));
+const SupplierPage = lazy(() => import("@/features/supplier/pages/SupplierPage"));
+const WarehousePage = lazy(() => import("@/features/warehouse/pages/WarehousePage"));
+const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
+const UsersPage = lazy(() => import("@/features/users/pages/UserPage"));
+const RolePage = lazy(() => import("@/features/roles/pages/RolePage"));
+const AuditLogPage = lazy(() => import("@/features/audit-logs/pages/AuditLogPage"));
+const TransactionPage = lazy(() => import("@/features/transaction/pages/TransactionPage"));
+
+const page = (Component: ComponentType) => (
+  <Suspense fallback={<LoadingPage />}>
+    <Component />
+  </Suspense>
+);
 
 export const router = createBrowserRouter([
-  { path: homeUrl, element: <Home /> },
-  { path: loginUrl, element: <LoginPage /> },
+  { path: homeUrl, element: page(Home), errorElement: <Error500 /> },
+  { path: loginUrl, element: page(LoginPage), errorElement: <Error500 /> },
   {
     path: homeUrl,
-    element: <MainLayout />,
+    element: page(MainLayout),
+    errorElement: <Error500 />,
     children: [
 
       {
         element: <ProtectedRoute />,
         children: [
-          { path: dashboardUrl, element: <Dashboard /> },
-          { path: productsUrl, element: <Products /> },
-          { path: inventoryUrl, element: <Inventory /> },
-          { path: categoryUrl, element: <CategoryPage /> },
-          { path: suppliersUrl, element: <SupplierPage /> },
-          { path: warehouseUrl, element: <WarehousePage /> },
-          { path: transactionsUrl, element: <TransactionPage /> },
-          { path: importUrl, element: <ImportPage /> },
-          { path: exportUrl, element: <ExportPage /> },
-          { path: forecastUrl, element: <ForecastPage /> },
-          { path: invoicesUrl, element: <InvoicePage /> },
+          { path: dashboardUrl, element: page(Dashboard) },
+          { path: productsUrl, element: page(Products) },
+          { path: inventoryUrl, element: page(Inventory) },
+          { path: categoryUrl, element: page(CategoryPage) },
+          { path: suppliersUrl, element: page(SupplierPage) },
+          { path: warehouseUrl, element: page(WarehousePage) },
+          { path: transactionsUrl, element: page(TransactionPage) },
+          { path: importUrl, element: page(ImportPage) },
+          { path: exportUrl, element: page(ExportPage) },
+          { path: forecastUrl, element: page(ForecastPage) },
+          { path: invoicesUrl, element: page(InvoicePage) },
           {
             element: <RoleRoute allowedRoles={["Admin"]} />,
             children: [
-              { path: aiDataUrl, element: <AiDataPage /> },
-              { path: warehouseAutomationUrl, element: <WarehouseAutomationPage /> },
-              { path: warehouseOperationsUrl, element: <WarehouseOperationsPage /> },
-              { path: usersUrl, element: <UsersPage /> },
-              { path: rolesUrl, element: <RolePage /> },
-              { path: auditLogsUrl, element: <AuditLogPage /> },
+              { path: aiDataUrl, element: page(AiDataPage) },
+              { path: warehouseAutomationUrl, element: page(WarehouseAutomationPage) },
+              { path: warehouseOperationsUrl, element: page(WarehouseOperationsPage) },
+              { path: usersUrl, element: page(UsersPage) },
+              { path: rolesUrl, element: page(RolePage) },
+              { path: auditLogsUrl, element: page(AuditLogPage) },
             ],
           },
         ],
@@ -88,10 +99,12 @@ export const router = createBrowserRouter([
   {
     path: error403Url,
     element: <Error403 />,
+    errorElement: <Error500 />,
   },
 
   {
     path: "*",
     element: <Error404 />,
+    errorElement: <Error500 />,
   },
 ]);

@@ -132,83 +132,15 @@ def create_return_order(session: Session, data: dict, user_id: int):
 
 
 def cancel_import_order(session: Session, order_id: int, user_id: int):
-    order = session.get(ImportOrder, order_id)
-    if not order or order.is_deleted:
-        raise HTTPException(status_code=404, detail="Import order not found")
-    if order.status == "CANCELLED":
-        return order
+    from app.services.import_service import cancel_import_order as cancel_order
 
-    items = session.exec(select(ImportOrderItem).where(ImportOrderItem.import_order_id == order_id)).all()
-    for item in items:
-        if item.warehouse_id is None:
-            continue
-        inventory = get_inventory(session, item.product_id, item.warehouse_id)
-        if inventory:
-            inventory.quantity = max(inventory.quantity - item.quantity, 0)
-            session.add(inventory)
-            session.add(
-                StockTransaction(
-                    product_id=item.product_id,
-                    warehouse_id=inventory.warehouse_id,
-                    type="IMPORT_CANCEL",
-                    quantity=item.quantity,
-                    balance_after=inventory.quantity,
-                    reference_type="IMPORT_ORDER",
-                    reference_id=order.id,
-                    created_by=user_id,
-                )
-            )
-    order.status = "CANCELLED"
-    session.commit()
-    session.refresh(order)
-    return order
+    return cancel_order(session, order_id, user_id)
 
 
 def cancel_export_order(session: Session, order_id: int, user_id: int):
-    order = session.get(ExportOrder, order_id)
-    if not order or order.is_deleted:
-        raise HTTPException(status_code=404, detail="Export order not found")
-    if order.status == "CANCELLED":
-        return order
+    from app.services.export_service import cancel_export_order as cancel_order
 
-    items = session.exec(
-        select(ExportOrderItem).where(
-            ExportOrderItem.export_order_id == order_id,
-            ExportOrderItem.is_deleted.is_(False),
-        )
-    ).all()
-    for item in items:
-        transaction = session.exec(
-            select(StockTransaction)
-            .where(
-                StockTransaction.reference_type == "EXPORT_ORDER",
-                StockTransaction.reference_id == order.id,
-                StockTransaction.product_id == item.product_id,
-            )
-            .order_by(StockTransaction.created_at.desc())
-        ).first()
-        warehouse_id = transaction.warehouse_id if transaction else 1
-        inventory = get_inventory(session, item.product_id, warehouse_id)
-        if not inventory:
-            inventory = Inventory(product_id=item.product_id, warehouse_id=warehouse_id, quantity=0)
-        inventory.quantity += item.quantity
-        session.add(inventory)
-        session.add(
-            StockTransaction(
-                product_id=item.product_id,
-                warehouse_id=warehouse_id,
-                type="EXPORT_CANCEL",
-                quantity=item.quantity,
-                balance_after=inventory.quantity,
-                reference_type="EXPORT_ORDER",
-                reference_id=order.id,
-                created_by=user_id,
-            )
-        )
-    order.status = "CANCELLED"
-    session.commit()
-    session.refresh(order)
-    return order
+    return cancel_order(session, order_id, user_id)
 
 
 def create_stocktake(session: Session, data: dict, user_id: int):

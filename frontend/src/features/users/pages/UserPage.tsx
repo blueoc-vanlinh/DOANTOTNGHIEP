@@ -7,6 +7,7 @@ import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import PaginationBar from "@/components/common/PaginationBar";
 import ModalConfirm from "@/components/common/ModalConfirm";
+import PageHero from "@/components/common/PageHero";
 
 import UserTable from "../components/UserTable";
 import UserFormModal from "../components/UserFormModal";
@@ -113,20 +114,11 @@ export default function UsersPage() {
 
     return (
         <div>
-
-            <div
-                style={{
-                    marginBottom: 24,
-                    display: "flex",
-                    justifyContent: "space-between",
-                }}
-            >
-
-                <h2>
-                    Quản lý tài khoản
-                </h2>
-
-                <Button
+            <PageHero
+                eyebrow="Access management"
+                title={`Tài khoản nhân viên (${total})`}
+                description="Quản lý người dùng, trạng thái hoạt động và vai trò truy cập hệ thống."
+                actions={<Button
                     type="primary"
 
                     onClick={() => {
@@ -135,11 +127,10 @@ export default function UsersPage() {
                     }}
                 >
                     + Thêm tài khoản
-                </Button>
+                </Button>}
+            />
 
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
+            <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
                 <Input.Search
                     allowClear
                     value={search}

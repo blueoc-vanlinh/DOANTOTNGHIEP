@@ -1,12 +1,6 @@
-const portMap: Record<string, string> = {
-    "5173": "8000",
-    "5174": "8001",
-    "5175": "8002",
-};
+const explicitApiUrl = import.meta.env.VITE_API_URL as string | undefined;
+const fallbackApiUrl = `${window.location.protocol}//${window.location.hostname}:8000/api/v1`;
 
-const backendPort = portMap[window.location.port] || "8000";
-
-export const VITE_API_URL =
-    `${window.location.protocol}//${window.location.hostname}:${backendPort}/api/v1`;
+export const VITE_API_URL = explicitApiUrl || fallbackApiUrl;
 
 export const BASE_URL = VITE_API_URL;

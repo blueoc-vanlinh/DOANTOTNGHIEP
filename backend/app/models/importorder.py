@@ -6,6 +6,7 @@ class ImportOrder(BaseModel, table=True):
     __tablename__ = "import_orders"
 
     order_code: str | None = Field(default=None, unique=True, index=True)
+    import_type: str = Field(default="PURCHASE", index=True)
     supplier_id: int = Field(foreign_key="suppliers.id")
     total_amount: float
     tax_amount: float = 0

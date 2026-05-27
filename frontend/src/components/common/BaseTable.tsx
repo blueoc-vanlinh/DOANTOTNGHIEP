@@ -100,9 +100,9 @@ const BaseTable = <T extends { id: number | string }>({
       bordered={bordered}
       className={className}
       style={{
-        borderRadius: "12px",
+        borderRadius: "8px",
         overflow: "hidden",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.04)",
+        boxShadow: "0 8px 24px rgba(15, 23, 42, 0.04)",
       }}
       sticky={{
         offsetHeader: 0,

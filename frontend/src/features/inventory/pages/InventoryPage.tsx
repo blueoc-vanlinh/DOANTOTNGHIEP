@@ -7,6 +7,7 @@ import InventoryFormModal from "../components/InventoryFormModal";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import PaginationBar from "@/components/common/PaginationBar";
+import PageHero from "@/components/common/PageHero";
 
 import { useInventory, useUpdateInventory } from "../hooks";
 import type { Inventory } from "../types";
@@ -63,13 +64,13 @@ export default function InventoryPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 600 }}>
-          Quản lý Tồn kho ({total})
-        </h2>
-      </div>
+      <PageHero
+        eyebrow="Inventory control"
+        title={`Tồn kho (${total})`}
+        description="Theo dõi tồn thực tế, hàng giữ chỗ, hàng đang về và ngưỡng cảnh báo theo từng kho."
+      />
 
-      <div style={{ marginBottom: 16 }}>
+      <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
         <Input.Search
           allowClear
           value={search}

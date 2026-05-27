@@ -11,10 +11,15 @@ interface User {
 
 interface AuthState {
     user: User | null;
+    accessToken: string | null;
+    refreshToken: string | null;
     isAuthenticated: boolean;
+    hasHydrated: boolean;
 
-    login: (user: User) => void;
+    login: (user: User, tokens: { accessToken: string; refreshToken: string }) => void;
+    updateTokens: (tokens: { accessToken: string; refreshToken: string }) => void;
     logout: () => void;
+    setHasHydrated: (value: boolean) => void;
 
     hasRole: (role: string) => boolean;
     hasAnyRole: (roles: string[]) => boolean;
@@ -24,11 +29,24 @@ export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
             user: null,
+            accessToken: null,
+            refreshToken: null,
             isAuthenticated: false,
+            hasHydrated: false,
 
-            login: (user) => {
+            login: (user, tokens) => {
                 set({
                     user: user,
+                    accessToken: tokens.accessToken,
+                    refreshToken: tokens.refreshToken,
+                    isAuthenticated: true,
+                });
+            },
+
+            updateTokens: (tokens) => {
+                set({
+                    accessToken: tokens.accessToken,
+                    refreshToken: tokens.refreshToken,
                     isAuthenticated: true,
                 });
             },
@@ -36,12 +54,18 @@ export const useAuthStore = create<AuthState>()(
             logout: () => {
                 set({
                     user: null,
+                    accessToken: null,
+                    refreshToken: null,
                     isAuthenticated: false,
                 });
 
                 localStorage.removeItem('auth-storage');
 
                 window.location.href = '/login';
+            },
+
+            setHasHydrated: (value) => {
+                set({ hasHydrated: value });
             },
 
             hasRole: (role) => {
@@ -59,6 +83,15 @@ export const useAuthStore = create<AuthState>()(
         {
             name: 'auth-storage',
             storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({
+                user: state.user,
+                accessToken: state.accessToken,
+                refreshToken: state.refreshToken,
+                isAuthenticated: state.isAuthenticated,
+            }),
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            },
         }
     )
 );

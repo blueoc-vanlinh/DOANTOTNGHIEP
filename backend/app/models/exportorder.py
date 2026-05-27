@@ -5,6 +5,7 @@ class ExportOrder(BaseModel, table=True):
     __tablename__ = "export_orders"
 
     order_code: str | None = Field(default=None, unique=True, index=True)
+    export_type: str = Field(default="RETAIL_SALE", index=True)
     customer_name: str
     total_amount: float
     tax_amount: float = 0
@@ -24,6 +25,7 @@ class ExportOrderItem(BaseModel, table=True):
 
     export_order_id: int = Field(foreign_key="export_orders.id")
     product_id: int = Field(foreign_key="products.id")
+    warehouse_id: int | None = Field(default=None, foreign_key="warehouses.id")
 
     quantity: int
     price: float

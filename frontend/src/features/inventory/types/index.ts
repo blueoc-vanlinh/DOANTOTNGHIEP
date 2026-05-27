@@ -4,6 +4,7 @@ export interface Inventory {
 
     product_id: number;
     product_name: string;
+    product_price?: number;
 
     warehouse_id: number;
     warehouse_name: string;

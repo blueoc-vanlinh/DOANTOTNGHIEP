@@ -5,7 +5,15 @@ from app.db.base_model import BaseModel
 class StockTransaction(BaseModel, table=True):
     __tablename__ = "stock_transactions"
     __table_args__ = (
-        CheckConstraint("type IN ('IMPORT', 'EXPORT', 'ADJUST')", name="ck_stock_transactions_type"),
+        CheckConstraint(
+            "type IN ("
+            "'IMPORT', 'EXPORT', 'ADJUST', "
+            "'IMPORT_CANCEL', 'EXPORT_CANCEL', "
+            "'CUSTOMER_RETURN', 'SUPPLIER_RETURN', "
+            "'STOCKTAKE_ADJUST', 'PO_RECEIVE'"
+            ")",
+            name="ck_stock_transactions_type",
+        ),
     )
 
     product_id: int = Field(foreign_key="products.id")

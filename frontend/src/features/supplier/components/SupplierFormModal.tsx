@@ -33,8 +33,8 @@ const SupplierFormModal: FC<SupplierFormModalProps> = ({
         try {
             const values = await form.validateFields();
             onSubmit(values);
-        } catch (error) {
-            console.log("Validate Failed:", error);
+        } catch {
+            return;
         }
     };
 

@@ -13,6 +13,7 @@ import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import ModalConfirm from "@/components/common/ModalConfirm";
 import PaginationBar from "@/components/common/PaginationBar";
+import PageHero from "@/components/common/PageHero";
 
 import { useCategories } from "@/features/category/hooks";
 
@@ -260,33 +261,11 @@ export default function ProductsPage() {
     return (
 
         <div>
-            <div
-                style={{
-                    marginBottom: 24,
-
-                    display: "flex",
-
-                    justifyContent:
-                        "space-between",
-
-                    alignItems:
-                        "center",
-                }}
-            >
-
-                <h2
-                    style={{
-                        margin: 0,
-
-                        fontSize: 24,
-
-                        fontWeight: 600,
-                    }}
-                >
-                    Quản lý Sản phẩm
-                </h2>
-
-                <Space wrap>
+            <PageHero
+                eyebrow="Product master data"
+                title={`Sản phẩm (${total})`}
+                description="Quản lý SKU, barcode, giá bán, danh mục và nhập dữ liệu sản phẩm bằng Excel."
+                actions={<Space wrap>
                     <Button
                         onClick={() =>
                             downloadTemplateMutation.mutate()
@@ -319,12 +298,14 @@ export default function ProductsPage() {
                     >
                         + Thêm sản phẩm
                     </Button>
-                </Space>
-            </div>
+                </Space>}
+            />
 
             <div
+                className="section-band"
                 style={{
                     marginBottom: 16,
+                    padding: 16,
                 }}
             >
 

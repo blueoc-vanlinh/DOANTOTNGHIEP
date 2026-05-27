@@ -215,12 +215,12 @@ export default function Home() {
             </Col>
             <Col xs={24} md={12}>
               <div style={{ padding: 24, background: "#ffffff", borderRadius: 8, border: "1px solid #e6ebf2" }}>
-                <Text strong>Demo account</Text>
+                <Text strong>Tài khoản trình diễn</Text>
                 <Paragraph style={{ margin: "8px 0 0", color: "#58667a" }}>
-                  Admin: <Text code>admin@inventory.com</Text> · Password: <Text code>000000</Text>
+                  Admin: <Text code>admin@inventory.com</Text> · Password: <Text code>Admin@123</Text>
                 </Paragraph>
                 <Paragraph style={{ margin: "8px 0 0", color: "#58667a" }}>
-                  Manager: <Text code>manager@inventory.com</Text> · Password: <Text code>000000</Text>
+                  Manager: <Text code>manager@inventory.com</Text> · Password: <Text code>Admin@123</Text>
                 </Paragraph>
               </div>
             </Col>

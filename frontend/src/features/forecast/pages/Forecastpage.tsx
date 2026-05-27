@@ -12,6 +12,7 @@ import {
 
 import Button from "@/components/common/button";
 import EmptyState from "@/components/common/EmptyState";
+import PageHero from "@/components/common/PageHero";
 import SearchCombobox from "@/components/common/SearchCombobox";
 import { useProducts } from "@/features/products/hooks";
 import { useForecast } from "../hooks";
@@ -27,7 +28,7 @@ import {
   Legend,
 } from "recharts";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export default function ForecastPage() {
   const [productId, setProductId] = useState<number | undefined>();
@@ -47,26 +48,13 @@ export default function ForecastPage() {
 
   return (
     <div>
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            Dự báo tồn kho AI
-          </Title>
+      <PageHero
+        eyebrow="AI demand forecasting"
+        title="Dự báo tồn kho AI"
+        description="Chọn sản phẩm để xem nhu cầu dự báo, tồn khả dụng, model đang dùng và số lượng nên nhập."
+      />
 
-          <Text type="secondary">
-            Dự đoán nhu cầu nhập hàng bằng AI Forecasting
-          </Text>
-        </div>
-      </div>
-
-      <Card style={{ marginBottom: 24 }}>
+      <Card style={{ marginBottom: 24 }} className="workflow-card">
         <Space size="large" align="end">
           <div>
             <Text strong style={{ display: "block", marginBottom: 8 }}>
@@ -118,7 +106,7 @@ export default function ForecastPage() {
           type="warning"
           showIcon
           style={{ marginBottom: 24 }}
-          message={data.warning}
+          title={data.warning}
           description="AI chưa đủ dữ liệu lịch sử để huấn luyện chính xác. Hệ thống đang dùng chế độ dự đoán tạm thời."
         />
       )}
@@ -128,7 +116,7 @@ export default function ForecastPage() {
           type={data.external_factors_used ? "success" : "info"}
           showIcon
           style={{ marginBottom: 24 }}
-          message={`Độ chính xác AI: ${data.model_accuracy ? `${data.model_accuracy}%` : "Đang cập nhật"}`}
+          title={`Độ chính xác AI: ${data.model_accuracy ? `${data.model_accuracy}%` : "Đang cập nhật"}`}
           description={`${data.ai_explanation || "AI đang phân tích nhu cầu nhập hàng."} Model: ${data.model_used || "Prophet"} · Nguồn: ${data.model_source === "forecast_results" ? "Đã train" : "Dự báo trực tiếp"} · Dataset: ${data.dataset_used || "N/A"} · Train/Test: ${data.train_points || 0}/${data.test_points || 0}`}
         />
       )}

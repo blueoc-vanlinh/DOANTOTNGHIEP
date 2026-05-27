@@ -17,6 +17,7 @@ import {
 } from "antd";
 
 import Button from "@/components/common/button";
+import PageHero from "@/components/common/PageHero";
 import SearchCombobox from "@/components/common/SearchCombobox";
 import { useProducts } from "@/features/products/hooks";
 import {
@@ -33,7 +34,7 @@ import type {
   ProductTrainingQuality,
 } from "../types";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const readinessColor: Record<ProductTrainingQuality["model_ready"], string> = {
   INSUFFICIENT_DATA: "red",
@@ -122,48 +123,62 @@ export default function AiDataPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Dữ liệu huấn luyện AI
-        </Title>
-        <Text type="secondary">
-          Kiểm tra số bản ghi, chất lượng chuỗi thời gian và yếu tố ngoại vi
-        </Text>
-      </div>
+      <PageHero
+        eyebrow="AI data platform"
+        title="Dữ liệu huấn luyện AI"
+        description="Theo dõi dữ liệu vận hành thật, benchmark public dataset, yếu tố ngoại vi và trạng thái sẵn sàng của từng sản phẩm trước khi train forecast."
+        actions={
+          <Button
+            type="primary"
+            loading={trainAi.isPending}
+            onClick={() =>
+              trainAi.mutate(undefined, {
+                onSuccess: () => message.success("Đã train lại AI Forecast"),
+                onError: (error) => {
+                  const err = error as { message?: string };
+                  message.error(err.message || "Không train lại được AI");
+                },
+              })
+            }
+          >
+            Train AI Forecast
+          </Button>
+        }
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Sản phẩm" value={counts?.products || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Dòng tồn kho" value={counts?.inventory_records || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="SL thực tế trong kho" value={counts?.current_stock_quantity || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Giao dịch" value={counts?.stock_transactions || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Xuất kho" value={counts?.export_transactions || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Forecast" value={counts?.forecast_results || 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={4}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Yếu tố ngoại vi" value={counts?.external_factors || 0} />
           </Card>
         </Col>
@@ -174,7 +189,7 @@ export default function AiDataPage() {
           type="info"
           showIcon
           style={{ marginBottom: 24 }}
-          message="Đánh giá dữ liệu"
+          title="Đánh giá dữ liệu"
           description={overview.data.recommendation}
         />
       )}
@@ -183,40 +198,26 @@ export default function AiDataPage() {
         type="success"
         showIcon
         style={{ marginBottom: 24 }}
-        message="Hybrid Data Architecture cho AI"
+        title="Hybrid Data Architecture cho AI"
         description="Public dataset + synthetic warehouse data + external factors + real operational logs. Đây là hướng mình đang đẩy vào seed/training pipeline để AI forecast hoạt động thật trên project."
       />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={8}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Model tốt nhất" value={bestBenchmark?.model || "Đang cập nhật"} />
             <Text type="secondary">{bestBenchmark?.dataset || "Chưa có dataset"}</Text>
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card>
+          <Card className="workflow-card">
             <Statistic title="Độ chính xác tốt nhất" value={bestBenchmark?.accuracy || 0} suffix="%" />
             <Text type="secondary">Train/Test: {bestBenchmark?.train_points || 0}/{bestBenchmark?.test_points || 0}</Text>
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card>
-            <Button
-              type="primary"
-              loading={trainAi.isPending}
-              onClick={() =>
-                trainAi.mutate(undefined, {
-                  onSuccess: () => message.success("Đã train lại AI Forecast"),
-                  onError: (error) => {
-                    const err = error as { message?: string };
-                    message.error(err.message || "Không train lại được AI");
-                  },
-                })
-              }
-            >
-              Train AI Forecast
-            </Button>
+          <Card className="workflow-card">
+            <Statistic title="Pipeline" value="Sẵn sàng train" />
             <div style={{ marginTop: 8 }}>
               <Text type="secondary">Dùng sau khi import/export nhiều dữ liệu mới.</Text>
             </div>
@@ -224,12 +225,12 @@ export default function AiDataPage() {
         </Col>
       </Row>
 
-      <Card title="Độ chính xác model AI theo dataset" style={{ marginBottom: 24 }}>
+      <Card title="Độ chính xác model AI theo dataset" className="workflow-card" style={{ marginBottom: 24 }}>
         <Alert
           type="info"
           showIcon
           style={{ marginBottom: 16 }}
-          message={`Accuracy tốt nhất: ${benchmarks.data?.best_accuracy || 0}%`}
+          title={`Accuracy tốt nhất: ${benchmarks.data?.best_accuracy || 0}%`}
           description={benchmarks.data?.metric_note || "Đang đọc train/test split từ dataset/splits"}
         />
         <Table
@@ -267,7 +268,7 @@ export default function AiDataPage() {
         />
       </Card>
 
-      <Card title="Chất lượng dữ liệu theo sản phẩm" style={{ marginBottom: 24 }}>
+      <Card title="Chất lượng dữ liệu theo sản phẩm" className="workflow-card" style={{ marginBottom: 24 }}>
         <Table<ProductTrainingQuality>
           rowKey="product_id"
           loading={overview.isLoading}
@@ -302,7 +303,7 @@ export default function AiDataPage() {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} lg={10}>
-          <Card title="Thêm yếu tố ngoại vi">
+          <Card title="Thêm yếu tố ngoại vi" className="workflow-card">
             <Form form={form} layout="vertical">
               <Form.Item
                 name="factor_date"
@@ -374,7 +375,7 @@ export default function AiDataPage() {
         </Col>
 
         <Col xs={24} lg={14}>
-          <Card title="Yếu tố ngoại vi đã ghi nhận">
+          <Card title="Yếu tố ngoại vi đã ghi nhận" className="workflow-card">
             <Table<ExternalFactor>
               rowKey="id"
               loading={externalFactors.isLoading}
@@ -392,7 +393,7 @@ export default function AiDataPage() {
         </Col>
       </Row>
 
-      <Card title="Dataset LSTM/Transformer">
+      <Card title="Dataset LSTM/Transformer" className="workflow-card">
         <Space style={{ marginBottom: 16 }}>
           <SearchCombobox
             value={productId}

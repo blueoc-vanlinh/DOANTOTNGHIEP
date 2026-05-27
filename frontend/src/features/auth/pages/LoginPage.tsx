@@ -28,7 +28,7 @@ export default function LoginPage() {
       },
       onError: (err: unknown) => {
         const e = err as { message?: string };
-        setError(e?.message || 'Login failed');
+        setError(e?.message || 'Đăng nhập thất bại');
       },
     });
   };
@@ -63,12 +63,12 @@ export default function LoginPage() {
           <Card style={{ borderRadius: 8, boxShadow: '0 18px 50px rgba(16, 24, 40, 0.12)' }}>
             <div style={{ marginBottom: 20 }}>
               <Title level={3} style={{ marginBottom: 4 }}>Inventory Intelligence</Title>
-              <Text type="secondary">Sử dụng tài khoản demo hoặc tài khoản được cấp quyền.</Text>
+              <Text type="secondary">Sử dụng tài khoản được cấp quyền để truy cập hệ thống.</Text>
             </div>
             {error && (
               <Alert
                 type="error"
-                message={error}
+                title={error}
                 style={{ marginBottom: 16 }}
               />
             )}
@@ -77,19 +77,19 @@ export default function LoginPage() {
               <Form.Item
                 label="Email"
                 name="email"
-                rules={[{ required: true, message: 'Please enter email' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập email' }]}
               >
-                <Input size="large" placeholder="Enter your email" />
+                <Input size="large" placeholder="Nhập email" />
               </Form.Item>
 
               <Form.Item
-                label="Password"
+                label="Mật khẩu"
                 name="password"
-                rules={[{ required: true, message: 'Please enter password' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
               >
                 <Input.Password
                   size="large"
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu"
                   iconRender={(visible) =>
                     visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                   }
@@ -98,8 +98,8 @@ export default function LoginPage() {
 
               <Form.Item>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Checkbox>Remember me</Checkbox>
-                  <Text type="secondary">Demo: admin@inventory.com</Text>
+                  <Checkbox>Ghi nhớ đăng nhập</Checkbox>
+                  <Text type="secondary">Admin: admin@inventory.com</Text>
                 </div>
               </Form.Item>
               <Form.Item>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   block
                   size="large"
                 >
-                  Login
+                  Đăng nhập
                 </Button>
               </Form.Item>
             </Form>

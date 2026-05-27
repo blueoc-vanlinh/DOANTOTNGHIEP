@@ -5,6 +5,7 @@ import { useDebounce } from "use-debounce";
 
 import LoadingPage from "@/components/common/LoadingPage";
 import PaginationBar from "@/components/common/PaginationBar";
+import PageHero from "@/components/common/PageHero";
 import { useAuditLogs } from "../hooks";
 import type { AuditLog } from "../types";
 
@@ -90,21 +91,11 @@ export default function AuditLogPage() {
 
   return (
     <div>
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <h2 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>
-          Nhật ký hoạt động ({data?.total || 0})
-        </h2>
-
-        <Space wrap>
+      <PageHero
+        eyebrow="Audit trail"
+        title={`Nhật ký hoạt động (${data?.total || 0})`}
+        description="Theo dõi thao tác người dùng, API, trạng thái thành công/thất bại và nguồn truy cập."
+        actions={<Space wrap>
           <Select
             allowClear
             placeholder="Hành động"
@@ -135,10 +126,10 @@ export default function AuditLogPage() {
               { label: "Thất bại", value: false },
             ]}
           />
-        </Space>
-      </div>
+        </Space>}
+      />
 
-      <div style={{ marginBottom: 16 }}>
+      <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
         <Input.Search
           allowClear
           value={search}

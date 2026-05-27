@@ -6,17 +6,30 @@ import {
   Card,
   message,
   notification,
+  Space,
+  Table,
+  Tag,
+  Select,
 } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
 import Button from "@/components/common/button";
+import PageHero from "@/components/common/PageHero";
 
 import SearchCombobox from "@/components/common/SearchCombobox";
 
 import { useImport } from "../hooks";
+import {
+  useApproveImportOrder,
+  useCancelImportOrder,
+  useImportOrders,
+  useReceiveImportOrder,
+} from "../hooks";
 
 import type {
   ImportItem,
   ImportInput,
+  ImportOrder,
 } from "../types";
 
 import { useProducts } from "@/features/products/hooks";
@@ -28,13 +41,29 @@ import { getForecast } from "@/features/forecast/api";
 
 interface FormValues {
   supplier_id: number;
+  import_type: string;
 }
+
+const importTypeOptions = [
+  { value: "PURCHASE", label: "Nhập mua hàng" },
+  { value: "RETURN_FROM_CUSTOMER", label: "Nhập hàng khách trả" },
+  { value: "TRANSFER_IN", label: "Nhập điều chuyển kho" },
+  { value: "PRODUCTION_FINISHED", label: "Nhập thành phẩm sản xuất" },
+  { value: "ADJUSTMENT_IN", label: "Nhập điều chỉnh tăng" },
+];
+
+const importTypeLabel = Object.fromEntries(
+  importTypeOptions.map((item) => [item.value, item.label])
+);
 
 export default function ImportPage() {
   const [form] =
     Form.useForm<FormValues>();
 
   const mutation = useImport();
+  const approveMutation = useApproveImportOrder();
+  const receiveMutation = useReceiveImportOrder();
+  const cancelMutation = useCancelImportOrder();
   const [supplierSearch, setSupplierSearch] = useState("");
   const [warehouseSearch, setWarehouseSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
@@ -81,6 +110,14 @@ export default function ImportPage() {
 
   const products =
     productsRes?.items || [];
+
+  const { data: importOrdersRes, isLoading: importOrdersLoading } =
+    useImportOrders({
+      page: 1,
+      page_size: 10,
+    });
+
+  const importOrders = importOrdersRes?.items || [];
 
   const addItem = () => {
     setItems((prev) => [
@@ -188,7 +225,7 @@ export default function ImportPage() {
   };
 
   const handleSubmit =
-    async () => {
+    async (autoComplete = true) => {
       try {
         const values =
           await form.validateFields();
@@ -197,6 +234,9 @@ export default function ImportPage() {
         {
           supplier_id:
             values.supplier_id,
+          import_type:
+            values.import_type,
+          auto_complete: autoComplete,
 
           items: items.filter(
             (item) =>
@@ -208,9 +248,11 @@ export default function ImportPage() {
         };
 
         mutation.mutate(payload, {
-          onSuccess: () => {
+          onSuccess: (result) => {
             message.success(
-              "Nhập hàng thành công!"
+              autoComplete
+                ? `Nhập kho thành công. Phiếu ${result.order?.order_code || result.order?.id} đã cập nhật tồn kho.`
+                : `Đã tạo phiếu nhập ${result.order?.order_code || result.order?.id} chờ duyệt/nhận hàng.`
             );
 
             form.resetFields();
@@ -233,32 +275,100 @@ export default function ImportPage() {
       }
     };
 
+  const handleApprove = (id: number) => {
+    approveMutation.mutate(id, {
+      onSuccess: () => message.success("Đã duyệt phiếu nhập"),
+    });
+  };
+
+  const handleReceive = (id: number) => {
+    receiveMutation.mutate(id, {
+      onSuccess: () => message.success("Đã nhận hàng và cập nhật tồn kho"),
+    });
+  };
+
+  const handleCancel = (id: number) => {
+    cancelMutation.mutate(id, {
+      onSuccess: () => message.success("Đã hủy phiếu nhập"),
+    });
+  };
+
+  const statusColor: Record<string, string> = {
+    PENDING: "gold",
+    APPROVED: "blue",
+    COMPLETED: "green",
+    CANCELLED: "red",
+  };
+
+  const importColumns: ColumnsType<ImportOrder> = [
+    {
+      title: "Mã phiếu",
+      dataIndex: "order_code",
+      key: "order_code",
+      render: (value, record) => value || `#${record.id}`,
+    },
+    {
+      title: "Loại phiếu",
+      dataIndex: "import_type",
+      key: "import_type",
+      render: (value: string) => importTypeLabel[value] || value,
+    },
+    {
+      title: "Nhà cung cấp",
+      dataIndex: "supplier_name",
+      key: "supplier_name",
+      render: (value, record) => value || `#${record.supplier_id}`,
+    },
+    {
+      title: "Tổng tiền",
+      dataIndex: "grand_total",
+      key: "grand_total",
+      align: "right",
+      render: (value: number) => value.toLocaleString("vi-VN"),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (value: string) => <Tag color={statusColor[value]}>{value}</Tag>,
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          {record.status === "PENDING" && (
+            <Button size="small" onClick={() => handleApprove(record.id)}>
+              Duyệt
+            </Button>
+          )}
+          {(record.status === "PENDING" || record.status === "APPROVED") && (
+            <Button size="small" type="primary" onClick={() => handleReceive(record.id)}>
+              Nhận hàng
+            </Button>
+          )}
+          {record.status !== "CANCELLED" && (
+            <Button size="small" danger onClick={() => handleCancel(record.id)}>
+              Hủy
+            </Button>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div>
-      {/* header */}
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            fontSize: "24px",
-            fontWeight: 600,
-          }}
-        >
-          Nhập kho
-        </h2>
-      </div>
+      <PageHero
+        eyebrow="Inbound workflow"
+        title="Phiếu nhập kho"
+        description="Lập phiếu nhập theo loại nghiệp vụ, dùng AI gợi ý số lượng và xử lý duyệt/nhận/hủy phiếu."
+      />
 
       {/* info */}
       <Card
         title="Thông tin chung"
+        className="workflow-card"
         style={{
           marginBottom: 24,
         }}
@@ -266,7 +376,25 @@ export default function ImportPage() {
         <Form
           form={form}
           layout="vertical"
+          initialValues={{ import_type: "PURCHASE" }}
         >
+          <Form.Item
+            name="import_type"
+            label="Loại phiếu nhập"
+            rules={[
+              {
+                required: true,
+                message:
+                  "Vui lòng chọn loại phiếu nhập",
+              },
+            ]}
+          >
+            <Select
+              options={importTypeOptions}
+              placeholder="Chọn loại phiếu nhập"
+            />
+          </Form.Item>
+
           <Form.Item
             name="supplier_id"
             label="Nhà cung cấp"
@@ -299,6 +427,7 @@ export default function ImportPage() {
       {/* items */}
       <Card
         title="Danh sách sản phẩm nhập kho"
+        className="workflow-card"
         style={{
           marginBottom: 24,
         }}
@@ -478,12 +607,27 @@ export default function ImportPage() {
       <div
         style={{
           textAlign: "right",
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 12,
         }}
       >
         <Button
+          size="large"
+          onClick={() => handleSubmit(false)}
+          loading={
+            mutation.isPending
+          }
+          style={{
+            minWidth: 200,
+          }}
+        >
+          Lưu phiếu chờ duyệt
+        </Button>
+        <Button
           type="primary"
           size="large"
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(true)}
           loading={
             mutation.isPending
           }
@@ -494,6 +638,28 @@ export default function ImportPage() {
           Xác nhận nhập kho
         </Button>
       </div>
+
+      <Card
+        title="Quản lý phiếu nhập gần đây"
+        className="workflow-card"
+        style={{
+          marginTop: 24,
+        }}
+      >
+        <Table<ImportOrder>
+          rowKey="id"
+          dataSource={importOrders}
+          columns={importColumns}
+          loading={
+            importOrdersLoading ||
+            approveMutation.isPending ||
+            receiveMutation.isPending ||
+            cancelMutation.isPending
+          }
+          pagination={false}
+          scroll={{ x: 900 }}
+        />
+      </Card>
     </div>
   );
 }

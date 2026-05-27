@@ -1,4 +1,5 @@
 import { BASE_URL } from '@/constants/config';
+import { useAuthStore } from '@/store/auth.store';
 import axios from 'axios';
 
 export const apiClient = axios.create({
@@ -12,6 +13,10 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -30,20 +35,13 @@ apiClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const refreshResponse = await apiClient.post('/auth/refresh');
-        const storage = localStorage.getItem('auth-storage');
-        const state = JSON.parse(storage || '{}')?.state || {};
-        localStorage.setItem(
-          'auth-storage',
-          JSON.stringify({
-            state: {
-              ...state,
-              user: refreshResponse.data.user,
-              isAuthenticated: true,
-            },
-            version: 0,
-          })
-        );
+        const refreshToken = useAuthStore.getState().refreshToken;
+        const refreshResponse = await apiClient.post('/auth/refresh', refreshToken ? { refreshToken } : undefined);
+        useAuthStore.getState().login(refreshResponse.data.user, {
+          accessToken: refreshResponse.data.accessToken,
+          refreshToken: refreshResponse.data.refreshToken,
+        });
+        originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.accessToken}`;
         return apiClient(originalRequest);
       } catch {
         localStorage.removeItem('auth-storage');
@@ -51,10 +49,10 @@ apiClient.interceptors.response.use(
     }
 
     if (status === 401) {
-      localStorage.removeItem('auth-storage');
-
       if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+        useAuthStore.getState().logout();
+      } else {
+        localStorage.removeItem('auth-storage');
       }
     }
     return Promise.reject({

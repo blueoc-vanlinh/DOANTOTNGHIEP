@@ -9,6 +9,7 @@ import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import ModalConfirm from "@/components/common/ModalConfirm";
 import PaginationBar from "@/components/common/PaginationBar";
+import PageHero from "@/components/common/PageHero";
 
 import {
   useCategories,
@@ -102,24 +103,16 @@ export default function CategoryPage() {
 
   return (
     <div>
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
-          Quản lý Danh mục ({total})
-        </h2>
-
-        <Button type="primary" onClick={handleCreate}>
+      <PageHero
+        eyebrow="Product catalog"
+        title={`Danh mục (${total})`}
+        description="Chuẩn hóa nhóm sản phẩm để lọc dữ liệu, báo cáo và dự báo chính xác hơn."
+        actions={<Button type="primary" onClick={handleCreate}>
           + Thêm danh mục
-        </Button>
-      </div>
+        </Button>}
+      />
 
-      <div style={{ marginBottom: 16 }}>
+      <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
         <Input.Search
           allowClear
           value={search}

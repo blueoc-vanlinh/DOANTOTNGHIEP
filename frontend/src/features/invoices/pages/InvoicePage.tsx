@@ -17,6 +17,7 @@ import { CopyOutlined, LinkOutlined } from "@ant-design/icons";
 import { useDebounce } from "use-debounce";
 
 import Button from "@/components/common/button";
+import PageHero from "@/components/common/PageHero";
 import {
   useCreateMomoPayment,
   useInvoice,
@@ -77,12 +78,11 @@ export default function InvoicePage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Hóa đơn
-        </Title>
-        <Text type="secondary">Quản lý hóa đơn nhập kho và xuất kho</Text>
-      </div>
+      <PageHero
+        eyebrow="Billing documents"
+        title="Hóa đơn"
+        description="Quản lý chứng từ nhập/xuất, chi tiết dòng hàng, in hóa đơn và tạo QR MoMo sandbox."
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={8}>
@@ -110,7 +110,7 @@ export default function InvoicePage() {
         </Col>
       </Row>
 
-      <Card title="Danh sách hóa đơn">
+      <Card title="Danh sách hóa đơn" className="workflow-card">
         <Input.Search
           allowClear
           value={invoiceSearch}

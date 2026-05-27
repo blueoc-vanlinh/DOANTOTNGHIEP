@@ -6,6 +6,7 @@ import TransactionTable from "../components/TransactionTable";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import PaginationBar from "@/components/common/PaginationBar";
+import PageHero from "@/components/common/PageHero";
 
 import { useTransactions } from "../hooks";
 import type { TransactionType } from "../types";
@@ -36,18 +37,11 @@ export default function TransactionPage() {
 
     return (
         <div>
-            <div
-                style={{
-                    marginBottom: 24,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                }}
-            >
-                <h2 style={{ fontSize: 24, fontWeight: 600 }}>
-                    Lịch sử Giao dịch ({total})
-                </h2>
-
+            <PageHero
+                eyebrow="Stock ledger"
+                title={`Lịch sử giao dịch (${total})`}
+                description="Theo dõi toàn bộ biến động nhập, xuất, điều chỉnh và hoàn/hủy tồn kho."
+                actions={
                 <Space>
                     <span style={{ fontWeight: 500, color: "#666" }}>
                         Lọc theo loại:
@@ -65,12 +59,18 @@ export default function TransactionPage() {
                             { label: "Nhập kho", value: "IMPORT" },
                             { label: "Xuất kho", value: "EXPORT" },
                             { label: "Điều chỉnh", value: "ADJUST" },
+                            { label: "Hủy phiếu nhập", value: "IMPORT_CANCEL" },
+                            { label: "Hủy phiếu xuất", value: "EXPORT_CANCEL" },
+                            { label: "Khách trả hàng", value: "CUSTOMER_RETURN" },
+                            { label: "Trả nhà cung cấp", value: "SUPPLIER_RETURN" },
+                            { label: "Nhận hàng PO", value: "PO_RECEIVE" },
                         ]}
                     />
                 </Space>
-            </div>
+                }
+            />
 
-            <div style={{ marginBottom: 16 }}>
+            <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
                 <Input.Search
                     allowClear
                     value={search}

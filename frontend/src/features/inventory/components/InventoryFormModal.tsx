@@ -34,8 +34,8 @@ const InventoryFormModal: FC<InventoryFormModalProps> = ({
         try {
             const values = await form.validateFields();
             onSubmit(values);
-        } catch (error) {
-            console.log("Validate Failed:", error);
+        } catch {
+            return;
         }
     };
 
@@ -91,45 +91,45 @@ const InventoryFormModal: FC<InventoryFormModalProps> = ({
 
                 <Form.Item
                     name="reserved_quantity"
-                    label="So luong da giu"
+                    label="Số lượng đã giữ"
                     rules={[
-                        { type: "number", min: 0, message: "So luong khong duoc am" }
+                        { type: "number", min: 0, message: "Số lượng không được âm" }
                     ]}
                 >
                     <InputNumber
                         style={{ width: "100%" }}
                         min={0}
-                        placeholder="Nhap so luong da giu"
+                        placeholder="Nhập số lượng đã giữ"
                         size="large"
                     />
                 </Form.Item>
 
                 <Form.Item
                     name="oncoming_quantity"
-                    label="So luong sap ve"
+                    label="Số lượng sắp về"
                     rules={[
-                        { type: "number", min: 0, message: "So luong khong duoc am" }
+                        { type: "number", min: 0, message: "Số lượng không được âm" }
                     ]}
                 >
                     <InputNumber
                         style={{ width: "100%" }}
                         min={0}
-                        placeholder="Nhap so luong sap ve"
+                        placeholder="Nhập số lượng sắp về"
                         size="large"
                     />
                 </Form.Item>
 
                 <Form.Item
                     name="min_threshold"
-                    label="Nguong ton toi thieu"
+                    label="Ngưỡng tồn tối thiểu"
                     rules={[
-                        { type: "number", min: 0, message: "Nguong khong duoc am" }
+                        { type: "number", min: 0, message: "Ngưỡng không được âm" }
                     ]}
                 >
                     <InputNumber
                         style={{ width: "100%" }}
                         min={0}
-                        placeholder="Nhap nguong toi thieu"
+                        placeholder="Nhập ngưỡng tối thiểu"
                         size="large"
                     />
                 </Form.Item>

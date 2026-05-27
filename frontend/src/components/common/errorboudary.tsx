@@ -19,8 +19,8 @@ class ErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(): State {
     return { hasError: true };
   }
-  componentDidCatch(error: Error, info: ErrorInfo): void {
-    console.error("ErrorBoundary caught an error:", error, info);
+  componentDidCatch(_error: Error, _info: ErrorInfo): void {
+    return;
   }
   handleReset = (): void => {
     this.setState({ hasError: false });

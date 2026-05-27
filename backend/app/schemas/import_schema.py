@@ -13,6 +13,8 @@ class ImportItem(BaseModel):
 
 class ImportCreate(BaseModel):
     supplier_id: int
+    import_type: str = "PURCHASE"
     vat_rate: float = 0.08
+    auto_complete: bool = True
 
     items: list[ImportItem]

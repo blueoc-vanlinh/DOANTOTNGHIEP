@@ -41,7 +41,18 @@ def create_transaction(
     user_id: Optional[int] = None,
 ):
 
-    if type not in ["IMPORT", "EXPORT", "ADJUST"]:
+    allowed_types = {
+        "IMPORT",
+        "EXPORT",
+        "ADJUST",
+        "IMPORT_CANCEL",
+        "EXPORT_CANCEL",
+        "CUSTOMER_RETURN",
+        "SUPPLIER_RETURN",
+        "STOCKTAKE_ADJUST",
+        "PO_RECEIVE",
+    }
+    if type not in allowed_types:
         raise HTTPException(400, "Invalid transaction type")
 
     if quantity <= 0:
@@ -57,15 +68,15 @@ def create_transaction(
 
     last_balance = get_last_balance(session, product_id, warehouse_id)
 
-    if type == "IMPORT":
+    if type in {"IMPORT", "CUSTOMER_RETURN", "PO_RECEIVE", "EXPORT_CANCEL"}:
         balance_after = last_balance + quantity
 
-    elif type == "EXPORT":
+    elif type in {"EXPORT", "SUPPLIER_RETURN", "IMPORT_CANCEL"}:
         if quantity > last_balance:
             raise HTTPException(400, "Not enough stock")
         balance_after = last_balance - quantity
 
-    else:  
+    else:
         balance_after = quantity
 
     transaction = StockTransaction(

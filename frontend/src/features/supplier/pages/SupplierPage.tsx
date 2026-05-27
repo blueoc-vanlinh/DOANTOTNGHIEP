@@ -8,6 +8,7 @@ import Button from "@/components/common/button";
 import LoadingPage from "@/components/common/LoadingPage";
 import EmptyState from "@/components/common/EmptyState";
 import ModalConfirm from "@/components/common/ModalConfirm";
+import PageHero from "@/components/common/PageHero";
 
 import {
     useSuppliers,
@@ -96,22 +97,15 @@ export default function SupplierPage() {
 
     return (
         <div>
-            <div
-                style={{
-                    marginBottom: 24,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                }}
-            >
-                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
-                    Quản lý Nhà cung cấp
-                </h2>
-                <Button type="primary" onClick={handleCreate}>
+            <PageHero
+                eyebrow="Supplier network"
+                title={`Nhà cung cấp (${total})`}
+                description="Quản lý đối tác cung ứng, thông tin liên hệ và dữ liệu phục vụ phiếu nhập."
+                actions={<Button type="primary" onClick={handleCreate}>
                     + Thêm nhà cung cấp
-                </Button>
-            </div>
-            <div style={{ marginBottom: 16 }}>
+                </Button>}
+            />
+            <div className="section-band" style={{ marginBottom: 16, padding: 16 }}>
                 <Input.Search
                     allowClear
                     value={search}

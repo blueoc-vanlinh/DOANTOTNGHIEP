@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { Card, Col, Form, Input, InputNumber, message, Row, Select, Space, Tabs, Typography } from "antd";
+import { Card, Col, Form, Input, InputNumber, message, Row, Select, Space, Tabs } from "antd";
 
 import Button from "@/components/common/button";
+import PageHero from "@/components/common/PageHero";
 import SearchCombobox from "@/components/common/SearchCombobox";
 import { useProducts } from "@/features/products/hooks";
 import { useSuppliers } from "@/features/supplier/hooks";
@@ -17,8 +18,6 @@ import {
   createStorageBin,
   receivePurchaseOrder,
 } from "../api";
-
-const { Title, Text } = Typography;
 
 type EntityOption = {
   value: number;
@@ -80,16 +79,14 @@ export default function WarehouseOperationsPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Nghiệp vụ kho (hệ thông đang trong giai đoạn phát triển)
-        </Title>
-        <Text type="secondary">
-          Trả hàng, hủy phiếu, vị trí kệ, batch/serial, kiểm kê, PO và báo cáo
-        </Text>
-      </div>
+      <PageHero
+        eyebrow="Warehouse operations"
+        title="Trung tâm nghiệp vụ kho"
+        description="Thực hiện các nghiệp vụ sau bán, kiểm kê, vị trí lưu trữ, batch/serial, mua hàng PO và báo cáo vận hành trong một luồng quản trị thống nhất."
+      />
 
       <Tabs
+        className="section-band"
         items={[
           { key: "return", label: "Trả hàng", children: <ReturnForm {...entityOptions} /> },
           { key: "cancel", label: "Hủy phiếu", children: <CancelOrderForm /> },
@@ -111,7 +108,7 @@ function ReturnForm({
 }: ReturnType<typeof useEntityOptions>) {
   const [form] = Form.useForm();
   return (
-    <Card title="Tạo phiếu trả hàng">
+    <Card title="Tạo phiếu trả hàng" className="workflow-card">
       <Form form={form} layout="vertical">
         <Row gutter={16}>
           <Col xs={24} md={8}>
@@ -169,7 +166,7 @@ function ReturnForm({
 function CancelOrderForm() {
   const [form] = Form.useForm();
   return (
-    <Card title="Hủy phiếu nhập/xuất và hoàn tồn kho">
+    <Card title="Hủy phiếu nhập/xuất và hoàn tồn kho" className="workflow-card">
       <Form form={form} layout="inline">
         <Form.Item name="type" initialValue="EXPORT">
           <Select
@@ -214,7 +211,7 @@ function LocationBatchForm({
   return (
     <Row gutter={[16, 16]}>
       <Col xs={24} lg={12}>
-        <Card title="Tạo vị trí kệ/bin">
+        <Card title="Tạo vị trí kệ/bin" className="workflow-card">
           <Form form={binForm} layout="vertical">
             <Form.Item name="warehouse_id" label="Kho" rules={[{ required: true, message: "Chọn kho" }]}>
               <SearchCombobox onSearch={setWarehouseSearch} options={warehouseOptions} placeholder="Tìm kho theo tên" />
@@ -241,7 +238,7 @@ function LocationBatchForm({
         </Card>
       </Col>
       <Col xs={24} lg={12}>
-        <Card title="Tạo batch/serial/hạn dùng">
+        <Card title="Tạo batch/serial/hạn dùng" className="workflow-card">
           <Form form={batchForm} layout="vertical">
             <Row gutter={12}>
               <Col span={12}>
@@ -286,7 +283,7 @@ function StocktakeForm({
   const [completeForm] = Form.useForm();
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
-      <Card title="Tạo phiếu kiểm kê">
+      <Card title="Tạo phiếu kiểm kê" className="workflow-card">
         <Form form={form} layout="vertical">
           <Row gutter={16}>
             <Col xs={24} md={8}>
@@ -318,7 +315,7 @@ function StocktakeForm({
           </Button>
         </Form>
       </Card>
-      <Card title="Hoàn tất kiểm kê">
+      <Card title="Hoàn tất kiểm kê" className="workflow-card">
         <Form form={completeForm} layout="inline">
           <Form.Item name="stocktake_id" rules={[{ required: true, message: "Nhập ID kiểm kê" }]}>
             <InputNumber placeholder="ID kiểm kê" min={1} />
@@ -351,7 +348,7 @@ function PurchaseOrderForm({
   const [receiveForm] = Form.useForm();
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
-      <Card title="Tạo đơn mua hàng PO">
+      <Card title="Tạo đơn mua hàng PO" className="workflow-card">
         <Form form={form} layout="vertical">
           <Row gutter={16}>
             <Col xs={24} md={8}>
@@ -393,7 +390,7 @@ function PurchaseOrderForm({
           </Button>
         </Form>
       </Card>
-      <Card title="Nhận hàng theo PO">
+      <Card title="Nhận hàng theo PO" className="workflow-card">
         <Form form={receiveForm} layout="inline">
           <Form.Item name="po_id" rules={[{ required: true, message: "Nhập ID PO" }]}>
             <InputNumber placeholder="ID PO" min={1} />
@@ -417,7 +414,7 @@ function PurchaseOrderForm({
 function ReportsPanel() {
   const apiBase = "/api/v1/reports";
   return (
-    <Card title="Xuất báo cáo CSV">
+    <Card title="Xuất báo cáo CSV" className="workflow-card">
       <Space>
         <Button href={`${apiBase}/inventory.csv`}>Tải tồn kho</Button>
         <Button href={`${apiBase}/import-export.csv`}>Tải nhập/xuất</Button>

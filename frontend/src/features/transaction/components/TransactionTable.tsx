@@ -3,6 +3,7 @@ import type { ColumnsType } from "antd/es/table";
 
 import BaseTable from "@/components/common/BaseTable";
 import type { Transaction, TransactionType } from "../types";
+import { getTransactionTypeMeta } from "../utils/transactionLabels";
 
 interface TransactionTableProps {
     data: Transaction[];
@@ -15,16 +16,8 @@ export default function TransactionTable({
 }: TransactionTableProps) {
 
     const getTypeTag = (type: TransactionType) => {
-        switch (type) {
-            case "IMPORT":
-                return <Tag color="green">NHẬP KHO</Tag>;
-            case "EXPORT":
-                return <Tag color="red">XUẤT KHO</Tag>;
-            case "ADJUST":
-                return <Tag color="orange">ĐIỀU CHỈNH</Tag>;
-            default:
-                return <Tag>{type}</Tag>;
-        }
+        const meta = getTransactionTypeMeta(type);
+        return <Tag color={meta.color}>{meta.label.toUpperCase()}</Tag>;
     };
 
     const columns: ColumnsType<Transaction> = [
@@ -63,21 +56,20 @@ export default function TransactionTable({
             align: "center",
             sorter: (a, b) => a.quantity - b.quantity,
             render: (qty: number, record) => {
-                const isImport = record.type === "IMPORT";
-                const isExport = record.type === "EXPORT";
+                const meta = getTransactionTypeMeta(record.type);
 
                 return (
                     <b
                         style={{
                             fontSize: 15,
-                            color: isImport
-                                ? "#52c41a"
-                                : isExport
+                            color: meta.sign === "+"
+                                ? "#237804"
+                                : meta.sign === "-"
                                     ? "#8b0000"
                                     : "#fa8c16",
                         }}
                     >
-                        {isImport ? "+" : isExport ? "-" : ""}
+                        {meta.sign}
                         {qty.toLocaleString()}
                     </b>
                 );

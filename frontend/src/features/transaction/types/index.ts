@@ -1,4 +1,13 @@
-export type TransactionType = "EXPORT" | "IMPORT" | "ADJUST";
+export type TransactionType =
+    | "EXPORT"
+    | "IMPORT"
+    | "ADJUST"
+    | "CUSTOMER_RETURN"
+    | "SUPPLIER_RETURN"
+    | "STOCKTAKE_ADJUST"
+    | "PO_RECEIVE"
+    | "IMPORT_CANCEL"
+    | "EXPORT_CANCEL";
 
 export interface Transaction {
     id: number;

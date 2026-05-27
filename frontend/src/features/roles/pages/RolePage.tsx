@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Card, Form, Input, message, Modal, Select, Space, Table, Tag, Typography } from "antd";
+import { Card, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 
 import Button from "@/components/common/button";
 import ModalConfirm from "@/components/common/ModalConfirm";
+import PageHero from "@/components/common/PageHero";
 import {
   useCreateRole,
   useDeleteRole,
@@ -11,8 +12,6 @@ import {
   useUpdateRole,
 } from "../hooks";
 import type { Role, RoleInput } from "../types";
-
-const { Title, Text } = Typography;
 
 const permissionLabels: Record<string, string> = {
   view_dashboard: "Xem tổng quan",
@@ -87,24 +86,14 @@ export default function RolePage() {
 
   return (
     <div>
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            Quản lý vai trò
-          </Title>
-          <Text type="secondary">Thiết lập role và quyền truy cập cho nhân viên</Text>
-        </div>
-        <Button type="primary" onClick={() => handleOpen()}>
+      <PageHero
+        eyebrow="Permission system"
+        title="Vai trò & quyền"
+        description="Thiết lập role và quyền truy cập cho từng nhóm nhân viên trong hệ thống."
+        actions={<Button type="primary" onClick={() => handleOpen()}>
           + Thêm vai trò
-        </Button>
-      </div>
+        </Button>}
+      />
 
       <Card>
         <Table<Role>

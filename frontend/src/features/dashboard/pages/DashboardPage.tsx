@@ -14,7 +14,6 @@ import {
 import {
   AlertOutlined,
   BarChartOutlined,
-  DatabaseOutlined,
   DownloadOutlined,
   InboxOutlined,
   RiseOutlined,
@@ -38,6 +37,7 @@ import {
 
 import EmptyState from "@/components/common/EmptyState";
 import LoadingPage from "@/components/common/LoadingPage";
+import { getTransactionTypeMeta } from "@/features/transaction/utils/transactionLabels";
 import { useDashboardData } from "../hooks";
 import type {
   ChartData,
@@ -46,7 +46,7 @@ import type {
   RecentTransaction,
 } from "../types";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 type DashboardPeriod = "day" | "month" | "year";
 
@@ -124,78 +124,87 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            Dashboard Tổng quan
-          </Title>
+      <section className="dashboard-hero">
+        <div className="dashboard-hero-copy">
+          <div className="page-kicker">Operations command center</div>
+          <h2>Sức khỏe vận hành kho</h2>
           <Text type="secondary">
-            Theo dõi vận hành kho theo ngày, tháng và năm
+            Tổng hợp tồn kho, dòng tiền, đơn nhập/xuất và rủi ro thiếu hàng theo kỳ.
           </Text>
         </div>
 
-        <Segmented
-          value={period}
-          onChange={(value) => handlePeriodChange(value as DashboardPeriod)}
-          options={[
-            { label: "Ngày", value: "day" },
-            { label: "Tháng", value: "month" },
-            { label: "Năm", value: "year" },
-          ]}
-        />
-        {period === "day" && (
-          <DatePicker
-            placeholder="Chọn ngày"
-            format="YYYY-MM-DD"
-            onChange={(_, value) => setTargetDate(String(value || "") || undefined)}
+        <div className="dashboard-controls">
+          <Segmented
+            value={period}
+            onChange={(value) => handlePeriodChange(value as DashboardPeriod)}
+            options={[
+              { label: "Ngày", value: "day" },
+              { label: "Tháng", value: "month" },
+              { label: "Năm", value: "year" },
+            ]}
           />
-        )}
-        {period === "month" && (
-          <DatePicker
-            picker="month"
-            placeholder="Chọn tháng"
-            format="YYYY-MM"
-            onChange={(_, value) => setTargetMonth(String(value || "") || undefined)}
-          />
-        )}
-        {period === "year" && (
-          <DatePicker
-            picker="year"
-            placeholder="Chọn năm"
-            format="YYYY"
-            onChange={(_, value) => {
-              const text = String(value || "");
-              setTargetYear(text ? Number(text) : undefined);
-            }}
-          />
-        )}
+          {period === "day" && (
+            <DatePicker
+              placeholder="Chọn ngày"
+              format="YYYY-MM-DD"
+              onChange={(_, value) => setTargetDate(String(value || "") || undefined)}
+            />
+          )}
+          {period === "month" && (
+            <DatePicker
+              picker="month"
+              placeholder="Chọn tháng"
+              format="YYYY-MM"
+              onChange={(_, value) => setTargetMonth(String(value || "") || undefined)}
+            />
+          )}
+          {period === "year" && (
+            <DatePicker
+              picker="year"
+              placeholder="Chọn năm"
+              format="YYYY"
+              onChange={(_, value) => {
+                const text = String(value || "");
+                setTargetYear(text ? Number(text) : undefined);
+              }}
+            />
+          )}
+        </div>
+      </section>
+
+      <div className="metric-strip">
+        <div className="metric-panel">
+          <div className="metric-panel-label">Doanh thu kỳ này</div>
+          <div className="metric-panel-value" style={{ color: "#15803d" }}>
+            {currencyFormatter.format(summary.period_export_value)}
+          </div>
+          <div className="metric-panel-note">
+            Lãi tạm tính: {currencyFormatter.format(summary.period_profit)}
+          </div>
+        </div>
+        <div className="metric-panel">
+          <div className="metric-panel-label">Giá trị tồn kho</div>
+          <div className="metric-panel-value" style={{ color: "#0f766e" }}>
+            {currencyFormatter.format(summary.inventory_value)}
+          </div>
+          <div className="metric-panel-note">
+            {numberFormatter.format(summary.total_inventory)} sản phẩm đang nằm trong kho
+          </div>
+        </div>
       </div>
 
       <Row gutter={[16, 16]}>
         <StatCard title="Tổng sản phẩm" value={summary.total_products} icon={<ShoppingOutlined />} color="#334371" />
         <StatCard title="Tổng tồn kho" value={summary.total_inventory} icon={<InboxOutlined />} color="#237804" />
-        <StatCard title="Giá trị tồn kho" value={summary.inventory_value} icon={<DatabaseOutlined />} color="#08979c" money />
         <StatCard title="Kho đang dùng" value={summary.total_warehouses} icon={<BarChartOutlined />} color="#531dab" />
         <StatCard title={`Đơn nhập ${periodLabels[period].toLowerCase()}`} value={summary.period_import_orders} icon={<UploadOutlined />} color="#1677ff" />
         <StatCard title={`Đơn xuất ${periodLabels[period].toLowerCase()}`} value={summary.period_export_orders} icon={<DownloadOutlined />} color="#a8071a" />
-        <StatCard title="Doanh thu kỳ này" value={summary.period_export_value} icon={<RiseOutlined />} color="#389e0d" money />
-        <StatCard title="Chi phí nhập kỳ này" value={summary.period_import_value} icon={<UploadOutlined />} color="#d48806" money />
-        <StatCard title="Lãi tạm tính" value={summary.period_profit} icon={<RiseOutlined />} color={summary.period_profit >= 0 ? "#237804" : "#cf1322"} money />
         <StatCard title="Sắp hết hàng" value={summary.low_stock_count} icon={<WarningOutlined />} color="#faad14" />
         <StatCard title="Hết hàng" value={summary.out_of_stock_count} icon={<AlertOutlined />} color="#cf1322" />
         <StatCard title="Tổng đơn xuất" value={summary.total_export_orders} icon={<DownloadOutlined />} color="#722ed1" />
       </Row>
 
-      <Card style={{ marginTop: 24 }} title="Trạng thái AI Forecast">
+      <Card className="workflow-card" style={{ marginTop: 24 }} title="Trạng thái AI Forecast">
         <Row gutter={[16, 16]}>
           <StatCard title="Model tốt nhất" value={aiStatus?.best_model || "Đang cập nhật"} icon={<ThunderboltOutlined />} color="#0b6bcb" />
           <StatCard title="Độ chính xác AI" value={aiStatus?.accuracy || 0} icon={<RiseOutlined />} color="#237804" suffix="%" />
@@ -209,7 +218,7 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} xl={14}>
-          <Card title={`Biểu đồ nhập/xuất - ${data?.period?.chart_label || periodLabels[period]}`}>
+          <Card className="workflow-card" title={`Biểu đồ nhập/xuất - ${data?.period?.chart_label || periodLabels[period]}`}>
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={360}>
                 <LineChart data={chartData}>
@@ -229,7 +238,7 @@ export default function DashboardPage() {
         </Col>
 
         <Col xs={24} xl={10}>
-          <Card title="Giá trị nhập/xuất">
+          <Card className="workflow-card" title="Giá trị nhập/xuất">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={360}>
                 <BarChart data={chartData}>
@@ -251,7 +260,7 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
-          <Card title="Top sản phẩm xuất nhiều">
+          <Card className="workflow-card" title="Top sản phẩm xuất nhiều">
             <Table
               rowKey="product_id"
               pagination={false}
@@ -264,7 +273,7 @@ export default function DashboardPage() {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Top sản phẩm nhập nhiều">
+          <Card className="workflow-card" title="Top sản phẩm nhập nhiều">
             <Table
               rowKey="product_id"
               pagination={false}
@@ -278,7 +287,7 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
-      <Card style={{ marginTop: 24 }} title="Sản phẩm sắp hết hàng">
+      <Card className="workflow-card" style={{ marginTop: 24 }} title="Sản phẩm sắp hết hàng">
         <Table<LowStockProduct>
           rowKey="inventory_id"
           pagination={false}
@@ -296,7 +305,7 @@ export default function DashboardPage() {
         />
       </Card>
 
-      <Card style={{ marginTop: 24 }} title="Giao dịch gần đây">
+      <Card className="workflow-card" style={{ marginTop: 24 }} title="Giao dịch gần đây">
         <Table<RecentTransaction>
           rowKey="id"
           pagination={false}
@@ -308,11 +317,10 @@ export default function DashboardPage() {
             {
               title: "Loại",
               dataIndex: "type",
-              render: (val: string) => (
-                <Tag color={val === "IMPORT" ? "green" : "red"}>
-                  {val === "IMPORT" ? "Nhập" : "Xuất"}
-                </Tag>
-              ),
+              render: (val: string) => {
+                const meta = getTransactionTypeMeta(val);
+                return <Tag color={meta.color}>{meta.label}</Tag>;
+              },
             },
             { title: "Số lượng", dataIndex: "quantity" },
             {
@@ -343,8 +351,8 @@ function StatCard({
   suffix?: string;
 }) {
   return (
-    <Col xs={24} sm={12} lg={6} xl={4}>
-      <Card>
+    <Col xs={24} sm={12} lg={6} xl={6}>
+      <Card className="compact-stat-card">
         <Statistic
           title={title}
           value={money ? currencyFormatter.format(Number(value)) : value}

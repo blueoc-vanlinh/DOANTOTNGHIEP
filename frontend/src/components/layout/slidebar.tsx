@@ -1,26 +1,48 @@
 import { Layout, Menu } from "antd";
+import type { MenuProps } from "antd";
 import {
+  AuditOutlined,
+  BarcodeOutlined,
   DashboardOutlined,
-  ShoppingOutlined,
-  InboxOutlined,
-  UploadOutlined,
+  DatabaseOutlined,
   DownloadOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+  HomeOutlined,
+  InboxOutlined,
   LineChartOutlined,
   RobotOutlined,
-  BarcodeOutlined,
-  FileTextOutlined,
-  TagsOutlined,
-  UserSwitchOutlined,
   SafetyCertificateOutlined,
-  HomeOutlined,
+  ShoppingOutlined,
   SwapOutlined,
-  HistoryOutlined,
+  TagsOutlined,
   ToolOutlined,
+  UploadOutlined,
+  UserSwitchOutlined,
 } from "@ant-design/icons";
-import { useNavigate, useLocation } from "react-router-dom";
-import { aiDataUrl, auditLogsUrl, categoryUrl, dashboardUrl, exportUrl, forecastUrl, importUrl, inventoryUrl, invoicesUrl, productsUrl, rolesUrl, suppliersUrl, transactionsUrl, usersUrl, warehouseAutomationUrl, warehouseOperationsUrl, warehouseUrl } from "@/routes/urls";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { FC } from "react";
+
 import { useAuthStore } from "@/store/auth.store";
+import {
+  aiDataUrl,
+  auditLogsUrl,
+  categoryUrl,
+  dashboardUrl,
+  exportUrl,
+  forecastUrl,
+  importUrl,
+  inventoryUrl,
+  invoicesUrl,
+  productsUrl,
+  rolesUrl,
+  suppliersUrl,
+  transactionsUrl,
+  usersUrl,
+  warehouseAutomationUrl,
+  warehouseOperationsUrl,
+  warehouseUrl,
+} from "@/routes/urls";
 
 const { Sider } = Layout;
 
@@ -34,74 +56,123 @@ const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.roles?.includes("Admin");
 
-  const menuItems = [
+  const operationsItems: MenuProps["items"] = [
     { key: dashboardUrl, icon: <DashboardOutlined />, label: "Tổng quan" },
+    { key: inventoryUrl, icon: <InboxOutlined />, label: "Tồn kho" },
+    { key: importUrl, icon: <UploadOutlined />, label: "Phiếu nhập" },
+    { key: exportUrl, icon: <DownloadOutlined />, label: "Phiếu xuất" },
+    { key: transactionsUrl, icon: <SwapOutlined />, label: "Giao dịch kho" },
+    { key: invoicesUrl, icon: <FileTextOutlined />, label: "Hóa đơn" },
+  ];
+
+  const catalogItems: MenuProps["items"] = [
     { key: productsUrl, icon: <ShoppingOutlined />, label: "Sản phẩm" },
-    { key: inventoryUrl, icon: <InboxOutlined />, label: "Kho hàng" },
     { key: categoryUrl, icon: <TagsOutlined />, label: "Danh mục" },
     { key: suppliersUrl, icon: <UserSwitchOutlined />, label: "Nhà cung cấp" },
-    { key: warehouseUrl, icon: <HomeOutlined />, label: "Kho" },
-    { key: transactionsUrl, icon: <SwapOutlined />, label: "Giao dịch" },
-    { key: importUrl, icon: <UploadOutlined />, label: "Nhập kho" },
-    { key: exportUrl, icon: <DownloadOutlined />, label: "Xuất kho" },
-    { key: invoicesUrl, icon: <FileTextOutlined />, label: "Hóa đơn" },
+    { key: warehouseUrl, icon: <HomeOutlined />, label: "Kho hàng" },
+  ];
+
+  const intelligenceItems: MenuProps["items"] = [
     { key: forecastUrl, icon: <LineChartOutlined />, label: "Dự báo AI" },
-    { key: aiDataUrl, icon: <RobotOutlined />, label: "Dữ liệu AI", adminOnly: true },
-    { key: warehouseAutomationUrl, icon: <BarcodeOutlined />, label: "Tự động kho", adminOnly: true },
-    { key: warehouseOperationsUrl, icon: <ToolOutlined />, label: "Nghiệp vụ kho", adminOnly: true },
-    { key: usersUrl, icon: <UserSwitchOutlined />, label: "Nhân viên", adminOnly: true },
-    { key: rolesUrl, icon: <SafetyCertificateOutlined />, label: "Vai trò", adminOnly: true },
-    { key: auditLogsUrl, icon: <HistoryOutlined />, label: "Nhật ký", adminOnly: true },
-  ].filter((item) => isAdmin || !item.adminOnly);
+    ...(isAdmin
+      ? [
+          { key: aiDataUrl, icon: <RobotOutlined />, label: "Dữ liệu AI" },
+          { key: warehouseAutomationUrl, icon: <BarcodeOutlined />, label: "Tự động kho" },
+          { key: warehouseOperationsUrl, icon: <ToolOutlined />, label: "Nghiệp vụ kho" },
+        ]
+      : []),
+  ];
+
+  const adminItems: MenuProps["items"] = isAdmin
+    ? [
+        { key: usersUrl, icon: <UserSwitchOutlined />, label: "Nhân viên" },
+        { key: rolesUrl, icon: <SafetyCertificateOutlined />, label: "Vai trò" },
+        { key: auditLogsUrl, icon: <HistoryOutlined />, label: "Nhật ký" },
+      ]
+    : [];
+
+  const menuItems: MenuProps["items"] = [
+    {
+      type: "group",
+      label: collapsed ? "" : "Vận hành",
+      children: operationsItems,
+    },
+    {
+      type: "group",
+      label: collapsed ? "" : "Dữ liệu nền",
+      children: catalogItems,
+    },
+    {
+      type: "group",
+      label: collapsed ? "" : "Dự báo & tối ưu",
+      children: intelligenceItems,
+    },
+    ...(adminItems.length
+      ? [
+          {
+            type: "group" as const,
+            label: collapsed ? "" : "Quản trị",
+            children: adminItems,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <Sider
       trigger={null}
       collapsible
       collapsed={collapsed}
-      width={256}
-      collapsedWidth={80}
+      width={280}
+      collapsedWidth={84}
+      className="app-sidebar"
       style={{
-        overflow: "auto",
+        overflow: "hidden",
         height: "100vh",
         position: "fixed",
         left: 0,
         top: 0,
         bottom: 0,
-        boxShadow: "2px 0 12px rgba(0, 21, 41, 0.12)",
-        zIndex: 999,
+        zIndex: 30,
       }}
     >
-      {/* Logo */}
-      <div
-        style={{
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #334371 0%, #4096ff 100%)",
-          color: "#fff",
-          fontWeight: 700,
-          fontSize: collapsed ? "22px" : "21px",
-          letterSpacing: "0.5px",
-          transition: "all 0.3s ease",
-        }}
-      >
-        {collapsed ? (
-          <img src="/2825346-200.png" alt="Logo" style={{ width: "40px", height: "40px" }} />
-        ) : (
-          <>
-            <img src="/2825346-200.png" alt="Logo" style={{ width: "40px", height: "40px", marginRight: "10px" }} />
-            INVENTORY
-          </>
+      <div className="app-brand">
+        <div className="app-brand-mark">
+          <img src="/2825346-200.png" alt="Inventory" />
+        </div>
+        {!collapsed && (
+          <div className="app-brand-text">
+            <div className="app-brand-title">Inventory Intelligence</div>
+            <div className="app-brand-subtitle">Warehouse AI Platform</div>
+          </div>
         )}
       </div>
+
+      {!collapsed && (
+        <div
+          style={{
+            margin: "14px 16px 4px",
+            padding: "12px",
+            borderRadius: 8,
+            background: "#f7faf9",
+            border: "1px solid #dfe7ee",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <DatabaseOutlined style={{ color: "#0f766e" }} />
+            <div>
+              <div style={{ fontWeight: 800, color: "#172033", fontSize: 13 }}>Production workspace</div>
+              <div style={{ color: "#667085", fontSize: 12, marginTop: 2 }}>Kho · Hóa đơn · AI forecast</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Menu
-        theme="dark"
         mode="inline"
         selectedKeys={[location.pathname]}
         onClick={({ key }) => navigate(key)}
         items={menuItems}
-        style={{ borderRight: 0, background: "#001529" }}
       />
     </Sider>
   );

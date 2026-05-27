@@ -19,6 +19,7 @@ def get_inventories(
         select(
             Inventory,
             Product.name.label("product_name"),
+            Product.price.label("product_price"),
             Warehouse.name.label("warehouse_name")
         )
         .join(Product, Product.id == Inventory.product_id)
@@ -81,11 +82,12 @@ def get_inventories(
     query = query.offset(skip).limit(limit)
     results = session.exec(query).all()
     items: List[Dict[str, Any]] = []
-    for inv, product_name, warehouse_name in results:
+    for inv, product_name, product_price, warehouse_name in results:
         items.append({
             "id": inv.id,
             "product_id": inv.product_id,
             "product_name": product_name,
+            "product_price": product_price,
             "warehouse_id": inv.warehouse_id,
             "warehouse_name": warehouse_name,
             "quantity": inv.quantity,
@@ -114,6 +116,7 @@ def get_inventory_with_details(
         select(
             Inventory,
             Product.name.label("product_name"),
+            Product.price.label("product_price"),
             Warehouse.name.label("warehouse_name")
         )
         .join(Product, Product.id == Inventory.product_id)
@@ -130,12 +133,13 @@ def get_inventory_with_details(
     if not result:
         return None
 
-    inventory, product_name, warehouse_name = result
+    inventory, product_name, product_price, warehouse_name = result
 
     return {
         "id": inventory.id,
         "product_id": inventory.product_id,
         "product_name": product_name,
+        "product_price": product_price,
         "warehouse_id": inventory.warehouse_id,
         "warehouse_name": warehouse_name,
         "quantity": inventory.quantity,
