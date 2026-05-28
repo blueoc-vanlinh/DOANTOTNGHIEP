@@ -55,6 +55,17 @@ export interface AiModelBenchmarkDataset {
 export interface AiModelBenchmarks {
   metric_note: string;
   best_accuracy: number;
+  recommended_model?: {
+    dataset: string;
+    model: string;
+    accuracy: number;
+    mape: number;
+    wmape: number;
+    mae: number;
+    rmse: number;
+    train_points: number;
+    test_points: number;
+  } | null;
   datasets: AiModelBenchmarkDataset[];
 }
 

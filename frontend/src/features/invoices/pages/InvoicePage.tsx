@@ -39,6 +39,7 @@ export default function InvoicePage() {
   });
   const invoiceDetail = useInvoice(selectedInvoiceId);
   const createMomoPayment = useCreateMomoPayment();
+  const resetMomoPayment = createMomoPayment.reset;
 
   const filteredInvoices = useMemo(() => invoices.data || [], [invoices.data]);
   const totalValue = useMemo(
@@ -67,8 +68,8 @@ export default function InvoicePage() {
   };
 
   useEffect(() => {
-    createMomoPayment.reset();
-  }, [selectedInvoiceId]);
+    resetMomoPayment();
+  }, [selectedInvoiceId, resetMomoPayment]);
 
   const handleCopyMomoCode = async (value?: string | null) => {
     if (!value) return;

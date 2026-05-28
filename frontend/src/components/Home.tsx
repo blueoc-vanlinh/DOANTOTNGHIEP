@@ -36,6 +36,13 @@ interface BenchmarkDataset {
 interface BenchmarkResponse {
   metric_note: string;
   best_accuracy: number;
+  recommended_model?: {
+    dataset: string;
+    model: string;
+    accuracy: number;
+    train_points: number;
+    test_points: number;
+  } | null;
   datasets: BenchmarkDataset[];
 }
 
@@ -293,8 +300,13 @@ export default function Home() {
               >
                 <Space align="center" style={{ width: "100%", justifyContent: "space-between", marginBottom: 12 }}>
                   <Text strong>Benchmark train/test</Text>
-                  <Tag color="blue">Best {benchmarks.data?.best_accuracy || 0}%</Tag>
+                  <Tag color="blue">
+                    Dùng {benchmarks.data?.recommended_model?.dataset || "M5"} {benchmarks.data?.recommended_model?.model || "Transformer"} · {benchmarks.data?.recommended_model?.accuracy || 0}%
+                  </Tag>
                 </Space>
+                <Paragraph style={{ marginTop: 0, color: "#58667a" }}>
+                  Hệ thống ưu tiên M5 Transformer vì M5 có tập train/test lớn hơn Walmart, phù hợp hơn để làm benchmark chính cho dự báo nhu cầu.
+                </Paragraph>
                 <Table
                   size="small"
                   rowKey="key"

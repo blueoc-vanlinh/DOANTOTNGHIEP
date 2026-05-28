@@ -1,7 +1,6 @@
 import { Layout, Menu } from "antd";
 import type { MenuProps } from "antd";
 import {
-  AuditOutlined,
   BarcodeOutlined,
   DashboardOutlined,
   DatabaseOutlined,

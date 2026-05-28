@@ -1,5 +1,5 @@
 import { Component } from "react";
-import type { ErrorInfo, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Button, Result } from "antd";
 import Error500 from "../error/error500";
 
@@ -18,9 +18,6 @@ class ErrorBoundary extends Component<Props, State> {
   }
   static getDerivedStateFromError(): State {
     return { hasError: true };
-  }
-  componentDidCatch(_error: Error, _info: ErrorInfo): void {
-    return;
   }
   handleReset = (): void => {
     this.setState({ hasError: false });

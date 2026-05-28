@@ -41,7 +41,8 @@ def test_forecast_uses_real_history_and_ai_model(session):
 
     assert result["history"]
     assert result["data"]
-    assert result["model_used"] in {"LSTM", "Neural Time Series"}
+    assert result["model_used"] == "Transformer"
+    assert result["dataset_used"] == "M5"
 
 
 def test_training_persists_forecast_results(session):

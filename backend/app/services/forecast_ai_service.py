@@ -523,7 +523,7 @@ def _trained_forecast_result(
         "recommended_import": round(total_forecast * 1.2, 2),
         "model_used": model_used,
         "model_source": "forecast_results",
-        "model_accuracy": _benchmark_accuracy_for_model(model_used),
+        "model_accuracy": best_model.get("accuracy") or _benchmark_accuracy_for_model(model_used),
         "accuracy_basis": "Benchmark train/test public dataset",
         "dataset_used": best_model.get("dataset"),
         "train_points": best_model.get("train_points"),

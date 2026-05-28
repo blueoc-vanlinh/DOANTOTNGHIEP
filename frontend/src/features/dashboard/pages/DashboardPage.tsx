@@ -206,7 +206,7 @@ export default function DashboardPage() {
 
       <Card className="workflow-card" style={{ marginTop: 24 }} title="Trạng thái AI Forecast">
         <Row gutter={[16, 16]}>
-          <StatCard title="Model tốt nhất" value={aiStatus?.best_model || "Đang cập nhật"} icon={<ThunderboltOutlined />} color="#0b6bcb" />
+          <StatCard title="Model đang dùng" value={aiStatus?.best_model || "Đang cập nhật"} icon={<ThunderboltOutlined />} color="#0b6bcb" />
           <StatCard title="Độ chính xác AI" value={aiStatus?.accuracy || 0} icon={<RiseOutlined />} color="#237804" suffix="%" />
           <StatCard title="Sản phẩm cần nhập" value={aiStatus?.recommended_import_count || 0} icon={<UploadOutlined />} color="#d48806" />
           <StatCard title="Sản phẩm rủi ro hết hàng" value={aiStatus?.risk_product_count || 0} icon={<WarningOutlined />} color="#cf1322" />

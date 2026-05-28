@@ -96,8 +96,12 @@ export default function AiDataPage() {
     [dataset.data?.rows]
   );
   const bestBenchmark = useMemo(
-    () =>
-      (benchmarks.data?.datasets || [])
+    () => {
+      if (benchmarks.data?.recommended_model) {
+        return benchmarks.data.recommended_model;
+      }
+
+      return (benchmarks.data?.datasets || [])
         .flatMap((dataset) =>
           dataset.models.map((model) => ({
             dataset: dataset.dataset,
@@ -106,8 +110,9 @@ export default function AiDataPage() {
             ...model,
           }))
         )
-        .sort((a, b) => b.accuracy - a.accuracy)[0],
-    [benchmarks.data?.datasets]
+        .find((row) => row.dataset === "M5" && row.model === "Transformer");
+    },
+    [benchmarks.data]
   );
 
   const handleCreateFactor = async () => {
@@ -205,13 +210,13 @@ export default function AiDataPage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={8}>
           <Card className="workflow-card">
-            <Statistic title="Model tốt nhất" value={bestBenchmark?.model || "Đang cập nhật"} />
-            <Text type="secondary">{bestBenchmark?.dataset || "Chưa có dataset"}</Text>
+            <Statistic title="Model đang ưu tiên" value={bestBenchmark?.model || "Đang cập nhật"} />
+            <Text type="secondary">{bestBenchmark?.dataset || "Chưa có dataset"} · ưu tiên dữ liệu lớn</Text>
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card className="workflow-card">
-            <Statistic title="Độ chính xác tốt nhất" value={bestBenchmark?.accuracy || 0} suffix="%" />
+            <Statistic title="Độ chính xác model ưu tiên" value={bestBenchmark?.accuracy || 0} suffix="%" />
             <Text type="secondary">Train/Test: {bestBenchmark?.train_points || 0}/{bestBenchmark?.test_points || 0}</Text>
           </Card>
         </Col>
@@ -230,8 +235,10 @@ export default function AiDataPage() {
           type="info"
           showIcon
           style={{ marginBottom: 16 }}
-          title={`Accuracy tốt nhất: ${benchmarks.data?.best_accuracy || 0}%`}
-          description={benchmarks.data?.metric_note || "Đang đọc train/test split từ dataset/splits"}
+          title={`Model hệ thống đang dùng: ${bestBenchmark?.dataset || "M5"} ${bestBenchmark?.model || "Transformer"} · ${bestBenchmark?.accuracy || 0}%`}
+          description={
+            "Hệ thống ưu tiên Transformer trên M5 vì M5 có nhiều điểm train/test hơn Walmart, nên kết quả ổn định hơn khi dùng làm benchmark chính."
+          }
         />
         <Table
           rowKey={(record) => `${record.dataset}-${record.model}`}

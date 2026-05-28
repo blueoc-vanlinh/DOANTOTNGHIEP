@@ -9,6 +9,8 @@ import pandas as pd
 
 
 DATASET_SPLIT_DIR = Path(__file__).resolve().parents[3] / "dataset" / "splits"
+PREFERRED_DATASET = "M5"
+PREFERRED_MODEL = "Transformer"
 
 
 @lru_cache(maxsize=1)
@@ -18,34 +20,20 @@ def get_public_model_benchmarks() -> dict:
         _evaluate_walmart(),
         _evaluate_rossmann(),
     ]
-    available = [item for item in datasets if item["status"] == "ready"]
-    best_accuracy = max(
-        (
-            model["accuracy"]
-            for dataset in available
-            for model in dataset["models"]
-        ),
-        default=0,
-    )
+    rows = _benchmark_rows({"datasets": datasets})
+    best_accuracy = max((row["accuracy"] for row in rows), default=0)
+    recommended_model = _preferred_model(rows) or _highest_accuracy_model(rows)
     return {
         "metric_note": "Accuracy = max(0, 100 - WMAPE). Metrics are calculated from train/test splits in dataset/splits.",
         "best_accuracy": round(best_accuracy, 2),
+        "recommended_model": recommended_model,
         "datasets": datasets,
     }
 
 
 def get_best_model_summary() -> dict:
     benchmarks = get_public_model_benchmarks()
-    rows = [
-        {
-            "dataset": dataset["dataset"],
-            "train_points": dataset["train_points"],
-            "test_points": dataset["test_points"],
-            **model,
-        }
-        for dataset in benchmarks["datasets"]
-        for model in dataset["models"]
-    ]
+    rows = _benchmark_rows(benchmarks)
     if not rows:
         return {
             "model": None,
@@ -55,7 +43,7 @@ def get_best_model_summary() -> dict:
             "test_points": 0,
         }
 
-    best = max(rows, key=lambda item: item["accuracy"])
+    best = _preferred_model(rows) or _highest_accuracy_model(rows)
     return {
         "model": best["model"],
         "accuracy": best["accuracy"],
@@ -64,7 +52,43 @@ def get_best_model_summary() -> dict:
         "test_points": best["test_points"],
         "mape": best["mape"],
         "wmape": best["wmape"],
+        "selection_reason": (
+            "Ưu tiên Transformer trên M5 vì tập train/test lớn hơn Walmart "
+            "nên độ tin cậy thực nghiệm ổn định hơn."
+            if best["dataset"] == PREFERRED_DATASET and best["model"] == PREFERRED_MODEL
+            else "Fallback sang model có Accuracy cao nhất vì không tìm thấy M5 Transformer."
+        ),
     }
+
+
+def _benchmark_rows(benchmarks: dict) -> list[dict]:
+    return [
+        {
+            "dataset": dataset["dataset"],
+            "train_points": dataset["train_points"],
+            "test_points": dataset["test_points"],
+            **model,
+        }
+        for dataset in benchmarks["datasets"]
+        for model in dataset["models"]
+    ]
+
+
+def _preferred_model(rows: list[dict]) -> dict | None:
+    return next(
+        (
+            row
+            for row in rows
+            if row["dataset"] == PREFERRED_DATASET and row["model"] == PREFERRED_MODEL
+        ),
+        None,
+    )
+
+
+def _highest_accuracy_model(rows: list[dict]) -> dict | None:
+    if not rows:
+        return None
+    return max(rows, key=lambda item: item["accuracy"])
 
 
 def _evaluate_m5() -> dict:
